@@ -23,7 +23,7 @@
 // ---- Display (GC9A01A) ----
 #define TFT_SCLK  13
 #define TFT_MOSI  11
-#define TFT_DC    12
+#define TFT_DC    10
 #define TFT_CS    9
 #define TFT_RST   8
 
@@ -49,9 +49,9 @@
 #define SCREEN_HEIGHT 240
 #define CENTER GC9A01A_t3n::CENTER
 
-// Framebuffers for double buffering
+// Framebuffer: drawing goes here in RAM, then updateScreen() blits the whole
+// frame to the panel in one SPI burst (flicker-free).
 DMAMEM uint16_t fb1[240 * 240];
-DMAMEM uint16_t fb2[240 * 240];
 
 // Initialize display with GC9A01A_t3n (optimized for Teensy 4.x)
 GC9A01A_t3n tft(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK);
@@ -80,7 +80,13 @@ void setup() {
   tft.begin();
 
   // Set rotation (adjust if needed: 0, 1, 2, or 3)
-  tft.setRotation(0);
+  tft.setRotation(2);
+
+  // Enable buffered drawing: set the buffer BEFORE useFrameBuffer() so the
+  // library uses ours instead of allocating its own. Without this, drawing
+  // goes straight to the panel and you see it clear-and-redraw every frame.
+  tft.setFrameBuffer(fb1);
+  tft.useFrameBuffer(true);
 
   Serial.println("Display initialized!");
 
@@ -90,19 +96,12 @@ void setup() {
 uint8_t timer = 0;
 
 void loop() {
-  tft.setFrameBuffer(fb1);
-  drawTestPattern(timer);
-  tft.updateScreen();
+  drawTestPattern(timer);   // renders into fb1 (RAM)
+  tft.updateScreen();       // pushes the complete frame to the panel at once
   countFrame();
   timer += 2;
 
-  tft.setFrameBuffer(fb2);
-  drawTestPattern(timer);
-  tft.updateScreen();
-  countFrame();
-  timer += 2;
-
-  updateLeds();
+  //updateLeds();
 }
 
 // Count a rendered frame and recompute FPS roughly once per second.
