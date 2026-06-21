@@ -15,33 +15,48 @@ A Teensy 4.0-based dual-channel oscilloscope Eurorack module.
 ## Pin Mapping
 
 ### Display (GC9A01A)
-- SCK: Pin 20 (13_SCK_CRX1_LED)
-- MOSI/SDA: Pin 13 (14_A0_TX3_SPDIF_OUT)
-- DC: Pin 10 (9_OUT1C) - Hardware CS pin for faster data/command switching
-- CS: Pin 9 (6_OUT1A)
-- RST: Pin 11 (11_MOSI_CTX1)
+- SCK: Pin 20 (Arduino Digital 13)
+- MOSI/SDA: Pin 13 (Arduino Digital 11)
+- DC: Pin 12 (Arduino Digital 12)
+- CS: Pin 11 (Arduino Digital 9)
+- RST: Pin 10 (Arduino Digital 8)
 
 ### Controls
-- Rotary Encoder A: ENC_A (Pin 27)
-- Rotary Encoder B: ENC_B (Pin 26)
-- Encoder Switch: SW_ENC (Pin 28)
-- Switch 1: SW1 (Pin 25)
-- Switch 2: SW2 (Pin 24)
-- Signal A Button: SIGNAL_A (Pin 21)
-- Signal B Button: SIGNAL_B (Pin 22)
+- Encoder Switch: SW_ENC (Pin 28, Arduino Digital 21)
+- Rotary Encoder A: ENC_A (Pin 27, Arduino Digital 20)
+- Rotary Encoder B: ENC_B (Pin 26, Arduino Digital 19)
+- Switch 1: SW1 (Pin 25, Arduino Digital 18)
+- Switch 2: SW2 (Pin 22, Arduino Digital 15)
+- Switch 3: SW3 (Pin 21, Arduino Digital 14)
 
 ### LEDs
-- LED 1: Pin 1 (0_RX1_CRX2_CS1)
-- LED 2: Pin 5 (3_LRCLK2)
-- LED 3: Pin 6 (4_BCLK2)
+- LED 1: Pin 1 (Pin 4, Arduino Digital 2)
+- LED 2: Pin 5 (Pin 5, Arduino Digital 3)
+- LED 3: Pin 6 (Pin 6, Arduino Digital 4)
 
 ### Analog Inputs
-- Channel A: XTRA1 (Pin 2)
-- Channel B: XTRA2 (Pin 3)
+- Channel A: SIGNAL_A (Pin 23, Arduino Digital 16 / Analog 2)
+- Channel B: SIGNAL_B (Pin 24, Arduino Digital 17 / Analog 3)
+
+### Unusued Breakouts
+- X1: Pin 30, Arduino Digital 23 / Analog 9
+- X2: Pin 29, Arduino Digital 22 / Analog 8
+- X3: Pin 7, Arduino Digital 5
+- X4: Pin 8, Arduino Digital 6
+- X5: Pin 9, Arduino Digital 7
+
 
 ## Firmware
 
 Location: `src/OScope.ino`
+
+**Quick commands ([just](https://github.com/casey/just)):**
+```bash
+just build   # Compile the firmware (pio run)
+just run     # Build and upload to the Teensy (pio run -t upload)
+just debug   # Upload, then open the serial monitor
+```
+Run `just` on its own to list available recipes.
 
 **Required Libraries:**
 - Adafruit GFX Library
