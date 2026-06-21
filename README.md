@@ -17,7 +17,7 @@ A Teensy 4.0-based dual-channel oscilloscope Eurorack module.
 ### Display (GC9A01A)
 - SCK: Pin 20 (Arduino Digital 13)
 - MOSI/SDA: Pin 13 (Arduino Digital 11)
-- DC: Pin 12 (Arduino Digital 12)
+- DC: Pin 12 (Arduino Digital 10)
 - CS: Pin 11 (Arduino Digital 9)
 - RST: Pin 10 (Arduino Digital 8)
 

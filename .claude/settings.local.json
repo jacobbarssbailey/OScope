@@ -10,7 +10,8 @@
       "Read(//Users/jacob/.claude/plugins/cache/claude-plugins-official/chrome-devtools-mcp/1.2.0/node_modules/third-party-web/lib/markdown/**)",
       "Bash(/opt/homebrew/bin/just *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(awk '/void GC9A01A_t3n::updateScreen/{f=1} f{print NR\": \"$0} f&&/^}/{exit}' GC9A01A_t3n.cpp)"
     ],
     "deny": [],
     "ask": []

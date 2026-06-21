@@ -20,6 +20,9 @@
 #include <GC9A01A_t3n.h>
 #include <SPI.h>
 
+#define GC9A01A_SPICLOCK 96000000
+#define GC9A01A_SPICLOCK_READ 2000000
+
 // ---- Display (GC9A01A) ----
 #define TFT_SCLK  13
 #define TFT_MOSI  11
@@ -77,7 +80,7 @@ void setup() {
 
   // Initialize display
   Serial.println("Initializing GC9A01A display...");
-  tft.begin();
+  tft.begin(GC9A01A_SPICLOCK, GC9A01A_SPICLOCK_READ);
 
   // Set rotation (adjust if needed: 0, 1, 2, or 3)
   tft.setRotation(2);
@@ -99,9 +102,9 @@ void loop() {
   drawTestPattern(timer);   // renders into fb1 (RAM)
   tft.updateScreen();       // pushes the complete frame to the panel at once
   countFrame();
-  timer += 2;
+  timer += 1;
 
-  //updateLeds();
+  updateLeds();
 }
 
 // Count a rendered frame and recompute FPS roughly once per second.
