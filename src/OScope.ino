@@ -19,6 +19,7 @@
 #include <Adafruit_GFX.h>
 #include <GC9A01A_t3n.h>
 #include <SPI.h>
+#include <Encoder.h>
 
 #define GC9A01A_SPICLOCK 96000000
 #define GC9A01A_SPICLOCK_READ 2000000
@@ -64,6 +65,31 @@ uint32_t frameCount = 0;
 uint32_t lastFpsTime = 0;
 float fps = 0.0f;
 
+// ---- Controls ----
+// Buttons are active-low (external pull-ups per README; INPUT_PULLUP is
+// harmless alongside them and covers the case where they aren't populated).
+#define DEBOUNCE_MS 10
+
+struct DebouncedButton {
+  uint8_t pin;
+  const char *name;
+  bool pressed;        // debounced state: true = pressed
+  bool lastRaw;        // last raw sample: true = pressed
+  uint32_t lastChange; // millis() of last raw transition
+};
+
+DebouncedButton buttons[] = {
+  {SW1,    "Button 1", false, false, 0},
+  {SW2,    "Button 2", false, false, 0},
+  {SW3,    "Button 3", false, false, 0},
+  {SW_ENC, "Enc Btn",  false, false, 0},
+};
+const uint8_t NUM_BUTTONS = sizeof(buttons) / sizeof(buttons[0]);
+
+// The Encoder library sets up INPUT_PULLUP and interrupts on these pins.
+Encoder encoder(ENC_A, ENC_B);
+long encoderPos = 0;
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -74,6 +100,12 @@ void setup() {
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
   pinMode(LED3, OUTPUT);
+
+  // Configure buttons as inputs (active-low). Encoder A/B pins are handled
+  // by the Encoder library.
+  for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+    pinMode(buttons[i].pin, INPUT_PULLUP);
+  }
 
   // Initialize SPI
   SPI.begin();
@@ -99,12 +131,31 @@ void setup() {
 uint8_t timer = 0;
 
 void loop() {
+  readControls();           // debounce buttons + read encoder
   drawTestPattern(timer);   // renders into fb1 (RAM)
   tft.updateScreen();       // pushes the complete frame to the panel at once
   countFrame();
   timer += 1;
 
   updateLeds();
+}
+
+// Sample and debounce the four buttons and read the encoder position.
+// A button's debounced state only changes once its raw reading has held
+// steady for DEBOUNCE_MS, which rejects contact-bounce chatter.
+void readControls() {
+  uint32_t now = millis();
+  for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+    bool raw = (digitalRead(buttons[i].pin) == LOW); // active-low: LOW = pressed
+    if (raw != buttons[i].lastRaw) {
+      buttons[i].lastRaw = raw;
+      buttons[i].lastChange = now;
+    }
+    if ((now - buttons[i].lastChange) >= DEBOUNCE_MS) {
+      buttons[i].pressed = raw;
+    }
+  }
+  encoderPos = encoder.read() / 4; // 4 counts per detent -> 1 per physical click
 }
 
 // Count a rendered frame and recompute FPS roughly once per second.
@@ -172,6 +223,28 @@ void drawTestPattern(uint8_t t) {
   tft.setTextColor(0xFFFF); // WHITE
   tft.setTextSize(1);
   tft.println("Display Test");
+
+  drawControlStatus();
+}
+
+// Render the live control status as small text lines in the center, over a
+// dark panel so they stay readable against the grid and crosshair.
+void drawControlStatus() {
+  const int16_t bx = 56, by = 88, bw = 128, bh = 66;
+  tft.fillRect(bx, by, bw, bh, 0x0000);   // black backing
+  tft.drawRect(bx, by, bw, bh, 0x39C7);   // gray border
+
+  tft.setTextSize(1);
+  int16_t y = by + 5;
+  for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+    tft.setCursor(bx + 6, y);
+    tft.setTextColor(buttons[i].pressed ? 0x07E0 : 0xC618); // green / light gray
+    tft.printf("%s: %s", buttons[i].name, buttons[i].pressed ? "pressed" : "released");
+    y += 12;
+  }
+  tft.setCursor(bx + 6, y);
+  tft.setTextColor(0x07FF); // CYAN
+  tft.printf("Encoder: %ld", encoderPos);
 }
 
 // Color wheel function for smooth color transitions
