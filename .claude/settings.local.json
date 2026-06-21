@@ -3,7 +3,14 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(pio run:*)",
-      "Bash(platformio run:*)"
+      "Bash(platformio run:*)",
+      "Bash(cargo init:*)",
+      "Bash(cargo test:*)",
+      "Read(//Users/jacob/.claude/plugins/marketplaces/claude-plugins-official/plugins/hookify/examples/**)",
+      "Read(//Users/jacob/.claude/plugins/cache/claude-plugins-official/chrome-devtools-mcp/1.2.0/node_modules/third-party-web/lib/markdown/**)",
+      "Bash(/opt/homebrew/bin/just *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ],
     "deny": [],
     "ask": []
