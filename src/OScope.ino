@@ -1,9 +1,14 @@
 /*
- * OScope — Task 1 verification harness
+ * OScope — Dual-channel Eurorack oscilloscope (Teensy 4.0)
  *
- * Displays the most-recently received InputEvent on the round 240×240
- * GC9A01A display. This is the temporary verification UI for milestone 1;
- * it will be replaced by the real oscilloscope UI in later milestones.
+ * This is the main Arduino sketch.  It owns:
+ *   - The framebuffer and display driver (GC9A01A_t3n, 240×240 round panel)
+ *   - The FPS counter (countFrame / fps)
+ *   - The top-level event/render loop
+ *
+ * It delegates all input decoding to Input, all drawing to Renderer, and all
+ * UI logic to the ScreenStack.  The temporary Task-1 verification display has
+ * been replaced by the screen-stack framework introduced in Task 2.
  *
  * Hardware: Teensy 4.0.  All pin assignments are in Config.h.
  */
@@ -14,6 +19,11 @@
 
 #include "Config.h"
 #include "Input.h"
+#include "Renderer.h"
+#include "ScopeState.h"
+#include "Theme.h"
+#include "screens/Screen.h"
+#include "screens/RunScreen.h"
 
 // Note: GC9A01A_SPICLOCK is also defined in the library header (30 MHz);
 // redefine here to use the faster 96 MHz rate the Teensy 4.0 can sustain.
@@ -44,9 +54,13 @@ void countFrame() {
     }
 }
 
-// Input module and last-event string for the verification display.
-Input input;
-char  lastEvent[32] = "none";
+// ---- Application objects (all statically allocated, no new/delete) ----
+Input      input;
+ScopeState state;
+Renderer   renderer(tft);
+ScreenStack screens;
+RunScreen   runScreen;
+AppContext  ctx{state, screens};
 
 void setup() {
     Serial.begin(115200);
@@ -60,28 +74,23 @@ void setup() {
 
     input.begin();
 
+    // Push the run screen as the root; later milestones may push sub-screens.
+    screens.reset(&runScreen, ctx);
+
     lastFpsTime = millis();
 }
 
 void loop() {
-    // Drain all pending input events; keep only the last description.
+    // 1. Drain all pending input events and forward each to the top screen.
     InputEvent e;
     while (input.poll(e)) {
-        if (e.type == EventType::EncoderTurn) {
-            snprintf(lastEvent, sizeof lastEvent, "enc %+d", e.delta);
-        } else if (e.type == EventType::ShortPress) {
-            snprintf(lastEvent, sizeof lastEvent, "short b%d", (int)e.button);
-        } else if (e.type == EventType::LongPress) {
-            snprintf(lastEvent, sizeof lastEvent, "LONG  b%d", (int)e.button);
-        }
+        screens.handleEvent(e, ctx);
     }
 
-    // Render: white text centred on the round display.
-    tft.fillScreen(0);
-    tft.setTextSize(2);
-    tft.setCursor(40, 110);
-    tft.setTextColor(0xFFFF);
-    tft.print(lastEvent);
+    // 2. Draw the current top screen into the framebuffer.
+    screens.draw(renderer, ctx);
+
+    // 3. Blit the framebuffer to the panel in one SPI burst.
     tft.updateScreen();
 
     countFrame();
