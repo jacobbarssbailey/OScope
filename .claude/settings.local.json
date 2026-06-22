@@ -11,7 +11,13 @@
       "Bash(/opt/homebrew/bin/just *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(awk '/void GC9A01A_t3n::updateScreen/{f=1} f{print NR\": \"$0} f&&/^}/{exit}' GC9A01A_t3n.cpp)"
+      "Bash(awk '/void GC9A01A_t3n::updateScreen/{f=1} f{print NR\": \"$0} f&&/^}/{exit}' GC9A01A_t3n.cpp)",
+      "Bash(git -C /Users/jacob/github/OScope rev-parse --short HEAD)",
+      "Bash(git -C /Users/jacob/github/OScope branch --show-current)",
+      "Bash(git -C /Users/jacob/github/OScope rev-parse --git-path sdd)",
+      "Bash($SKILL/scripts/task-brief *)",
+      "Bash(git commit *)",
+      "Bash($SKILL/scripts/review-package ddfac53 *)"
     ],
     "deny": [],
     "ask": []

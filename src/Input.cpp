@@ -9,7 +9,8 @@
 static const uint8_t BTN_PIN[] = {BTN_MODE, BTN_CHAN, BTN_RUN, SW_ENC};
 
 // Encoder object (uses interrupt-driven quadrature decoding from the library).
-static Encoder s_encoder(ENC_A, ENC_B);
+// Pins ordered B,A (not A,B) so CW rotation reads positive on this hardware.
+static Encoder s_encoder(ENC_B, ENC_A);
 static long s_lastEnc = 0;
 
 // ---------------------------------------------------------------------------
