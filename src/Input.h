@@ -27,9 +27,10 @@ public:
     // Pops the next pending event; returns false when none remain.
     bool poll(InputEvent& out);
 
-private:
     // Fixed-size event FIFO (power-of-2 size for cheap modulo).
     static const uint8_t QUEUE_SIZE = 8;
+
+private:
     InputEvent _queue[QUEUE_SIZE];
     uint8_t    _head = 0;
     uint8_t    _tail = 0;
