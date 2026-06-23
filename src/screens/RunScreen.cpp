@@ -47,8 +47,10 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 break;
         }
     } else if (e.type == EventType::LongPress && e.button == Btn::Encoder) {
-        // Encoder long-press: reset everything to factory defaults.
+        // Encoder long-press: reset everything to factory defaults, then
+        // clamp selection in case the defaults land on an invalid parameter.
         s.resetToDefaults();
+        clampSelectable(s);
     } else if (e.type == EventType::EncoderTurn) {
         // Encoder rotation: adjust the currently selected parameter.
         parameterFor(s.selected).adjust(s, e.delta);
@@ -78,10 +80,9 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     r.text(Theme::RunStopX, Theme::RunStopY, s.running ? "RUN" : "STOP",
            s.running ? Theme::TraceA : Theme::Highlight);
 
-    // Selected parameter name and live formatted value (Task 3).
+    // Live formatted value for the selected parameter.
+    // The parameter name is already shown in the "Sel:" row above.
     char val[24];
     parameterFor(s.selected).format(s, val, sizeof val);
-    r.text(Theme::RunParamNameX, Theme::RunParamNameY,
-           parameterFor(s.selected).name, Theme::Dim);
-    r.text(Theme::RunParamValX,  Theme::RunParamValY, val, Theme::Highlight);
+    r.text(Theme::RunParamValX, Theme::RunParamValY, val, Theme::Highlight);
 }

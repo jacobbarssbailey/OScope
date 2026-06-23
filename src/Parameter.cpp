@@ -62,9 +62,9 @@ static void adjVScale(ScopeState& s, int8_t d) {
     }
 }
 
-// Display the value for the currently selected channel (A → ch0, B or Both → ch1
-// is conventional; we show ch0 for A, ch1 for B/Both so the active channel's
-// scale is always visible).
+// Display the value for the currently selected channel: ch0 for A or Both,
+// ch1 for B.  In Both mode ch0 is shown (both channels are edited together,
+// so either would be accurate; ch0 is the conventional lead channel).
 static void fmtVScale(const ScopeState& s, char* b, uint8_t n) {
     uint8_t c = (s.channel == ChannelSel::B) ? 1 : 0;
     snprintf(b, n, "%u mV/div", s.vscale_mv_per_div[c]);
@@ -86,6 +86,10 @@ static void fmtTrig(const ScopeState& s, char* b, uint8_t n) {
 // The table is indexed directly by (uint8_t)EncoderParam, so the order MUST
 // match the enum declaration in ScopeState.h:
 //   Timebase = 0, VScale = 1, TriggerLevel = 2.
+
+static_assert((uint8_t)EncoderParam::Timebase == 0, "kParams order must match EncoderParam");
+static_assert((uint8_t)EncoderParam::VScale == 1, "kParams order must match EncoderParam");
+static_assert((uint8_t)EncoderParam::TriggerLevel == 2, "kParams order must match EncoderParam");
 
 static const Parameter kParams[] = {
     { EncoderParam::Timebase,     "Time",   adjTime,   fmtTime   },
