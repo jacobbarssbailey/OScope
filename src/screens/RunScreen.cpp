@@ -1,40 +1,30 @@
 // screens/RunScreen.cpp — Implementation of the main oscilloscope run screen.
 //
-// Button mapping (short press only for this milestone):
+// Button mapping (short press):
 //   B1 (Mode)    — cycle acquisition mode: TRIG → ROLL → X-Y → TRIG …
+//                  then clampSelectable() to fix selection if now invalid.
 //   B2 (Channel) — cycle channel: A → B → A+B → A …
 //   B3 (RunStop) — toggle run/stop
-//   Encoder      — cycle selected encoder parameter: Time → V/div → Trig → …
+//   Encoder      — advance selected parameter (skips N/A params for current mode)
 //   Encoder long — reset all state to defaults
-//
-// Mode long-press (Settings) and Channel/RunStop long-press are left for
-// later tasks and produce no action here.
+//   Encoder turn — adjust the selected parameter value by encoder delta
 
 #include "RunScreen.h"
 #include "../Theme.h"
 #include "../ScopeState.h"
+#include "../Parameter.h"
 
 #include <Arduino.h>   // snprintf on Teensy
-
-// Local helper: human-readable encoder-parameter label.
-// Task 3 will replace this with parameterFor().name via the Parameter abstraction.
-static const char* paramName(EncoderParam p) {
-    switch (p) {
-        case EncoderParam::Timebase:     return "Time";
-        case EncoderParam::VScale:       return "V/div";
-        case EncoderParam::TriggerLevel: return "Trig";
-        default:                         return "?";
-    }
-}
 
 void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
     auto& s = ctx.state;
 
     if (e.type == EventType::ShortPress) {
         switch (e.button) {
-            // B1: advance acquisition mode (wraps at COUNT).
+            // B1: advance acquisition mode, then fix selection if invalidated.
             case Btn::Mode:
                 s.mode = (Mode)(((int)s.mode + 1) % (int)Mode::COUNT);
+                clampSelectable(s);
                 break;
 
             // B2: advance channel selection (three values: A, B, Both).
@@ -47,10 +37,10 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 s.running = !s.running;
                 break;
 
-            // Encoder press: advance selected parameter.
-            // Task 3 will replace this inline cycle with nextSelectable().
+            // Encoder press: advance to next selectable parameter, skipping
+            // any that do not apply in the current mode.
             case Btn::Encoder:
-                s.selected = (EncoderParam)(((int)s.selected + 1) % 3);
+                s.selected = nextSelectable(s);
                 break;
 
             default:
@@ -59,6 +49,9 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
     } else if (e.type == EventType::LongPress && e.button == Btn::Encoder) {
         // Encoder long-press: reset everything to factory defaults.
         s.resetToDefaults();
+    } else if (e.type == EventType::EncoderTurn) {
+        // Encoder rotation: adjust the currently selected parameter.
+        parameterFor(s.selected).adjust(s, e.delta);
     }
     // Mode long-press (Settings) and Channel/RunStop long-press:
     // handled in later milestones — intentionally ignored here.
@@ -72,9 +65,9 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     // Mode label centred near the top (within the safe inset band).
     r.text(Theme::RunModeX, Theme::RunModeY, modeName(s.mode), Theme::Text, 2);
 
-    // Selected encoder parameter.
+    // Selected encoder parameter: name on the existing row.
     r.text(Theme::RunSelLabelX, Theme::RunSelY, "Sel:", Theme::Dim);
-    r.text(Theme::RunSelValueX, Theme::RunSelY, paramName(s.selected), Theme::Highlight);
+    r.text(Theme::RunSelValueX, Theme::RunSelY, parameterFor(s.selected).name, Theme::Highlight);
 
     // Active channel.
     char b[24];
@@ -84,4 +77,11 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     // Run / stop indicator: green when running, yellow when stopped.
     r.text(Theme::RunStopX, Theme::RunStopY, s.running ? "RUN" : "STOP",
            s.running ? Theme::TraceA : Theme::Highlight);
+
+    // Selected parameter name and live formatted value (Task 3).
+    char val[24];
+    parameterFor(s.selected).format(s, val, sizeof val);
+    r.text(Theme::RunParamNameX, Theme::RunParamNameY,
+           parameterFor(s.selected).name, Theme::Dim);
+    r.text(Theme::RunParamValX,  Theme::RunParamValY, val, Theme::Highlight);
 }

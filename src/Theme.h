@@ -35,4 +35,10 @@ namespace Theme {
   constexpr int16_t RunChanY      = 110;  // Channel row Y
   constexpr int16_t RunStopX      = 40;   // Run/stop indicator X
   constexpr int16_t RunStopY      = 130;  // Run/stop indicator Y
+
+  // Rows for the selected-parameter name and live formatted value (Task 3).
+  constexpr int16_t RunParamNameX = 40;   // Parameter name label X
+  constexpr int16_t RunParamNameY = 150;  // Parameter name label Y
+  constexpr int16_t RunParamValX  = 40;   // Formatted value X
+  constexpr int16_t RunParamValY  = 170;  // Formatted value Y
 }
