@@ -17,7 +17,12 @@
       "Bash(git -C /Users/jacob/github/OScope rev-parse --git-path sdd)",
       "Bash($SKILL/scripts/task-brief *)",
       "Bash(git commit *)",
-      "Bash($SKILL/scripts/review-package ddfac53 *)"
+      "Bash($SKILL/scripts/review-package ddfac53 *)",
+      "Skill(commit-commands:commit)",
+      "Bash($SKILL/scripts/review-package fb96c7e *)",
+      "Bash(grep -n \"magic\\\\|0x[0-9A-Fa-f]\\\\{4\\\\}\\\\|[0-9]\\\\{2,3\\\\}\" /Users/jacob/github/OScope/src/screens/RunScreen.cpp)",
+      "Bash($SKILL/scripts/review-package 7ed244a *)",
+      "Skill(fewer-permission-prompts)"
     ],
     "deny": [],
     "ask": []

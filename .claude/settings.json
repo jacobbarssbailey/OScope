@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(just build)",
+      "Bash(just run)",
+      "Bash(just debug)",
+      "Bash(pio run)",
+      "Bash(pio run -t upload)",
+      "Bash($SKILL/scripts/review-package *)",
+      "Bash($SKILL/scripts/task-brief *)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
