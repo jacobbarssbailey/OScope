@@ -40,4 +40,20 @@ namespace Theme {
   // The parameter name is shown in the "Sel:" row (RunSelY); no separate name row needed.
   constexpr int16_t RunParamValX  = 40;   // Formatted value X
   constexpr int16_t RunParamValY  = 170;  // Formatted value Y
+
+  // ---- Oscilloscope plot area ----
+  // The round display is 240×240.  The waveform occupies the full 240×240 canvas;
+  // the HUD text is drawn on top at z-order above the waveform so it stays readable.
+  // Grid divisions are 30 px × 30 px → 8 columns × 8 rows (8 divs each axis).
+  constexpr int16_t PlotX         = 0;    // Plot area left edge (pixels)
+  constexpr int16_t PlotY         = 0;    // Plot area top edge (pixels)
+  constexpr int16_t PlotW         = 240;  // Plot area width (pixels)
+  constexpr int16_t PlotH         = 240;  // Plot area height (pixels)
+  constexpr int16_t GridDiv       = 30;   // Grid division size (pixels/div)
+  // Number of complete grid divisions per axis: 240 / 30 = 8
+  constexpr int16_t GridCols      = 8;    // Horizontal divisions
+  constexpr int16_t GridRows      = 8;    // Vertical divisions
+  // Centre of the plot area in pixels (mid-rail = 0 V input).
+  constexpr int16_t PlotCX        = PlotX + PlotW / 2;  // 120
+  constexpr int16_t PlotCY        = PlotY + PlotH / 2;  // 120
 }

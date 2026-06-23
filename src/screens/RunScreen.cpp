@@ -8,6 +8,15 @@
 //   Encoder      — advance selected parameter (skips N/A params for current mode)
 //   Encoder long — reset all state to defaults
 //   Encoder turn — adjust the selected parameter value by encoder delta
+//
+// Draw Z-order (bottom → top):
+//   1. Background clear (r.clear())
+//   2. Waveform grid + traces (activeMode->render())
+//   3. HUD text overlay (drawn here, after render())
+//
+// Acquisition: when state.running, capture() is called once per draw() call
+// (i.e. once per frame).  Capture is blocking; at short timebases the sweep
+// completes in a few milliseconds.
 
 #include "RunScreen.h"
 #include "../Theme.h"
@@ -16,6 +25,29 @@
 
 #include <Arduino.h>   // snprintf on Teensy
 
+// --------------------------------------------------------------------------
+// Constructor: initialise mode table and zero buffers
+// --------------------------------------------------------------------------
+RunScreen::RunScreen() {
+    // Populate the mode dispatch table.  Only Triggered is implemented this
+    // milestone; Rolling and XY slots are null (guarded in draw()).
+    for (int i = 0; i < static_cast<int>(Mode::COUNT); ++i) {
+        _modes[i] = nullptr;
+    }
+    _modes[static_cast<int>(Mode::Triggered)] = &_triggeredMode;
+    // Rolling and XY: intentionally null until Milestone 6.
+}
+
+// --------------------------------------------------------------------------
+// onEnter: initialise ADC resolution once (called from ScreenStack::reset)
+// --------------------------------------------------------------------------
+void RunScreen::onEnter(AppContext& /*ctx*/) {
+    _acq.begin();
+}
+
+// --------------------------------------------------------------------------
+// handleEvent
+// --------------------------------------------------------------------------
 void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
     auto& s = ctx.state;
 
@@ -59,10 +91,30 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
     // handled in later milestones — intentionally ignored here.
 }
 
+// --------------------------------------------------------------------------
+// draw
+// --------------------------------------------------------------------------
 void RunScreen::draw(Renderer& r, AppContext& ctx) {
     auto& s = ctx.state;
 
+    // 1. Clear background.
     r.clear();
+
+    // 2. Capture a new sweep when running.
+    if (s.running) {
+        _acq.capture(s, _buf);
+    }
+    // When stopped, _buf retains the last captured sweep — frozen display.
+
+    // 3. Delegate waveform rendering to the active mode strategy.
+    ScopeMode* activeMode = _modes[static_cast<int>(s.mode)];
+    if (activeMode != nullptr) {
+        activeMode->render(r, s, _buf);
+    }
+    // If activeMode is null (Rolling/XY not yet implemented), waveform area
+    // shows only the grid-less background — safe, no crash.
+
+    // 4. HUD overlay — drawn last so it appears on top of the waveform.
 
     // Mode label centred near the top (within the safe inset band).
     r.text(Theme::RunModeX, Theme::RunModeY, modeName(s.mode), Theme::Text, 2);
@@ -81,7 +133,6 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
            s.running ? Theme::TraceA : Theme::Highlight);
 
     // Live formatted value for the selected parameter.
-    // The parameter name is already shown in the "Sel:" row above.
     char val[24];
     parameterFor(s.selected).format(s, val, sizeof val);
     r.text(Theme::RunParamValX, Theme::RunParamValY, val, Theme::Highlight);
