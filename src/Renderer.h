@@ -24,6 +24,9 @@ public:
     // Draw a vertical line of height h starting at (x, y).
     void vline(int16_t x, int16_t y, int16_t h, uint16_t c);
 
+    // Draw an arbitrary line from (x0, y0) to (x1, y1).
+    void line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+
     // Direct reference to the underlying driver (for advanced use by screens).
     GC9A01A_t3n& tft;
 };

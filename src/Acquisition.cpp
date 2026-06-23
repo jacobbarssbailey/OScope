@@ -73,8 +73,9 @@ void Acquisition::capture(const ScopeState& state, SampleBuffers& buf) {
     const uint16_t trig_adc = triggerADC(state.trigger_level_mv);
 
     // --- Trigger search (Triggered mode only; channel A rising edge) ---
-    // NOTE: trigger source is always channel A and edge is always rising in
-    // this milestone.  Configurable Source/Edge/Mode come in Milestone 7.
+    // NOTE: trigger source is fixed to channel A; SIGNAL_A is read
+    // unconditionally here regardless of state.channelEnabled[0].
+    // Configurable trigger source/edge arrives in Milestone 7.
     if (state.mode == Mode::Triggered) {
         uint16_t prev = (uint16_t)analogRead(SIGNAL_A);
         bool found = false;

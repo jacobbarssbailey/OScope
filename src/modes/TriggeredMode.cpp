@@ -101,7 +101,7 @@ void TriggeredMode::render(Renderer& r, const ScopeState& state,
             const int16_t x0 = (int16_t)(Theme::PlotX + i - 1);
             const int16_t x1 = (int16_t)(Theme::PlotX + i);
             const int16_t y1 = sampleToY(buf.ch[1][i], vscale);
-            r.tft.drawLine(x0, y0, x1, y1, Theme::TraceB);
+            r.line(x0, y0, x1, y1, Theme::TraceB);
             y0 = y1;
         }
     }
@@ -114,7 +114,7 @@ void TriggeredMode::render(Renderer& r, const ScopeState& state,
             const int16_t x0 = (int16_t)(Theme::PlotX + i - 1);
             const int16_t x1 = (int16_t)(Theme::PlotX + i);
             const int16_t y1 = sampleToY(buf.ch[0][i], vscale);
-            r.tft.drawLine(x0, y0, x1, y1, Theme::TraceA);
+            r.line(x0, y0, x1, y1, Theme::TraceA);
             y0 = y1;
         }
     }

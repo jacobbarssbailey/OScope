@@ -54,8 +54,9 @@ public:
     virtual const char* name() const = 0;
 
     // Render the waveform (grid + traces) into the framebuffer via r.
-    // Called every frame AFTER RunScreen has drawn the HUD, so the HUD appears
-    // on top.  Modes MUST NOT call tft.updateScreen() — the main loop owns that.
+    // Called every frame BEFORE RunScreen draws the HUD; the HUD is drawn on
+    // top afterward, so a mode must not assume it can overwrite the HUD area.
+    // Modes MUST NOT call tft.updateScreen() — the main loop owns that.
     virtual void render(Renderer& r, const ScopeState& state,
                         const SampleBuffers& buf) = 0;
 };
