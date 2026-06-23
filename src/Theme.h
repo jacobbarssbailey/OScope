@@ -24,4 +24,15 @@ namespace Theme {
   constexpr int16_t CX        = 120;  // Centre X
   constexpr int16_t CY        = 120;  // Centre Y
   constexpr int16_t SafeInset = 30;   // Min margin from edge for readable content
+
+  // ---- RunScreen text-row positions ----
+  constexpr int16_t RunModeX      = 90;   // Mode label X (centres text in safe band)
+  constexpr int16_t RunModeY      = SafeInset; // Mode label Y (top safe-band row)
+  constexpr int16_t RunSelLabelX  = 40;   // "Sel:" label X
+  constexpr int16_t RunSelY       = 90;   // Selected-parameter row Y
+  constexpr int16_t RunSelValueX  = 80;   // Selected-parameter value X
+  constexpr int16_t RunChanX      = 40;   // Channel row X
+  constexpr int16_t RunChanY      = 110;  // Channel row Y
+  constexpr int16_t RunStopX      = 40;   // Run/stop indicator X
+  constexpr int16_t RunStopY      = 130;  // Run/stop indicator Y
 }

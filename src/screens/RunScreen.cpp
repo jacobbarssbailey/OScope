@@ -70,18 +70,18 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     r.clear();
 
     // Mode label centred near the top (within the safe inset band).
-    r.text(90, 30, modeName(s.mode), Theme::Text, 2);
+    r.text(Theme::RunModeX, Theme::RunModeY, modeName(s.mode), Theme::Text, 2);
 
     // Selected encoder parameter.
-    r.text(40, 90, "Sel:", Theme::Dim);
-    r.text(80, 90, paramName(s.selected), Theme::Highlight);
+    r.text(Theme::RunSelLabelX, Theme::RunSelY, "Sel:", Theme::Dim);
+    r.text(Theme::RunSelValueX, Theme::RunSelY, paramName(s.selected), Theme::Highlight);
 
     // Active channel.
     char b[24];
     snprintf(b, sizeof b, "Chan: %s", channelName(s.channel));
-    r.text(40, 110, b, Theme::Text);
+    r.text(Theme::RunChanX, Theme::RunChanY, b, Theme::Text);
 
     // Run / stop indicator: green when running, yellow when stopped.
-    r.text(40, 130, s.running ? "RUN" : "STOP",
+    r.text(Theme::RunStopX, Theme::RunStopY, s.running ? "RUN" : "STOP",
            s.running ? Theme::TraceA : Theme::Highlight);
 }
