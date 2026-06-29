@@ -28,20 +28,32 @@ static int indexOf(const uint16_t (&arr)[N], uint16_t needle) {
     return 0;
 }
 
-// ---- Timebase (50 µs/div … 10 ms/div, 8 steps) ---------------------------
+// ---- Timebase (50 µs/div … 10 ms/div, 15 steps) --------------------------
+// A 1-1.5-2-3-5-7 sequence per decade for fine control in the ms range.
 
 static void adjTime(ScopeState& s, int8_t d) {
-    static const uint16_t steps[] = {50, 100, 200, 500, 1000, 2000, 5000, 10000};
+    static const uint16_t steps[] = {50, 70, 100, 150, 200, 300, 500, 700,
+                                     1000, 1500, 2000, 3000, 5000, 7000, 10000};
+    const int count = sizeof(steps) / sizeof(steps[0]);
     int i = indexOf(steps, s.timebase_us_per_div);
-    i = clampi(i + d, 0, 7);
+    i = clampi(i + d, 0, count - 1);
     s.timebase_us_per_div = steps[i];
 }
 
+// Render the timebase with one decimal of precision for non-integer ms values
+// (e.g. 1500 µs → "1.5 ms/div").  Sub-millisecond values stay in µs.
 static void fmtTime(const ScopeState& s, char* b, uint8_t n) {
-    if (s.timebase_us_per_div >= 1000)
-        snprintf(b, n, "%u ms/div", s.timebase_us_per_div / 1000);
-    else
-        snprintf(b, n, "%u us/div", s.timebase_us_per_div);
+    uint16_t us = s.timebase_us_per_div;
+    if (us >= 1000) {
+        uint16_t whole = us / 1000;
+        uint16_t tenths = (us % 1000) / 100;   // step table never goes finer than 0.1 ms
+        if (tenths == 0)
+            snprintf(b, n, "%u ms/div", whole);
+        else
+            snprintf(b, n, "%u.%u ms/div", whole, tenths);
+    } else {
+        snprintf(b, n, "%u us/div", us);
+    }
 }
 
 // ---- Voltage scale (100 mV/div … 5 V/div, 6 steps) -----------------------
