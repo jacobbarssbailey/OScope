@@ -26,8 +26,9 @@
 #define LED3 4
 
 // ---- Analog signal inputs ----
-#define SIGNAL_A A2  // Channel A (Digital 16)
-#define SIGNAL_B A3  // Channel B (Digital 17)
+// A/B swapped to match hardware wiring (Channel A is physically on A3).
+#define SIGNAL_A A3  // Channel A (Digital 17)
+#define SIGNAL_B A2  // Channel B (Digital 16)
 
 // ---- Timing constants ----
 #define LONG_PRESS_MS 500  // ms held before a LongPress event fires

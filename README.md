@@ -35,8 +35,8 @@ A Teensy 4.0-based dual-channel oscilloscope Eurorack module.
 - LED 3: Pin 6 (Pin 6, Arduino Digital 4)
 
 ### Analog Inputs
-- Channel A: SIGNAL_A (Pin 23, Arduino Digital 16 / Analog 2)
-- Channel B: SIGNAL_B (Pin 24, Arduino Digital 17 / Analog 3)
+- Channel A: SIGNAL_A (Pin 24, Arduino Digital 17 / Analog 3)
+- Channel B: SIGNAL_B (Pin 23, Arduino Digital 16 / Analog 2)
 
 ### Unusued Breakouts
 - X1: Pin 30, Arduino Digital 23 / Analog 9
