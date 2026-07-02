@@ -28,6 +28,10 @@ struct ScopeState {
     int16_t  trigger_level_mv       = 0;           // mV
     bool     channelEnabled[2]      = {true, true};
 
+    // Single-shot: when true, the next successful triggered capture freezes the
+    // display (running → false) and disarms.  Set by B3 long-press.
+    bool     singleArmed            = false;
+
     // Restore all fields to the compile-time defaults above.
     void resetToDefaults();
 };

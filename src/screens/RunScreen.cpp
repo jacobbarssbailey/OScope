@@ -4,10 +4,14 @@
 //   B1 (Mode)    — cycle acquisition mode: TRIG → ROLL → X-Y → TRIG …
 //                  then clampSelectable() to fix selection if now invalid.
 //   B2 (Channel) — cycle channel: A → B → A+B → A …
-//   B3 (RunStop) — toggle run/stop
+//   B3 (RunStop) — toggle run/stop (also disarms a pending single-shot)
 //   Encoder      — advance selected parameter (skips N/A params for current mode)
-//   Encoder long — reset all state to defaults
 //   Encoder turn — adjust the selected parameter value by encoder delta
+// Long press:
+//   B2 (Channel) — toggle the focused channel's trace on/off
+//   B3 (RunStop) — arm single-shot: run until the next successful triggered
+//                  capture, then freeze and disarm
+//   Encoder      — reset all state to defaults
 //
 // Draw Z-order (bottom → top):
 //   1. Background clear (r.clear())
@@ -24,6 +28,12 @@
 #include "../Parameter.h"
 
 #include <Arduino.h>   // snprintf on Teensy
+
+// Channel index (0 or 1) that single-channel operations act on.  For Both,
+// the conventional lead channel (A = 0) is used, matching fmtVScale's display.
+static uint8_t focusedChannel(ChannelSel sel) {
+    return (sel == ChannelSel::B) ? 1 : 0;
+}
 
 // --------------------------------------------------------------------------
 // Constructor: initialise mode table and zero buffers
@@ -64,9 +74,11 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 s.channel = (ChannelSel)(((int)s.channel + 1) % 3);
                 break;
 
-            // B3: toggle run/stop.
+            // B3: toggle run/stop.  A manual run/stop overrides any pending
+            // single-shot arm.
             case Btn::RunStop:
                 s.running = !s.running;
+                s.singleArmed = false;
                 break;
 
             // Encoder press: advance to next selectable parameter, skipping
@@ -78,17 +90,38 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
             default:
                 break;
         }
-    } else if (e.type == EventType::LongPress && e.button == Btn::Encoder) {
-        // Encoder long-press: reset everything to factory defaults, then
-        // clamp selection in case the defaults land on an invalid parameter.
-        s.resetToDefaults();
-        clampSelectable(s);
+    } else if (e.type == EventType::LongPress) {
+        switch (e.button) {
+            // Encoder long-press: reset everything to factory defaults, then
+            // clamp selection in case the defaults land on an invalid parameter.
+            case Btn::Encoder:
+                s.resetToDefaults();
+                clampSelectable(s);
+                break;
+
+            // B2 long-press: toggle the focused channel's trace on/off.  When
+            // disabled the trace isn't drawn and its V/div edits are skipped.
+            case Btn::Channel: {
+                const uint8_t c = focusedChannel(s.channel);
+                s.channelEnabled[c] = !s.channelEnabled[c];
+                break;
+            }
+
+            // B3 long-press: arm single-shot — run until the next successful
+            // triggered capture, then freeze (completion handled in draw()).
+            case Btn::RunStop:
+                s.singleArmed = true;
+                s.running = true;
+                break;
+
+            default:
+                break;
+        }
     } else if (e.type == EventType::EncoderTurn) {
         // Encoder rotation: adjust the currently selected parameter.
         parameterFor(s.selected).adjust(s, e.delta);
     }
-    // Mode long-press (Settings) and Channel/RunStop long-press:
-    // handled in later milestones — intentionally ignored here.
+    // Mode long-press (Settings) handled in a later milestone.
 }
 
 // --------------------------------------------------------------------------
@@ -102,7 +135,12 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
 
     // 2. Capture a new sweep when running.
     if (s.running) {
-        _acq.capture(s, _buf);
+        const bool triggered = _acq.capture(s, _buf);
+        // Single-shot: freeze on the first successful triggered capture.
+        if (s.singleArmed && triggered) {
+            s.running = false;
+            s.singleArmed = false;
+        }
     }
     // When stopped, _buf retains the last captured sweep — frozen display.
 
@@ -128,9 +166,12 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     snprintf(b, sizeof b, "Chan: %s", channelName(s.channel));
     r.text(Theme::RunChanX, Theme::RunChanY, b, Theme::Text);
 
-    // Run / stop indicator: green when running, yellow when stopped.
-    r.text(Theme::RunStopX, Theme::RunStopY, s.running ? "RUN" : "STOP",
-           s.running ? Theme::TraceA : Theme::Highlight);
+    // Run / stop indicator: "ARM" (yellow) while a single-shot is pending,
+    // else green "RUN" when running or yellow "STOP" when frozen.
+    const char* runLabel = s.singleArmed ? "ARM" : (s.running ? "RUN" : "STOP");
+    const uint16_t runColor = (s.running && !s.singleArmed) ? Theme::TraceA
+                                                            : Theme::Highlight;
+    r.text(Theme::RunStopX, Theme::RunStopY, runLabel, runColor);
 
     // Live formatted value for the selected parameter.
     char val[24];

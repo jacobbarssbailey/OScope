@@ -36,5 +36,11 @@ public:
     // to a free-run sweep if no crossing is found within the search window.
     // For other modes (Rolling, XY): free-runs immediately (no trigger search).
     // Blocks for approximately N * sample_interval_us µs.
-    void capture(const ScopeState& state, SampleBuffers& buf);
+    //
+    // Returns true when the sweep represents a "successful" capture for
+    // single-shot purposes: a real trigger crossing was found in Triggered
+    // mode, or any completed sweep in the free-running modes.  Returns false
+    // only when Triggered mode fell through to a free-run (no crossing found),
+    // so single-shot keeps waiting for a genuine trigger.
+    bool capture(const ScopeState& state, SampleBuffers& buf);
 };

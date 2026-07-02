@@ -13,6 +13,7 @@ void ScopeState::resetToDefaults() {
     trigger_level_mv      = 0;
     channelEnabled[0]     = true;
     channelEnabled[1]     = true;
+    singleArmed           = false;
 }
 
 const char* modeName(Mode m) {

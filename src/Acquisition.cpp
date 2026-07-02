@@ -68,9 +68,13 @@ void Acquisition::begin() {
     analogReadResolution(10);   // 0..1023 raw counts
 }
 
-void Acquisition::capture(const ScopeState& state, SampleBuffers& buf) {
+bool Acquisition::capture(const ScopeState& state, SampleBuffers& buf) {
     const uint32_t interval = sampleIntervalUs(state.timebase_us_per_div);
     const uint16_t trig_adc = triggerADC(state.trigger_level_mv);
+
+    // Non-triggered modes free-run; every completed sweep counts as a
+    // successful single-shot capture.  Triggered mode overrides this below.
+    bool triggered = true;
 
     // --- Trigger search (Triggered mode only; channel A rising edge) ---
     // NOTE: trigger source is fixed to channel A; SIGNAL_A is read
@@ -90,10 +94,11 @@ void Acquisition::capture(const ScopeState& state, SampleBuffers& buf) {
             }
             prev = cur;
         }
-        // If no crossing found within the search window: free-run (fall through).
-        // This prevents hanging when the signal is absent or the trigger level
-        // is outside the signal's actual range.
-        (void)found;  // free-run path is identical to no-trigger path
+        // If no crossing found within the search window: free-run (fall through)
+        // so the display never hangs when the signal is absent or the trigger
+        // level is unreachable.  Report the free-run so single-shot keeps
+        // waiting for a genuine trigger rather than freezing on noise.
+        triggered = found;
     }
 
     // --- Sweep: read N samples for each enabled channel ---
@@ -109,4 +114,5 @@ void Acquisition::capture(const ScopeState& state, SampleBuffers& buf) {
         }
     }
     buf.count = SampleBuffers::N;
+    return triggered;
 }
