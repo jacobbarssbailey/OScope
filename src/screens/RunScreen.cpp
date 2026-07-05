@@ -8,6 +8,7 @@
 //   Encoder      — advance selected parameter (skips N/A params for current mode)
 //   Encoder turn — adjust the selected parameter value by encoder delta
 // Long press:
+//   B1 (Mode)    — open the settings menu (push MenuScreen)
 //   B2 (Channel) — toggle the focused channel's trace on/off
 //   B3 (RunStop) — arm single-shot: run until the next successful triggered
 //                  capture, then freeze and disarm
@@ -15,8 +16,9 @@
 //
 // Draw Z-order (bottom → top):
 //   1. Background clear (r.clear())
-//   2. Waveform grid + traces (activeMode->render())
-//   3. HUD text overlay (drawn here, after render())
+//   2. Grid underlay (drawn here when settings.grid, shared by all modes)
+//   3. Waveform traces (activeMode->render())
+//   4. HUD text overlay (drawn here, after render())
 //
 // Acquisition: when state.running, capture() is called once per draw() call
 // (i.e. once per frame).  Capture is blocking; at short timebases the sweep
@@ -26,6 +28,8 @@
 #include "../Theme.h"
 #include "../ScopeState.h"
 #include "../Parameter.h"
+#include "../Settings.h"
+#include "../Mapping.h"
 
 #include <Arduino.h>   // snprintf on Teensy
 
@@ -99,6 +103,11 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 clampSelectable(s);
                 break;
 
+            // B1 long-press: open the settings menu.
+            case Btn::Mode:
+                if (_menu) ctx.screens.push(_menu, ctx);
+                break;
+
             // B2 long-press: toggle the focused channel's trace on/off.  When
             // disabled the trace isn't drawn and its V/div edits are skipped.
             case Btn::Channel: {
@@ -121,7 +130,6 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
         // Encoder rotation: adjust the currently selected parameter.
         parameterFor(s.selected).adjust(s, e.delta);
     }
-    // Mode long-press (Settings) handled in a later milestone.
 }
 
 // --------------------------------------------------------------------------
@@ -135,7 +143,7 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
 
     // 2. Capture a new sweep when running.
     if (s.running) {
-        const bool triggered = _acq.capture(s, _buf);
+        const bool triggered = _acq.capture(s, ctx.settings, _buf);
         // Single-shot: freeze on the first successful triggered capture.
         if (s.singleArmed && triggered) {
             s.running = false;
@@ -144,15 +152,19 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     }
     // When stopped, _buf retains the last captured sweep — frozen display.
 
-    // 3. Delegate waveform rendering to the active mode strategy.
+    // 3. Draw the grid underlay (shared by all modes) when enabled in settings.
+    if (ctx.settings.grid) {
+        Mapping::drawGrid(r);
+    }
+
+    // 4. Delegate waveform rendering to the active mode strategy.
     ScopeMode* activeMode = _modes[static_cast<int>(s.mode)];
     if (activeMode != nullptr) {
         activeMode->render(r, s, _buf);
     }
-    // If activeMode is null (Rolling/XY not yet implemented), waveform area
-    // shows only the grid-less background — safe, no crash.
+    // activeMode is never null (all modes registered); the guard is defensive.
 
-    // 4. HUD overlay — drawn last so it appears on top of the waveform.
+    // 5. HUD overlay — drawn last so it appears on top of the waveform.
 
     // Mode label centred near the top (within the safe inset band).
     r.text(Theme::RunModeX, Theme::RunModeY, modeName(s.mode), Theme::Text, Theme::HudTitleSize);

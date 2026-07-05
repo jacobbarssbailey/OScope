@@ -41,14 +41,12 @@ void RollingMode::drawChannel(Renderer& r, uint8_t ch, uint16_t vscale,
 
 void RollingMode::render(Renderer& r, const ScopeState& state,
                          const SampleBuffers& buf) {
-    // 1. Grid underlay.
-    Mapping::drawGrid(r);
-
-    // 2. Fold this frame's fresh sweep into the persistent history.
+    // Grid is drawn by RunScreen (gated on settings.grid) before this call.
+    // Fold this frame's fresh sweep into the persistent history.
     ingest(buf);
     if (_count < 2) return;
 
-    // 3. Draw B first so A lands on top (matches Triggered mode's Z-order).
+    // Draw B first so A lands on top (matches Triggered mode's Z-order).
     if (state.channelEnabled[1]) {
         drawChannel(r, 1, state.vscale_mv_per_div[1], Theme::TraceB);
     }

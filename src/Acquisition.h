@@ -25,22 +25,27 @@
 #include "modes/ScopeMode.h"
 #include "ScopeState.h"
 
+struct Settings;   // trigger source/edge/mode come from Settings
+
 class Acquisition {
 public:
     // Set ADC resolution to 10 bits (0..1023).  Call once in setup().
     void begin();
 
     // Capture one full sweep into buf.
-    // For Triggered mode: pre-scans channel A for a rising edge crossing
-    // trigger_level_mv; aligns sweep start to that crossing.  Falls through
-    // to a free-run sweep if no crossing is found within the search window.
+    // For Triggered mode: pre-scans the trigger source channel (settings
+    // .trigSource) for a settings.trigEdge crossing of trigger_level_mv and
+    // aligns the sweep to it.  If none is found within the search window,
+    // behaviour depends on settings.trigMode:
+    //   Auto   — free-run a sweep anyway (never hangs; buf is refreshed).
+    //   Normal — leave buf untouched (hold the last trace) and return false.
     // For other modes (Rolling, XY): free-runs immediately (no trigger search).
     // Blocks for approximately N * sample_interval_us µs.
     //
     // Returns true when the sweep represents a "successful" capture for
     // single-shot purposes: a real trigger crossing was found in Triggered
     // mode, or any completed sweep in the free-running modes.  Returns false
-    // only when Triggered mode fell through to a free-run (no crossing found),
-    // so single-shot keeps waiting for a genuine trigger.
-    bool capture(const ScopeState& state, SampleBuffers& buf);
+    // when Triggered mode found no crossing (Auto free-ran; Normal held), so
+    // single-shot keeps waiting for a genuine trigger.
+    bool capture(const ScopeState& state, const Settings& settings, SampleBuffers& buf);
 };

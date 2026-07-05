@@ -28,6 +28,7 @@
 
 #include "Acquisition.h"
 #include "Config.h"
+#include "Settings.h"
 #include "Theme.h"
 
 #include <Arduino.h>
@@ -68,7 +69,8 @@ void Acquisition::begin() {
     analogReadResolution(10);   // 0..1023 raw counts
 }
 
-bool Acquisition::capture(const ScopeState& state, SampleBuffers& buf) {
+bool Acquisition::capture(const ScopeState& state, const Settings& settings,
+                          SampleBuffers& buf) {
     const uint32_t interval = sampleIntervalUs(state.timebase_us_per_div);
     const uint16_t trig_adc = triggerADC(state.trigger_level_mv);
 
@@ -76,29 +78,36 @@ bool Acquisition::capture(const ScopeState& state, SampleBuffers& buf) {
     // successful single-shot capture.  Triggered mode overrides this below.
     bool triggered = true;
 
-    // --- Trigger search (Triggered mode only; channel A rising edge) ---
-    // NOTE: trigger source is fixed to channel A; SIGNAL_A is read
-    // unconditionally here regardless of state.channelEnabled[0].
-    // Configurable trigger source/edge arrives in Milestone 7.
+    // --- Trigger search (Triggered mode only) ---
+    // Source channel, edge direction, and no-trigger behaviour all come from
+    // Settings.  The source pin is read independently of channelEnabled — a
+    // channel can be the trigger source without its trace being drawn.
     if (state.mode == Mode::Triggered) {
-        uint16_t prev = (uint16_t)analogRead(SIGNAL_A);
+        const uint8_t trigPin = (settings.trigSource == TrigSource::B) ? SIGNAL_B : SIGNAL_A;
+        const bool rising = (settings.trigEdge == TrigEdge::Rising);
+        uint16_t prev = (uint16_t)analogRead(trigPin);
         bool found = false;
 
         for (uint16_t i = 0; i < TRIGGER_SEARCH_SAMPLES; ++i) {
             delayMicroseconds(interval);
-            uint16_t cur = (uint16_t)analogRead(SIGNAL_A);
-            // Rising edge: previous sample below threshold, current at/above.
-            if (prev < trig_adc && cur >= trig_adc) {
+            uint16_t cur = (uint16_t)analogRead(trigPin);
+            // Rising: below → at/above threshold.  Falling: above → at/below.
+            const bool cross = rising ? (prev < trig_adc && cur >= trig_adc)
+                                      : (prev > trig_adc && cur <= trig_adc);
+            if (cross) {
                 found = true;
                 break;
             }
             prev = cur;
         }
-        // If no crossing found within the search window: free-run (fall through)
-        // so the display never hangs when the signal is absent or the trigger
-        // level is unreachable.  Report the free-run so single-shot keeps
-        // waiting for a genuine trigger rather than freezing on noise.
         triggered = found;
+
+        // Normal mode with no crossing: hold the previous trace (leave buf
+        // untouched) so the display waits for a real trigger.  Auto mode falls
+        // through and free-runs a sweep so the display never hangs.
+        if (!found && settings.trigMode == TrigMode::Normal) {
+            return false;
+        }
     }
 
     // --- Sweep: read N samples for each channel we need ---

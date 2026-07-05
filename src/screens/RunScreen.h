@@ -32,7 +32,11 @@ public:
     // Capture (if running) then render waveform + HUD into the framebuffer.
     void draw(Renderer& r, AppContext& ctx) override;
 
+    // Wire the settings menu opened by B1 (Mode) long-press.
+    void setMenuScreen(Screen* menu) { _menu = menu; }
+
 private:
+    Screen*       _menu = nullptr;
     Acquisition   _acq;
     SampleBuffers _buf;
     TriggeredMode _triggeredMode;

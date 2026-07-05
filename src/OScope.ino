@@ -21,9 +21,12 @@
 #include "Input.h"
 #include "Renderer.h"
 #include "ScopeState.h"
+#include "Settings.h"
 #include "Theme.h"
 #include "screens/Screen.h"
 #include "screens/RunScreen.h"
+#include "screens/MenuScreen.h"
+#include "screens/EditValueScreen.h"
 
 // Note: GC9A01A_SPICLOCK is also defined in the library header (30 MHz);
 // redefine here to use the faster 96 MHz rate the Teensy 4.0 can sustain.
@@ -55,12 +58,15 @@ void countFrame() {
 }
 
 // ---- Application objects (all statically allocated, no new/delete) ----
-Input      input;
-ScopeState state;
-Renderer   renderer(tft);
-ScreenStack screens;
-RunScreen   runScreen;
-AppContext  ctx{state, screens};
+Input           input;
+ScopeState      state;
+Settings        settings;
+Renderer        renderer(tft);
+ScreenStack     screens;
+RunScreen       runScreen;
+MenuScreen      menuScreen;
+EditValueScreen editScreen;
+AppContext      ctx{state, screens, settings};
 
 void setup() {
     Serial.begin(115200);
@@ -74,7 +80,13 @@ void setup() {
 
     input.begin();
 
-    // Push the run screen as the root; later milestones may push sub-screens.
+    settings.defaults();
+
+    // Wire the screen graph: RunScreen (root) → MenuScreen → EditValueScreen.
+    menuScreen.setEditScreen(&editScreen);
+    runScreen.setMenuScreen(&menuScreen);
+
+    // Push the run screen as the root; the menu is pushed on demand.
     screens.reset(&runScreen, ctx);
 
     lastFpsTime = millis();

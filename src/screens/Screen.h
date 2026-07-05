@@ -14,11 +14,13 @@
 
 // Forward declarations.
 class ScreenStack;
+struct Settings;
 
 // Context bundle passed to every Screen method.
 struct AppContext {
     ScopeState&  state;
     ScreenStack& screens;
+    Settings&    settings;
 };
 
 // Abstract base class for all UI screens.

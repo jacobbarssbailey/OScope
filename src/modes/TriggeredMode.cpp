@@ -18,11 +18,9 @@
 // --------------------------------------------------------------------------
 void TriggeredMode::render(Renderer& r, const ScopeState& state,
                            const SampleBuffers& buf) {
-    // 1. Draw the background grid.
-    Mapping::drawGrid(r);
-
-    // 2. Plot each enabled channel as a connected polyline.
-    //    We draw channel B first so A (the trigger source) is on top.
+    // Grid is drawn by RunScreen (gated on settings.grid) before this call.
+    // Plot each enabled channel as a connected polyline.
+    // We draw channel B first so A (the trigger source) is on top.
     const uint16_t nSamples = buf.count;
     if (nSamples < 2) return;  // nothing to draw
 
