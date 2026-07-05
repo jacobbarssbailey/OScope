@@ -155,26 +155,26 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     // 4. HUD overlay — drawn last so it appears on top of the waveform.
 
     // Mode label centred near the top (within the safe inset band).
-    r.text(Theme::RunModeX, Theme::RunModeY, modeName(s.mode), Theme::Text, 2);
+    r.text(Theme::RunModeX, Theme::RunModeY, modeName(s.mode), Theme::Text, Theme::HudTitleSize);
 
     // Selected encoder parameter: name on the existing row.
-    r.text(Theme::RunSelLabelX, Theme::RunSelY, "Sel:", Theme::Dim);
-    r.text(Theme::RunSelValueX, Theme::RunSelY, parameterFor(s.selected).name, Theme::Highlight);
+    r.text(Theme::RunSelLabelX, Theme::RunSelY, "Sel:", Theme::Dim, Theme::HudTextSize);
+    r.text(Theme::RunSelValueX, Theme::RunSelY, parameterFor(s.selected).name, Theme::Highlight, Theme::HudTextSize);
 
     // Active channel.
     char b[24];
     snprintf(b, sizeof b, "Chan: %s", channelName(s.channel));
-    r.text(Theme::RunChanX, Theme::RunChanY, b, Theme::Text);
+    r.text(Theme::RunChanX, Theme::RunChanY, b, Theme::Text, Theme::HudTextSize);
 
     // Run / stop indicator: "ARM" (yellow) while a single-shot is pending,
     // else green "RUN" when running or yellow "STOP" when frozen.
     const char* runLabel = s.singleArmed ? "ARM" : (s.running ? "RUN" : "STOP");
     const uint16_t runColor = (s.running && !s.singleArmed) ? Theme::TraceA
                                                             : Theme::Highlight;
-    r.text(Theme::RunStopX, Theme::RunStopY, runLabel, runColor);
+    r.text(Theme::RunStopX, Theme::RunStopY, runLabel, runColor, Theme::HudTextSize);
 
     // Live formatted value for the selected parameter.
     char val[24];
     parameterFor(s.selected).format(s, val, sizeof val);
-    r.text(Theme::RunParamValX, Theme::RunParamValY, val, Theme::Highlight);
+    r.text(Theme::RunParamValX, Theme::RunParamValY, val, Theme::Highlight, Theme::HudTextSize);
 }
