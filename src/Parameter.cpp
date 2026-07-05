@@ -127,8 +127,11 @@ bool paramAppliesInMode(EncoderParam id, Mode m) {
             // TriggerLevel has no meaning when free-running.
             return id != EncoderParam::TriggerLevel;
         case Mode::XY:
-            // Only voltage scale makes sense in XY mode.
-            return id == EncoderParam::VScale;
+            // V/div scales both axes; Timebase sets the sample rate, which
+            // controls how much of each signal's period the figure spans (and
+            // thus how completely a slow Lissajous closes).  Trigger has no
+            // meaning when free-running.
+            return id != EncoderParam::TriggerLevel;
         default:
             return false;
     }

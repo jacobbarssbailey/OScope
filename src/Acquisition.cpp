@@ -101,12 +101,17 @@ bool Acquisition::capture(const ScopeState& state, SampleBuffers& buf) {
         triggered = found;
     }
 
-    // --- Sweep: read N samples for each enabled channel ---
+    // --- Sweep: read N samples for each channel we need ---
+    // XY mode is inherently two-channel (A drives X, B drives Y), so sample
+    // both regardless of the per-channel display-enable flags — those are a
+    // Y-t display concept and don't apply to XY.
+    const bool readA = state.channelEnabled[0] || state.mode == Mode::XY;
+    const bool readB = state.channelEnabled[1] || state.mode == Mode::XY;
     for (uint16_t i = 0; i < SampleBuffers::N; ++i) {
-        if (state.channelEnabled[0]) {
+        if (readA) {
             buf.ch[0][i] = (uint16_t)analogRead(SIGNAL_A);
         }
-        if (state.channelEnabled[1]) {
+        if (readB) {
             buf.ch[1][i] = (uint16_t)analogRead(SIGNAL_B);
         }
         if (i < SampleBuffers::N - 1) {
