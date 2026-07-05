@@ -6,16 +6,17 @@
 //   - Delegates waveform drawing to the active ScopeMode strategy.
 //   - Draws the HUD overlay on top of the waveform so it remains readable.
 //
-// Task 4 additions:
-//   - Holds a static Acquisition instance and SampleBuffers.
-//   - Holds a ScopeMode* table indexed by Mode enum (only Triggered slot is
-//     populated this milestone; Rolling/XY slots are null and are guarded).
+// Holds a static Acquisition instance and SampleBuffers plus one ScopeMode
+// instance per Mode enum value; the _modes[] table dispatches drawing to the
+// active mode.  All three modes (Triggered, Rolling, XY) are populated.
 #pragma once
 
 #include "Screen.h"
 #include "../Acquisition.h"
 #include "../modes/ScopeMode.h"
 #include "../modes/TriggeredMode.h"
+#include "../modes/RollingMode.h"
+#include "../modes/XYMode.h"
 
 class RunScreen : public Screen {
 public:
@@ -35,8 +36,9 @@ private:
     Acquisition   _acq;
     SampleBuffers _buf;
     TriggeredMode _triggeredMode;
+    RollingMode   _rollingMode;
+    XYMode        _xyMode;
 
-    // Mode dispatch table: indexed by (int)Mode enum value.
-    // Slots for Rolling and XY are null until Milestone 6.
+    // Mode dispatch table: indexed by (int)Mode enum value.  All slots populated.
     ScopeMode*    _modes[static_cast<int>(Mode::COUNT)];
 };

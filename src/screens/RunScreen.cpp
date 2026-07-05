@@ -39,13 +39,13 @@ static uint8_t focusedChannel(ChannelSel sel) {
 // Constructor: initialise mode table and zero buffers
 // --------------------------------------------------------------------------
 RunScreen::RunScreen() {
-    // Populate the mode dispatch table.  Only Triggered is implemented this
-    // milestone; Rolling and XY slots are null (guarded in draw()).
+    // Populate the mode dispatch table, one entry per Mode enum value.
     for (int i = 0; i < static_cast<int>(Mode::COUNT); ++i) {
         _modes[i] = nullptr;
     }
     _modes[static_cast<int>(Mode::Triggered)] = &_triggeredMode;
-    // Rolling and XY: intentionally null until Milestone 6.
+    _modes[static_cast<int>(Mode::Rolling)]   = &_rollingMode;
+    _modes[static_cast<int>(Mode::XY)]        = &_xyMode;
 }
 
 // --------------------------------------------------------------------------
