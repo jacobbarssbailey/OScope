@@ -24,7 +24,7 @@ struct ScopeState {
     bool         running  = true;
 
     uint16_t timebase_us_per_div    = 500;        // µs/div
-    uint16_t vscale_mv_per_div[2]   = {1000, 1000}; // mV/div per channel
+    uint16_t vscale_mv_per_div[2]   = {700, 700};  // mV/div per channel
     int16_t  trigger_level_mv       = 0;           // mV
     bool     channelEnabled[2]      = {true, true};
 

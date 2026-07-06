@@ -8,8 +8,8 @@ void ScopeState::resetToDefaults() {
     selected              = EncoderParam::Timebase;
     running               = true;
     timebase_us_per_div   = 500;
-    vscale_mv_per_div[0]  = 1000;
-    vscale_mv_per_div[1]  = 1000;
+    vscale_mv_per_div[0]  = 700;
+    vscale_mv_per_div[1]  = 700;
     trigger_level_mv      = 0;
     channelEnabled[0]     = true;
     channelEnabled[1]     = true;

@@ -56,14 +56,17 @@ static void fmtTime(const ScopeState& s, char* b, uint8_t n) {
     }
 }
 
-// ---- Voltage scale (100 mV/div … 5 V/div, 6 steps) -----------------------
+// ---- Voltage scale (50 mV/div … 5 V/div, 12 steps) -----------------------
+// A 1-1.5-2-3-5-7 sequence for fine control (roughly doubles the old 6 steps).
 // Adjusts the channel(s) indicated by s.channel:
 //   ChannelSel::A    → ch 0 only
 //   ChannelSel::B    → ch 1 only
 //   ChannelSel::Both → ch 0 and ch 1
 
 static void adjVScale(ScopeState& s, int8_t d) {
-    static const uint16_t steps[] = {100, 200, 500, 1000, 2000, 5000};
+    static const uint16_t steps[] = {50, 100, 150, 200, 300, 500,
+                                     700, 1000, 1500, 2000, 3000, 5000};
+    const int count = sizeof(steps) / sizeof(steps[0]);
     // lo/hi define the inclusive channel index range to update.
     uint8_t lo = (s.channel == ChannelSel::B) ? 1 : 0;
     uint8_t hi = (s.channel == ChannelSel::A) ? 0 : 1;
@@ -72,7 +75,7 @@ static void adjVScale(ScopeState& s, int8_t d) {
         // would have no visible effect, so leave its stored scale untouched.
         if (!s.channelEnabled[c]) continue;
         int i = indexOf(steps, s.vscale_mv_per_div[c]);
-        i = clampi(i + d, 0, 5);
+        i = clampi(i + d, 0, count - 1);
         s.vscale_mv_per_div[c] = steps[i];
     }
 }
@@ -80,9 +83,20 @@ static void adjVScale(ScopeState& s, int8_t d) {
 // Display the value for the currently selected channel: ch0 for A or Both,
 // ch1 for B.  In Both mode ch0 is shown (both channels are edited together,
 // so either would be accurate; ch0 is the conventional lead channel).
+// Values ≥ 1 V show in volts (with one decimal for fractional values).
 static void fmtVScale(const ScopeState& s, char* b, uint8_t n) {
     uint8_t c = (s.channel == ChannelSel::B) ? 1 : 0;
-    snprintf(b, n, "%u mV/div", s.vscale_mv_per_div[c]);
+    uint16_t mv = s.vscale_mv_per_div[c];
+    if (mv >= 1000) {
+        uint16_t whole = mv / 1000;
+        uint16_t tenths = (mv % 1000) / 100;   // step table never finer than 0.1 V
+        if (tenths == 0)
+            snprintf(b, n, "%u V/div", whole);
+        else
+            snprintf(b, n, "%u.%u V/div", whole, tenths);
+    } else {
+        snprintf(b, n, "%u mV/div", mv);
+    }
 }
 
 // ---- Trigger level (–10 000 mV … +10 000 mV, 100 mV/step) ---------------
