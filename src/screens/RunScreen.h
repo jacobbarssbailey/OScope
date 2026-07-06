@@ -40,6 +40,12 @@ public:
     void setMenuScreen(Screen* menu) { _menu = menu; }
 
 private:
+    // Debounced persistence of ScopeState: an event that changes the setup marks
+    // it dirty, and tick() saves once the change has settled (batches a burst of
+    // encoder detents into a single EEPROM write).
+    bool     _stateDirty  = false;
+    uint32_t _lastChangeMs = 0;
+
     Screen*       _menu = nullptr;
     Acquisition   _acq;
     TriggeredMode _triggeredMode;

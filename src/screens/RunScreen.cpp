@@ -41,6 +41,10 @@ static uint8_t focusedChannel(ChannelSel sel) {
     return (sel == ChannelSel::B) ? 1 : 0;
 }
 
+// How long the acquisition setup must be unchanged before it is written to
+// EEPROM.  Batches a burst of encoder detents into a single write.
+static constexpr uint32_t kStateSaveDelayMs = 2000;
+
 // --------------------------------------------------------------------------
 // Constructor: initialise mode table and zero buffers
 // --------------------------------------------------------------------------
@@ -66,6 +70,14 @@ void RunScreen::onEnter(AppContext& /*ctx*/) {
 // --------------------------------------------------------------------------
 bool RunScreen::tick(AppContext& ctx) {
     auto& s = ctx.state;
+
+    // Debounced persistence: save the acquisition setup once changes have
+    // settled.  Runs regardless of run/stop so edits made while stopped persist.
+    if (_stateDirty && (millis() - _lastChangeMs) >= kStateSaveDelayMs) {
+        s.save();
+        _stateDirty = false;
+    }
+
     if (!s.running) return false;   // frozen: hold the last frame, no sampling
 
     const bool newFrame = _acq.update(s, ctx.settings);
@@ -155,6 +167,12 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
         // Encoder rotation: adjust the currently selected parameter.
         parameterFor(s.selected).adjust(s, e.delta);
     }
+
+    // Any handled event may have changed the acquisition setup; mark it for a
+    // debounced save.  Harmless when nothing persisted actually changed (e.g.
+    // run/stop) — EEPROM put() only rewrites changed bytes.
+    _stateDirty   = true;
+    _lastChangeMs = millis();
 }
 
 // --------------------------------------------------------------------------

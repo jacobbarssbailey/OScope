@@ -81,6 +81,7 @@ void setup() {
     input.begin();
 
     settings.load();   // stored settings, or defaults on first boot
+    state.load();      // stored acquisition setup, or defaults on first boot
 
     // Wire the screen graph: RunScreen (root) → MenuScreen → EditValueScreen.
     menuScreen.setEditScreen(&editScreen);

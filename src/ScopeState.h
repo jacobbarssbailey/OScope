@@ -34,6 +34,16 @@ struct ScopeState {
 
     // Restore all fields to the compile-time defaults above.
     void resetToDefaults();
+
+    // Persistence (Teensy emulated EEPROM), stored separately from Settings.
+    // Persists the acquisition setup (mode, channel, selected param, timebase,
+    // V/div, trigger level, channel enables).  The transient run/stop and
+    // single-shot flags are NOT persisted — the scope always boots running and
+    // disarmed.  load() applies a stored record if present, else sets defaults
+    // and writes them.  save() persists the current setup (call it debounced,
+    // not on every encoder detent).
+    void load();
+    void save() const;
 };
 
 // Human-readable names for UI display.
