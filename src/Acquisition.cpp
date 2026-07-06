@@ -18,19 +18,24 @@
 #include <ADC_util.h>
 #include <AnalogBufferDMA.h>
 
-static constexpr uint16_t N = SampleBuffers::N;   // 240
+static constexpr uint16_t N       = SampleBuffers::N;   // 240 (display window)
+static constexpr uint16_t CAPTURE = 2 * N;             // 480 samples per DMA buffer
+
+// Nominal ADC count for 0 V input (mid-rail).
+static constexpr int32_t ADC_MID = 512;
 
 // DMA target buffers, double-buffered by AnalogBufferDMA — one pair per channel
-// (A on ADC0, B on ADC1).  Must be in DMAMEM and 32-byte aligned so eDMA and the
-// M7 data cache stay coherent.
-DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufA1[N];
-DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufA2[N];
-DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufB1[N];
-DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufB2[N];
+// (A on ADC0, B on ADC1).  Each buffer holds CAPTURE samples so a full N-sample
+// window can be extracted around a found trigger.  Must be in DMAMEM and 32-byte
+// aligned so eDMA and the M7 data cache stay coherent.
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufA1[CAPTURE];
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufA2[CAPTURE];
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufB1[CAPTURE];
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufB2[CAPTURE];
 
 static ADC s_adc;
-static AnalogBufferDMA s_abdmaA(s_dmaBufA1, N, s_dmaBufA2, N);   // channel A, ADC0
-static AnalogBufferDMA s_abdmaB(s_dmaBufB1, N, s_dmaBufB2, N);   // channel B, ADC1
+static AnalogBufferDMA s_abdmaA(s_dmaBufA1, CAPTURE, s_dmaBufA2, CAPTURE);  // ch A, ADC0
+static AnalogBufferDMA s_abdmaB(s_dmaBufB1, CAPTURE, s_dmaBufB2, CAPTURE);  // ch B, ADC1
 
 // Inter-sample interval in µs from the current timebase (min 1 µs).
 static uint32_t sampleIntervalUs(uint16_t timebase_us_per_div) {
@@ -38,6 +43,26 @@ static uint32_t sampleIntervalUs(uint16_t timebase_us_per_div) {
                         / SampleBuffers::N;
     if (interval < 1) interval = 1;
     return interval;
+}
+
+// Convert trigger_level_mv to an ADC count threshold, clamped to [0, 1023].
+static uint16_t triggerADC(int16_t trigger_level_mv) {
+    int32_t adc = ADC_MID + ((int32_t)trigger_level_mv * ADC_MID) / 10000;
+    if (adc < 0)    adc = 0;
+    if (adc > 1023) adc = 1023;
+    return (uint16_t)adc;
+}
+
+// Scan src[1..searchLen] for the first edge crossing of `thr` in the given
+// direction.  Returns the crossing index, or -1 if none.
+static int findTrigger(volatile uint16_t* src, uint16_t searchLen,
+                       uint16_t thr, bool rising) {
+    for (uint16_t t = 1; t <= searchLen; ++t) {
+        const bool cross = rising ? (src[t - 1] < thr && src[t] >= thr)
+                                  : (src[t - 1] > thr && src[t] <= thr);
+        if (cross) return (int)t;
+    }
+    return -1;
 }
 
 // --------------------------------------------------------------------------
@@ -77,43 +102,78 @@ void Acquisition::configureTimer(uint16_t timebase_us_per_div) {
     s_adc.adc1->startTimer(freq);
 }
 
-bool Acquisition::update(const ScopeState& state, const Settings& /*settings*/) {
+bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     // (Re)configure the sample timers on first run or when the timebase changes.
+    // Trigger source/edge/level changes need no reconfigure — they only affect
+    // the software search below and take effect on the next buffer.
     if (!_started || _sTimebase != state.timebase_us_per_div) {
         configureTimer(state.timebase_us_per_div);
         _sTimebase = state.timebase_us_per_div;
         _started   = true;
     }
 
-    // Publish a frame only when BOTH channels have a completed DMA buffer, so
-    // the two traces stay paired frame-for-frame.  At equal rates they complete
-    // within microseconds of each other, so neither laps the other.
+    // Consume only when BOTH channels have a completed DMA buffer, so the two
+    // traces stay paired.  At equal rates they complete within microseconds of
+    // each other, so neither laps the other.
     if (!s_abdmaA.interrupted() || !s_abdmaB.interrupted()) {
         return false;
     }
 
     volatile uint16_t* srcA = s_abdmaA.bufferLastISRFilled();
     volatile uint16_t* srcB = s_abdmaB.bufferLastISRFilled();
-    uint16_t nA = s_abdmaA.bufferCountLastISRFilled();
-    uint16_t nB = s_abdmaB.bufferCountLastISRFilled();
-    uint16_t n = nA < nB ? nA : nB;
-    if (n > N) n = N;
+    const uint16_t nA = s_abdmaA.bufferCountLastISRFilled();
+    const uint16_t nB = s_abdmaB.bufferCountLastISRFilled();
+    const uint16_t cap = nA < nB ? nA : nB;   // usable samples in this buffer pair
 
-    SampleBuffers& fb = _buf[_fill];
-    for (uint16_t i = 0; i < n; ++i) {
-        fb.ch[0][i] = (uint16_t)srcA[i];
-        fb.ch[1][i] = (uint16_t)srcB[i];
+    // Decide the window start into the capture buffer.
+    // Default (free-run / non-triggered): the first N samples.
+    uint16_t start = 0;
+    bool     triggered = true;
+    bool     produce   = true;
+
+    if (state.mode == Mode::Triggered) {
+        // Search the trigger-source channel over the first N samples, leaving a
+        // full N-sample window after any crossing.
+        const uint16_t searchLen = (cap > N) ? N : (cap ? (uint16_t)(cap - 1) : 0);
+        volatile uint16_t* trigSrc = (settings.trigSource == TrigSource::B) ? srcB : srcA;
+        const uint16_t thr    = triggerADC(state.trigger_level_mv);
+        const bool     rising = (settings.trigEdge == TrigEdge::Rising);
+
+        const int t = findTrigger(trigSrc, searchLen, thr, rising);
+        if (t >= 0) {
+            start     = (uint16_t)t;     // trigger at the left edge
+            triggered = true;
+        } else if (settings.trigMode == TrigMode::Auto) {
+            start     = 0;               // free-run this frame
+            triggered = false;
+        } else {
+            produce   = false;           // Normal: hold last frame, wait
+        }
     }
-    fb.count = n;
 
+    if (produce) {
+        // Copy the N-sample window (clamped to what the buffer holds).
+        uint16_t n = N;
+        if (start + n > cap) n = (start < cap) ? (uint16_t)(cap - start) : 0;
+
+        SampleBuffers& fb = _buf[_fill];
+        for (uint16_t i = 0; i < n; ++i) {
+            fb.ch[0][i] = (uint16_t)srcA[start + i];
+            fb.ch[1][i] = (uint16_t)srcB[start + i];
+        }
+        fb.count = n;
+        _lastTriggered = triggered;
+
+        // Publish: swap fill/show.
+        const uint8_t tmp = _show;
+        _show = _fill;
+        _fill = tmp;
+    }
+
+    // Always release the buffers so the next capture is fresh (esp. Normal mode
+    // hold, which would otherwise re-scan the same stale buffer forever).
     s_abdmaA.clearInterrupt();
     s_abdmaB.clearInterrupt();
 
-    _lastTriggered = true;   // free-running: every buffer pair "succeeds"
-
-    // Publish: swap fill/show.
-    const uint8_t tmp = _show;
-    _show = _fill;
-    _fill = tmp;
-    return true;
+    return produce;
 }

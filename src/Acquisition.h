@@ -11,16 +11,22 @@
 //   update() — non-blocking; publishes a frame when a DMA buffer completes.
 //   frame()  — the last complete frame, for rendering.
 //
-// MILESTONE B SCOPE (dual channel, free-running):
-//   - Channel A on ADC0 / SIGNAL_A, channel B on ADC1 / SIGNAL_B, each with its
-//     own DMA stream, both clocked by a timer at the same rate.  A frame is
-//     published when both channels' DMA buffers have completed.
-//   - No triggering yet: every completed pair of buffers is published as-is.
-//   Software triggering (with optional pre-trigger) is Milestone C.
+// Dual channel: channel A on ADC0 / SIGNAL_A, channel B on ADC1 / SIGNAL_B, each
+// with its own DMA stream, both clocked by a timer at the same rate.  The two
+// timers run independently at the same frequency, so A[i]/B[i] carry a small
+// constant sampling skew (fine for Y-t; acceptable for X-Y).
 //
-// The two ADC timers are started independently at the same frequency, so A[i]
-// and B[i] carry a small constant sampling skew (fine for Y-t; acceptable for
-// X-Y).  A single synchronized trigger is a later refinement if XY phase needs it.
+// Triggering (Milestone C) is done in software over the captured buffer.  Each
+// DMA buffer holds CAPTURE = 2*N samples per channel — two screen widths — so a
+// full N-sample display window can be extracted starting at a found trigger:
+//   Triggered — scan the trigger-source channel (settings.trigSource) in the
+//     first N samples for a settings.trigEdge crossing of trigger_level_mv.
+//     On a hit, both channels' [t, t+N) window is published (trigger at the left
+//     edge).  If none is found: Auto publishes the first N samples (free-run);
+//     Normal holds the last frame (no publish) and waits.
+//   Rolling / XY — no trigger; the first N samples are published.
+// Pre-trigger (showing samples before the edge) is a trivial future tweak: shift
+// the window start to t - pretrigger.
 //
 // Sample rate: the timer runs at 1e6 / interval_us, where
 //   interval_us = timebase_us_per_div * GridCols / N  (same mapping as before).
@@ -45,8 +51,9 @@ public:
     // buffer completes.
     const SampleBuffers& frame() const { return _buf[_show]; }
 
-    // Whether the last published frame was trigger-aligned.  Always true in
-    // Milestone A (free-running); real triggering returns in Milestone C.
+    // Whether the last published frame was trigger-aligned: true for a real
+    // crossing (Triggered mode) or any free-running frame (Rolling/XY, or Auto
+    // fallback with no crossing → false).  Used by single-shot.
     bool lastTriggered() const { return _lastTriggered; }
 
 private:
