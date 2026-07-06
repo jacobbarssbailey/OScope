@@ -133,15 +133,13 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     const uint16_t nB = s_abdmaB.bufferCountLastISRFilled();
     const uint16_t cap = nA < nB ? nA : nB;   // usable samples in this buffer pair
 
-    // The input hardware inverts the signal: a HIGHER ADC count corresponds to a
-    // LOWER input voltage (0 counts ≈ +full-scale, full-scale counts ≈ −full-scale).
-    // Normalize both channels in place so the rest of the pipeline — trigger
-    // search below and the sampleToY/X mapping — can assume higher = higher
-    // voltage.  cap covers every sample the trigger search and window copy read.
-    for (uint16_t i = 0; i < cap; ++i) {
-        srcA[i] = (uint16_t)(kADCMax - srcA[i]);
-        srcB[i] = (uint16_t)(kADCMax - srcB[i]);
-    }
+    // The input hardware inverts the signal: a HIGHER ADC count is a LOWER input
+    // voltage.  We must NOT normalize the buffer in place — it lives in cached
+    // RAM2, and the ADC library treats it as read-only (its completion ISR does
+    // no cache maintenance on Teensy 4).  A CPU write dirties cache lines that
+    // later write back over freshly DMA'd samples → intermittent stale values.
+    // Instead we invert only on the copy into the (non-DMA) frame, and search
+    // the still-raw buffer for the equivalent raw-space edge.
 
     // Decide the window start into the capture buffer.
     // Default (free-run / non-triggered): the first N samples.
@@ -151,13 +149,15 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
 
     if (state.mode == Mode::Triggered) {
         // Search the trigger-source channel over the first N samples, leaving a
-        // full N-sample window after any crossing.
+        // full N-sample window after any crossing.  The buffer is still raw
+        // (inverted), so a rising input edge is a FALLING raw edge through the
+        // inverted threshold (kADCMax − thr).
         const uint16_t searchLen = (cap > N) ? N : (cap ? (uint16_t)(cap - 1) : 0);
         volatile uint16_t* trigSrc = (settings.trigSource == TrigSource::B) ? srcB : srcA;
-        const uint16_t thr    = triggerADC(state.trigger_level_mv);
-        const bool     rising = (settings.trigEdge == TrigEdge::Rising);
+        const uint16_t rawThr    = (uint16_t)(kADCMax - triggerADC(state.trigger_level_mv));
+        const bool     rawRising = (settings.trigEdge != TrigEdge::Rising);
 
-        const int t = findTrigger(trigSrc, searchLen, thr, rising);
+        const int t = findTrigger(trigSrc, searchLen, rawThr, rawRising);
         if (t >= 0) {
             start     = (uint16_t)t;     // trigger at the left edge
             triggered = true;
@@ -170,14 +170,16 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     }
 
     if (produce) {
-        // Copy the N-sample window (clamped to what the buffer holds).
+        // Copy the N-sample window (clamped to what the buffer holds), inverting
+        // each sample into normalized (higher = higher voltage) space here — a
+        // read of the DMA buffer plus a write to the frame, never a buffer write.
         uint16_t n = N;
         if (start + n > cap) n = (start < cap) ? (uint16_t)(cap - start) : 0;
 
         SampleBuffers& fb = _buf[_fill];
         for (uint16_t i = 0; i < n; ++i) {
-            fb.ch[0][i] = (uint16_t)srcA[start + i];
-            fb.ch[1][i] = (uint16_t)srcB[start + i];
+            fb.ch[0][i] = (uint16_t)(kADCMax - srcA[start + i]);
+            fb.ch[1][i] = (uint16_t)(kADCMax - srcB[start + i]);
         }
         fb.count = n;
         _lastTriggered = triggered;
