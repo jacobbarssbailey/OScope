@@ -1,38 +1,34 @@
-// Acquisition.cpp — Non-blocking ADC acquisition state machine implementation.
+// Acquisition.cpp — Timer-triggered DMA acquisition (Milestone A).
 //
-// Voltage ↔ ADC mapping (nominal, hardware-calibrate if needed):
-//   ±10 V input → 0..3.3 V at the ADC pin → 0..1023 counts (10-bit).
-//   Mid-rail (0 V input) = 512 counts.  ~19.53 mV/count.
-//   Trigger threshold: trig_adc = 512 + trigger_level_mv * 512 / 10000.
+// The pedvide Teensy ADC library drives a hardware timer that triggers ADC
+// conversions at a fixed rate; eDMA streams each conversion into a buffer.
+// AnalogBufferDMA double-buffers and handles the M7 cache invalidation, so
+// bufferLastData() hands back a coherent, complete buffer to publish.
 //
-// Timebase → sample interval:
-//   interval_us = timebase_us_per_div * GridCols / N  (GridCols=8, N=240).
-//   Minimum 1 µs.
-//
-// See Acquisition.h for the state-machine and pacing description.
+// Voltage ↔ ADC mapping is unchanged (10-bit, 0..1023, mid-rail 512).
+// Sample rate: timer frequency = 1e6 / interval_us,
+//   interval_us = timebase_us_per_div * GridCols / N   (min 1 µs).
 
 #include "Acquisition.h"
 #include "Config.h"
 #include "Theme.h"
 
 #include <Arduino.h>
+#include <ADC.h>
+#include <ADC_util.h>
+#include <AnalogBufferDMA.h>
 
-// Nominal ADC count for 0 V input (mid-rail).
-static constexpr int32_t ADC_MID = 512;
+static constexpr uint16_t N = SampleBuffers::N;   // 240
 
-// Trigger-search window: two full sweep widths, so a periodic signal of period
-// up to ~2 sweeps always presents a crossing before the window is exhausted.
-static constexpr uint16_t TRIGGER_SEARCH_SAMPLES = 2 * SampleBuffers::N;
+// DMA target buffers, double-buffered by AnalogBufferDMA.  Must be in DMAMEM
+// and 32-byte aligned so eDMA and the M7 data cache stay coherent.
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufA1[N];
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufA2[N];
 
-// Convert trigger_level_mv to an ADC count threshold, clamped to [0, 1023].
-static uint16_t triggerADC(int16_t trigger_level_mv) {
-    int32_t adc = ADC_MID + ((int32_t)trigger_level_mv * ADC_MID) / 10000;
-    if (adc < 0)    adc = 0;
-    if (adc > 1023) adc = 1023;
-    return (uint16_t)adc;
-}
+static ADC s_adc;
+static AnalogBufferDMA s_abdmaA(s_dmaBufA1, N, s_dmaBufA2, N);
 
-// Inter-sample delay in µs from the current timebase (see header formula).
+// Inter-sample interval in µs from the current timebase (min 1 µs).
 static uint32_t sampleIntervalUs(uint16_t timebase_us_per_div) {
     uint32_t interval = ((uint32_t)timebase_us_per_div * Theme::GridCols)
                         / SampleBuffers::N;
@@ -43,130 +39,63 @@ static uint32_t sampleIntervalUs(uint16_t timebase_us_per_div) {
 // --------------------------------------------------------------------------
 
 void Acquisition::begin() {
-    analogReadResolution(10);   // 0..1023 raw counts
-    _started = false;           // force a fresh acquisition on the first update()
+    // One-time ADC configuration.  Fast conversion/sampling to keep up at short
+    // timebases; no hardware averaging (a scope wants raw samples).
+    s_adc.adc0->setAveraging(1);
+    s_adc.adc0->setResolution(10);
+    s_adc.adc0->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);
+    s_adc.adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);
+
+    s_abdmaA.init(&s_adc, ADC_0);
+
+    _started = false;   // configureTimer() runs on the first update()
 }
 
-void Acquisition::startSearch() {
-    _phase       = Phase::Search;
-    _searchCount = 0;
-    _havePrev    = false;
-    _currentTriggered = false;
+void Acquisition::configureTimer(uint16_t timebase_us_per_div) {
+    const uint32_t interval = sampleIntervalUs(timebase_us_per_div);
+    uint32_t freq = 1000000UL / interval;
+    if (freq == 0) freq = 1;
+
+    s_adc.adc0->stopTimer();
+    s_adc.adc0->startSingleRead(SIGNAL_A);   // select the channel-A pin
+    s_adc.adc0->startTimer(freq);            // timer-triggered conversions + DMA
 }
 
-void Acquisition::startSweep() {
-    _phase = Phase::Sweep;
-    _idx   = 0;
-}
-
-void Acquisition::scheduleNext() {
-    _nextSampleUs += _interval;
-    // If a large real-time gap (redraw blit, menu visit) left us more than one
-    // interval behind, drop the backlog rather than firing a compressed burst.
-    if ((int32_t)(micros() - _nextSampleUs) > (int32_t)_interval) {
-        _nextSampleUs = micros() + _interval;
-    }
-}
-
-bool Acquisition::paramsChanged(const ScopeState& state, const Settings& settings) const {
-    return _sTimebase  != state.timebase_us_per_div
-        || _sMode      != state.mode
-        || _sSource    != settings.trigSource
-        || _sEdge      != settings.trigEdge
-        || _sTrigLevel != state.trigger_level_mv;
-}
-
-void Acquisition::beginAcq(const ScopeState& state, const Settings& settings) {
-    // Snapshot the acquisition-defining params.
-    _sTimebase  = state.timebase_us_per_div;
-    _sMode      = state.mode;
-    _sSource    = settings.trigSource;
-    _sEdge      = settings.trigEdge;
-    _sTrigLevel = state.trigger_level_mv;
-
-    // Derive per-acquisition constants.
-    _interval = sampleIntervalUs(state.timebase_us_per_div);
-    _trigAdc  = triggerADC(state.trigger_level_mv);
-    _trigPin  = (settings.trigSource == TrigSource::B) ? SIGNAL_B : SIGNAL_A;
-    _rising   = (settings.trigEdge == TrigEdge::Rising);
-
-    _nextSampleUs = micros();   // first sample due immediately
-    _started      = true;
-
-    if (state.mode == Mode::Triggered) {
-        startSearch();
-    } else {
-        _currentTriggered = true;   // free-running sweeps always "succeed"
-        startSweep();
-    }
-}
-
-bool Acquisition::update(const ScopeState& state, const Settings& settings) {
-    if (!_started || paramsChanged(state, settings)) {
-        beginAcq(state, settings);
+bool Acquisition::update(const ScopeState& state, const Settings& /*settings*/) {
+    // (Re)configure the sample timer on first run or when the timebase changes.
+    if (!_started || _sTimebase != state.timebase_us_per_div) {
+        configureTimer(state.timebase_us_per_div);
+        _sTimebase = state.timebase_us_per_div;
+        _started   = true;
     }
 
-    // Pace: do nothing until the next sample is due.
-    const uint32_t now = micros();
-    if ((int32_t)(now - _nextSampleUs) < 0) {
+    // Non-blocking: nothing to do until a DMA buffer has completed.
+    if (!s_abdmaA.interrupted()) {
         return false;
     }
 
-    if (_phase == Phase::Search) {
-        const uint16_t cur = (uint16_t)analogRead(_trigPin);
-        scheduleNext();
+    volatile uint16_t* src = s_abdmaA.bufferLastISRFilled();
+    uint16_t n = s_abdmaA.bufferCountLastISRFilled();
+    if (n > N) n = N;
 
-        if (_havePrev) {
-            const bool cross = _rising ? (_prevSample < _trigAdc && cur >= _trigAdc)
-                                       : (_prevSample > _trigAdc && cur <= _trigAdc);
-            if (cross) {
-                _currentTriggered = true;
-                startSweep();
-                return false;
-            }
-        }
-        _prevSample = cur;
-        _havePrev   = true;
-
-        if (++_searchCount >= TRIGGER_SEARCH_SAMPLES) {
-            // Window exhausted with no crossing.
-            if (settings.trigMode == TrigMode::Auto) {
-                _currentTriggered = false;   // free-run this sweep
-                startSweep();
-            } else {
-                // Normal: keep waiting; restart the window, hold the display.
-                _searchCount = 0;
-                _havePrev    = false;
-            }
-        }
-        return false;
+    SampleBuffers& fb = _buf[_fill];
+    for (uint16_t i = 0; i < n; ++i) {
+        fb.ch[0][i] = (uint16_t)src[i];
     }
-
-    // Phase::Sweep — read the channels we need into the fill buffer.
-    // XY is inherently two-channel; sample both regardless of the display-enable
-    // flags (those are a Y-t concept).
-    const bool readA = state.channelEnabled[0] || state.mode == Mode::XY;
-    const bool readB = state.channelEnabled[1] || state.mode == Mode::XY;
-    if (readA) _buf[_fill].ch[0][_idx] = (uint16_t)analogRead(SIGNAL_A);
-    if (readB) _buf[_fill].ch[1][_idx] = (uint16_t)analogRead(SIGNAL_B);
-    scheduleNext();
-
-    if (++_idx >= SampleBuffers::N) {
-        // Frame complete — publish it (swap fill/show) and start the next.
-        _buf[_fill].count = SampleBuffers::N;
-        _lastTriggered = _currentTriggered;
-
-        const uint8_t tmp = _show;
-        _show = _fill;
-        _fill = tmp;
-
-        if (_sMode == Mode::Triggered) {
-            startSearch();
-        } else {
-            _currentTriggered = true;
-            startSweep();
-        }
-        return true;   // new frame ready
+    // Milestone A samples channel A only; hold B flat at mid-rail so it draws a
+    // clean centre line rather than stale/zero data.  Dual-channel is Milestone B.
+    for (uint16_t i = 0; i < n; ++i) {
+        fb.ch[1][i] = 512;
     }
-    return false;
+    fb.count = n;
+
+    s_abdmaA.clearInterrupt();
+
+    _lastTriggered = true;   // free-running: every buffer "succeeds"
+
+    // Publish: swap fill/show.
+    const uint8_t tmp = _show;
+    _show = _fill;
+    _fill = tmp;
+    return true;
 }
