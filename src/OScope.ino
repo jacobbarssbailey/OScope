@@ -28,10 +28,13 @@
 #include "screens/MenuScreen.h"
 #include "screens/EditValueScreen.h"
 
-// Note: GC9A01A_SPICLOCK is also defined in the library header (30 MHz);
-// redefine here to use the faster 96 MHz rate the Teensy 4.0 can sustain.
+// SPI clock for the panel.  96 MHz works for a CPU-driven (sync) blit, but with
+// the async (DMA) blit the display DMA competes with the ADC DMA for RAM2
+// bandwidth; a slower clock frees bandwidth for acquisition.  40 MHz here is an
+// experiment to test whether the signal glitching is display/ADC DMA contention
+// (tune back up toward 96 MHz once we know where it goes clean).
 #ifndef GC9A01A_SPICLOCK
-#  define GC9A01A_SPICLOCK      96000000
+#  define GC9A01A_SPICLOCK      40000000
 #endif
 #define GC9A01A_SPICLOCK_READ  2000000
 
