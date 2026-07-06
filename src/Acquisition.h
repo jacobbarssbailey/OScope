@@ -11,10 +11,16 @@
 //   update() — non-blocking; publishes a frame when a DMA buffer completes.
 //   frame()  — the last complete frame, for rendering.
 //
-// MILESTONE A SCOPE (single channel, free-running — proves the DMA plumbing):
-//   - Channel A only (ADC0 / SIGNAL_A).  Channel B is filled flat (mid-rail).
-//   - No triggering yet: every completed DMA buffer is published as-is.
-//   Dual-channel (both ADCs) is Milestone B; software triggering is Milestone C.
+// MILESTONE B SCOPE (dual channel, free-running):
+//   - Channel A on ADC0 / SIGNAL_A, channel B on ADC1 / SIGNAL_B, each with its
+//     own DMA stream, both clocked by a timer at the same rate.  A frame is
+//     published when both channels' DMA buffers have completed.
+//   - No triggering yet: every completed pair of buffers is published as-is.
+//   Software triggering (with optional pre-trigger) is Milestone C.
+//
+// The two ADC timers are started independently at the same frequency, so A[i]
+// and B[i] carry a small constant sampling skew (fine for Y-t; acceptable for
+// X-Y).  A single synchronized trigger is a later refinement if XY phase needs it.
 //
 // Sample rate: the timer runs at 1e6 / interval_us, where
 //   interval_us = timebase_us_per_div * GridCols / N  (same mapping as before).
