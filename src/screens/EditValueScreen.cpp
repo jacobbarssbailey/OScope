@@ -16,7 +16,8 @@ void EditValueScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
         _item->adjust(ctx.settings, e.delta);       // live edit
     } else if (e.type == EventType::ShortPress) {
         switch (e.button) {
-            case Btn::Encoder:                       // confirm: keep, pop
+            case Btn::Encoder:                       // confirm: persist, pop
+                ctx.settings.save();
                 ctx.screens.pop(ctx);
                 break;
             case Btn::Mode:                          // cancel: restore, pop

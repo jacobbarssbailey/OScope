@@ -1,13 +1,51 @@
-// Settings.cpp — Settings defaults and the editable-setting descriptor table.
+// Settings.cpp — Settings defaults, persistence, and the descriptor table.
 
 #include "Settings.h"
 #include <Arduino.h>   // snprintf on Teensy
+#include <EEPROM.h>
 
 void Settings::defaults() {
     trigSource = TrigSource::A;
     trigEdge   = TrigEdge::Rising;
     trigMode   = TrigMode::Auto;
     grid       = true;
+}
+
+// ---- Persistence ----------------------------------------------------------
+// A magic + version header guards against reading uninitialised EEPROM (first
+// boot) or a stale layout after a settings-format change; either case falls
+// back to defaults.  Bump kVersion whenever the stored fields change.
+
+static constexpr int      kEEAddr  = 0;
+static constexpr uint16_t kMagic   = 0x05C0;   // "OScope settings"
+static constexpr uint8_t  kVersion = 1;
+
+struct StoredSettings {
+    uint16_t   magic;
+    uint8_t    version;
+    TrigSource trigSource;
+    TrigEdge   trigEdge;
+    TrigMode   trigMode;
+    bool       grid;
+};
+
+void Settings::load() {
+    StoredSettings s;
+    EEPROM.get(kEEAddr, s);
+    if (s.magic == kMagic && s.version == kVersion) {
+        trigSource = s.trigSource;
+        trigEdge   = s.trigEdge;
+        trigMode   = s.trigMode;
+        grid       = s.grid;
+    } else {
+        defaults();
+        save();   // initialise EEPROM so subsequent boots read a valid record
+    }
+}
+
+void Settings::save() const {
+    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid};
+    EEPROM.put(kEEAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
 // ---- Per-setting adjust/format helpers -----------------------------------

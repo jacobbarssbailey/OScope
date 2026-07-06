@@ -24,6 +24,12 @@ struct Settings {
 
     // Restore all fields to the compile-time defaults above.
     void defaults();
+
+    // Persistence (Teensy emulated EEPROM).  load() applies the stored settings
+    // if a valid record is present, otherwise sets defaults and writes them.
+    // save() persists the current settings; call it when an edit is confirmed.
+    void load();
+    void save() const;
 };
 // NOTE: display brightness (in the original plan) is intentionally omitted —
 // the GC9A01A is wired with no backlight-control pin (see Config.h / README
