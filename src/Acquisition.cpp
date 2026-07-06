@@ -29,6 +29,9 @@ static constexpr uint16_t CAPTURE = 2 * N;             // 480 samples per DMA bu
 // Nominal ADC count for 0 V input (mid-rail).
 static constexpr int32_t ADC_MID = 512;
 
+// Full-scale ADC count (10-bit).  Used to invert the hardware-inverted input.
+static constexpr uint16_t kADCMax = 1023;
+
 // DMA target buffers, double-buffered by AnalogBufferDMA — one pair per channel
 // (A on ADC0, B on ADC1).  Each buffer holds CAPTURE samples so a full N-sample
 // window can be extracted around a found trigger.  Must be in DMAMEM and 32-byte
@@ -129,6 +132,16 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     const uint16_t nA = s_abdmaA.bufferCountLastISRFilled();
     const uint16_t nB = s_abdmaB.bufferCountLastISRFilled();
     const uint16_t cap = nA < nB ? nA : nB;   // usable samples in this buffer pair
+
+    // The input hardware inverts the signal: a HIGHER ADC count corresponds to a
+    // LOWER input voltage (0 counts ≈ +full-scale, full-scale counts ≈ −full-scale).
+    // Normalize both channels in place so the rest of the pipeline — trigger
+    // search below and the sampleToY/X mapping — can assume higher = higher
+    // voltage.  cap covers every sample the trigger search and window copy read.
+    for (uint16_t i = 0; i < cap; ++i) {
+        srcA[i] = (uint16_t)(kADCMax - srcA[i]);
+        srcB[i] = (uint16_t)(kADCMax - srcB[i]);
+    }
 
     // Decide the window start into the capture buffer.
     // Default (free-run / non-triggered): the first N samples.
