@@ -6,8 +6,8 @@
 // buffer.  All descriptors live in a static table — no heap allocation.
 //
 // Key rules:
-//   - paramAppliesInMode(): Triggered → all three; Rolling → Timebase + VScale;
-//     XY → VScale only.
+//   - paramAppliesInMode(): Triggered → all three; Rolling and XY → Timebase +
+//     VScale (TriggerLevel has no meaning when free-running).
 //   - nextSelectable(): advances selected, skipping params not applicable in
 //     the current mode.  VScale is always applicable, so there is always a
 //     valid target and the loop cannot run forever.
@@ -32,7 +32,7 @@ const Parameter& parameterFor(EncoderParam id);
 // True if the parameter is meaningful in the given mode.
 //   Triggered: Timebase, VScale, TriggerLevel
 //   Rolling:   Timebase, VScale
-//   XY:        VScale only
+//   XY:        Timebase, VScale
 bool paramAppliesInMode(EncoderParam id, Mode m);
 
 // Return the next selectable EncoderParam after s.selected, skipping any that

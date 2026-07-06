@@ -1,11 +1,16 @@
-// Acquisition.cpp — Timer-triggered DMA acquisition (Milestone A).
+// Acquisition.cpp — Timer-triggered, dual-channel DMA acquisition.
 //
-// The pedvide Teensy ADC library drives a hardware timer that triggers ADC
-// conversions at a fixed rate; eDMA streams each conversion into a buffer.
-// AnalogBufferDMA double-buffers and handles the M7 cache invalidation, so
-// bufferLastData() hands back a coherent, complete buffer to publish.
+// A hardware timer triggers ADC conversions on both ADCs (channel A on ADC0,
+// channel B on ADC1) at the timebase-derived rate; eDMA streams each channel
+// into its own CAPTURE-sample double buffer.  The pedvide Teensy ADC library
+// (AnalogBufferDMA) owns the DMA plumbing and the M7 cache invalidation, and
+// bufferLastISRFilled() hands back a coherent, complete buffer.
 //
-// Voltage ↔ ADC mapping is unchanged (10-bit, 0..1023, mid-rail 512).
+// update() consumes a completed buffer pair, extracts an N-sample display
+// window — trigger-aligned in Triggered mode via a software edge search over
+// the buffer, or the first N samples otherwise — and publishes it via frame().
+//
+// Voltage ↔ ADC mapping: 10-bit, 0..1023, mid-rail 512.
 // Sample rate: timer frequency = 1e6 / interval_us,
 //   interval_us = timebase_us_per_div * GridCols / N   (min 1 µs).
 
