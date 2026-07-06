@@ -114,6 +114,15 @@ void loop() {
     //    what keeps the UI responsive at long timebases.
     if (uiDirty || newFrame) {
         screens.draw(renderer, ctx);
+
+        // FPS overlay (debug) — only over the run screen, so it doesn't collide
+        // with the menu/edit bottom hints.  Reflects the redraw rate.
+        if (screens.top() == &runScreen) {
+            char fbuf[12];
+            snprintf(fbuf, sizeof fbuf, "%d fps", (int)(fps + 0.5f));
+            renderer.text(Theme::RunFpsX, Theme::RunFpsY, fbuf, Theme::Dim, 1);
+        }
+
         tft.updateScreen();
         countFrame();
         uiDirty = false;

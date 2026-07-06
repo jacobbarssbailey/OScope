@@ -47,6 +47,10 @@ namespace Theme {
   constexpr int16_t RunParamValX  = 30;   // Formatted value X
   constexpr int16_t RunParamValY  = 162;  // Formatted value Y
 
+  // FPS readout (size-1 debug overlay), low in the central safe band.
+  constexpr int16_t RunFpsX       = 96;   // FPS readout X
+  constexpr int16_t RunFpsY       = 205;  // FPS readout Y
+
   // ---- Oscilloscope plot area ----
   // The round display is 240×240.  The waveform occupies the full 240×240 canvas;
   // the HUD text is drawn on top at z-order above the waveform so it stays readable.
