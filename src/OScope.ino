@@ -92,27 +92,30 @@ void setup() {
     lastFpsTime = millis();
 }
 
-// Redraw only when something changed: a handled input event (UI dirty) or a
-// newly completed acquisition frame.  Between those the loop just polls input
-// and nudges acquisition, so iterations are microseconds long and input stays
-// responsive even while a slow sweep fills.  Start true to force the first draw.
-bool uiDirty = true;
+// "Redraw pending" flag: set by a handled input event or a newly completed
+// acquisition frame, cleared only when we actually redraw.  Because the display
+// blit is now asynchronous (DMA), a frame that arrives while a blit is in flight
+// must stay pending rather than be dropped — hence a persistent flag rather than
+// redrawing purely on this iteration's signals.  Start true to force first draw.
+bool redrawPending = true;
 
 void loop() {
     // 1. Drain all pending input events and forward each to the top screen.
     InputEvent e;
     while (input.poll(e)) {
         screens.handleEvent(e, ctx);
-        uiDirty = true;
+        redrawPending = true;
     }
 
     // 2. Advance the top screen's time-based work (non-blocking acquisition).
-    const bool newFrame = screens.tick(ctx);
+    if (screens.tick(ctx)) redrawPending = true;
 
-    // 3. Redraw + blit only when there is something new to show.  The full-frame
-    //    blit (~10-15 ms) is the loop's one expensive step; gating it here is
-    //    what keeps the UI responsive at long timebases.
-    if (uiDirty || newFrame) {
+    // 3. Redraw only when something changed AND the previous async blit has
+    //    finished — the DMA reads fb1 in the background, so drawing into it while
+    //    a blit is active would tear/garbage the frame.  When a blit is in flight
+    //    we simply skip drawing this iteration and keep polling input / sampling
+    //    (the CPU is free during the blit); the pending flag holds until we draw.
+    if (redrawPending && !tft.asyncUpdateActive()) {
         screens.draw(renderer, ctx);
 
         // FPS overlay (debug) — only over the run screen, so it doesn't collide
@@ -123,8 +126,8 @@ void loop() {
             renderer.text(Theme::RunFpsX, Theme::RunFpsY, fbuf, Theme::Dim, 1);
         }
 
-        tft.updateScreen();
+        tft.updateScreenAsync();   // DMA blit; returns immediately
         countFrame();
-        uiDirty = false;
+        redrawPending = false;
     }
 }
