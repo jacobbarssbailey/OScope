@@ -20,9 +20,11 @@
 //   3. Waveform traces (activeMode->render())
 //   4. HUD text overlay (drawn here, after render())
 //
-// Acquisition: when state.running, capture() is called once per draw() call
-// (i.e. once per frame).  Capture is blocking; at short timebases the sweep
-// completes in a few milliseconds.
+// Acquisition: driven by tick() (called every main-loop iteration), which
+// advances the non-blocking Acquisition state machine one sample at a time.
+// draw() renders whatever complete frame Acquisition last published, so the
+// loop stays responsive even at slow timebases.  When stopped, tick() does
+// nothing and the last frame stays frozen on screen.
 
 #include "RunScreen.h"
 #include "../Theme.h"
@@ -57,6 +59,29 @@ RunScreen::RunScreen() {
 // --------------------------------------------------------------------------
 void RunScreen::onEnter(AppContext& /*ctx*/) {
     _acq.begin();
+}
+
+// --------------------------------------------------------------------------
+// tick — advance non-blocking acquisition (called every loop iteration)
+// --------------------------------------------------------------------------
+bool RunScreen::tick(AppContext& ctx) {
+    auto& s = ctx.state;
+    if (!s.running) return false;   // frozen: hold the last frame, no sampling
+
+    const bool newFrame = _acq.update(s, ctx.settings);
+    if (newFrame) {
+        // Let the active mode fold the completed sweep into any history it keeps
+        // (Rolling); others no-op.  Done here (once per frame), not in draw().
+        ScopeMode* activeMode = _modes[static_cast<int>(s.mode)];
+        if (activeMode) activeMode->onFrame(_acq.frame());
+
+        // Single-shot: freeze on the first successful triggered capture.
+        if (s.singleArmed && _acq.lastTriggered()) {
+            s.running = false;
+            s.singleArmed = false;
+        }
+    }
+    return newFrame;
 }
 
 // --------------------------------------------------------------------------
@@ -141,30 +166,22 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     // 1. Clear background.
     r.clear();
 
-    // 2. Capture a new sweep when running.
-    if (s.running) {
-        const bool triggered = _acq.capture(s, ctx.settings, _buf);
-        // Single-shot: freeze on the first successful triggered capture.
-        if (s.singleArmed && triggered) {
-            s.running = false;
-            s.singleArmed = false;
-        }
-    }
-    // When stopped, _buf retains the last captured sweep — frozen display.
+    // Acquisition runs in tick(); draw renders the last completed frame.  When
+    // stopped, _acq.frame() keeps returning that frame — a frozen display.
 
-    // 3. Draw the grid underlay (shared by all modes) when enabled in settings.
+    // 2. Draw the grid underlay (shared by all modes) when enabled in settings.
     if (ctx.settings.grid) {
         Mapping::drawGrid(r);
     }
 
-    // 4. Delegate waveform rendering to the active mode strategy.
+    // 3. Delegate waveform rendering to the active mode strategy.
     ScopeMode* activeMode = _modes[static_cast<int>(s.mode)];
     if (activeMode != nullptr) {
-        activeMode->render(r, s, _buf);
+        activeMode->render(r, s, _acq.frame());
     }
     // activeMode is never null (all modes registered); the guard is defensive.
 
-    // 5. HUD overlay — drawn last so it appears on top of the waveform.
+    // 4. HUD overlay — drawn last so it appears on top of the waveform.
 
     // Mode label centred near the top (within the safe inset band).
     r.text(Theme::RunModeX, Theme::RunModeY, modeName(s.mode), Theme::Text, Theme::HudTitleSize);

@@ -53,10 +53,17 @@ public:
     // Human-readable mode name (for debug / future UI use).
     virtual const char* name() const = 0;
 
-    // Render the waveform (grid + traces) into the framebuffer via r.
-    // Called every frame BEFORE RunScreen draws the HUD; the HUD is drawn on
-    // top afterward, so a mode must not assume it can overwrite the HUD area.
+    // Render the traces into the framebuffer via r.  The grid is drawn by
+    // RunScreen beforehand (gated on settings.grid); render draws traces only.
+    // Called before RunScreen draws the HUD, which lands on top.
+    // May be called more than once per acquired frame (e.g. on a UI redraw),
+    // so it must be a pure function of (state, buf) — no accumulation here.
     // Modes MUST NOT call tft.updateScreen() — the main loop owns that.
     virtual void render(Renderer& r, const ScopeState& state,
                         const SampleBuffers& buf) = 0;
+
+    // Called exactly once each time a new sweep completes, before render.
+    // Modes that accumulate cross-frame history (Rolling) ingest it here so a
+    // UI-triggered redraw never double-counts the same frame.  Default: no-op.
+    virtual void onFrame(const SampleBuffers& /*buf*/) {}
 };

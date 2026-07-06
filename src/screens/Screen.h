@@ -37,6 +37,11 @@ public:
     // Handle one input event; mutate ctx.state as appropriate.
     virtual void handleEvent(const InputEvent& e, AppContext& ctx) = 0;
 
+    // Advance any non-blocking, time-based work (e.g. acquisition).  Called
+    // every main-loop iteration, independent of drawing.  Returns true when
+    // something changed that warrants a redraw.  Default: no-op.
+    virtual bool tick(AppContext& /*ctx*/) { return false; }
+
     // Draw the current state into the framebuffer via r.
     virtual void draw(Renderer& r, AppContext& ctx) = 0;
 };
@@ -58,6 +63,9 @@ public:
 
     // Forward event to the top screen.
     void handleEvent(const InputEvent& e, AppContext& ctx);
+
+    // Advance the top screen's time-based work; returns its redraw request.
+    bool tick(AppContext& ctx);
 
     // Forward draw to the top screen.
     void draw(Renderer& r, AppContext& ctx);
@@ -101,6 +109,11 @@ inline Screen* ScreenStack::top() {
 inline void ScreenStack::handleEvent(const InputEvent& e, AppContext& ctx) {
     Screen* s = top();
     if (s) s->handleEvent(e, ctx);
+}
+
+inline bool ScreenStack::tick(AppContext& ctx) {
+    Screen* s = top();
+    return s ? s->tick(ctx) : false;
 }
 
 inline void ScreenStack::draw(Renderer& r, AppContext& ctx) {

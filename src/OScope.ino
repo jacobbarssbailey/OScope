@@ -92,18 +92,30 @@ void setup() {
     lastFpsTime = millis();
 }
 
+// Redraw only when something changed: a handled input event (UI dirty) or a
+// newly completed acquisition frame.  Between those the loop just polls input
+// and nudges acquisition, so iterations are microseconds long and input stays
+// responsive even while a slow sweep fills.  Start true to force the first draw.
+bool uiDirty = true;
+
 void loop() {
     // 1. Drain all pending input events and forward each to the top screen.
     InputEvent e;
     while (input.poll(e)) {
         screens.handleEvent(e, ctx);
+        uiDirty = true;
     }
 
-    // 2. Draw the current top screen into the framebuffer.
-    screens.draw(renderer, ctx);
+    // 2. Advance the top screen's time-based work (non-blocking acquisition).
+    const bool newFrame = screens.tick(ctx);
 
-    // 3. Blit the framebuffer to the panel in one SPI burst.
-    tft.updateScreen();
-
-    countFrame();
+    // 3. Redraw + blit only when there is something new to show.  The full-frame
+    //    blit (~10-15 ms) is the loop's one expensive step; gating it here is
+    //    what keeps the UI responsive at long timebases.
+    if (uiDirty || newFrame) {
+        screens.draw(renderer, ctx);
+        tft.updateScreen();
+        countFrame();
+        uiDirty = false;
+    }
 }

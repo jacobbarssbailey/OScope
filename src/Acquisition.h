@@ -1,51 +1,97 @@
-// Acquisition.h — ADC sampling engine for OScope.
+// Acquisition.h — Non-blocking ADC acquisition state machine for OScope.
 //
-// Acquisition owns the blocking single-sweep capture loop.  It reads both
-// analog input channels (SIGNAL_A / SIGNAL_B from Config.h) into a
-// SampleBuffers and handles trigger alignment for Triggered mode.
+// Acquisition samples both input channels (SIGNAL_A / SIGNAL_B) into a
+// double-buffered SampleBuffers.  Unlike a blocking sweep, update() does a
+// bounded amount of work per call (at most one sample, paced by micros()) and
+// returns immediately, so the main loop stays responsive and can service input
+// between samples.  A frame is published (made available to frame()) only when
+// a full sweep completes; rendering always sees a complete frame.
 //
-// Usage:
-//   Acquisition acq;
-//   acq.begin();          // call once in setup()
-//   acq.capture(state, buf);  // call each frame when state.running
+// State machine (per frame):
+//   Search  — Triggered mode only: sample the trigger source channel looking
+//             for a settings.trigEdge crossing of trigger_level_mv.  On a
+//             crossing → Sweep (trigger-aligned).  If the search window is
+//             exhausted: Auto → Sweep anyway (free-run); Normal → keep waiting
+//             (hold the last frame, no new frame produced).
+//   Sweep   — sample both needed channels into the fill buffer until N samples,
+//             then publish the frame and start the next one.
+// Non-triggered modes (Rolling, XY) skip Search and free-run.
 //
-// Timing model (documented; see capture() in Acquisition.cpp for details):
-//   timebase_us_per_div : µs per grid division (set by encoder)
-//   GridDiv (= 30 px)   : pixels per grid division (from Theme.h)
-//   SampleBuffers::N    : total samples = display width (240)
-//   Samples per div     : SampleBuffers::N / GridCols  = 240/8 = 30 samples/div
-//   Sample interval     : timebase_us_per_div / samples_per_div
-//                       = timebase_us_per_div * GridCols / SampleBuffers::N
-//                       = timebase_us_per_div * 8 / 240  [µs/sample]
-//   At 500 µs/div       : interval = 500*8/240 ≈ 16.7 µs/sample
-//   At 1 ms/div         : interval = 1000*8/240 ≈ 33.3 µs/sample
-//   Interval is clamped to a minimum of 1 µs (analogRead takes ~1–2 µs on T4).
+// Pacing: each due sample sets the next due time to micros() + interval, so
+// samples are spaced by at least `interval` of real time with no catch-up
+// bursts (a burst would compress timing after a long gap, e.g. a redraw).
+//
+// Timebase → interval (µs/sample) = timebase_us_per_div * GridCols / N.
+// The acquisition auto-restarts if timebase / mode / trigger source / edge /
+// level change, so control edits take effect on the next sample.
 #pragma once
 
 #include "modes/ScopeMode.h"
 #include "ScopeState.h"
-
-struct Settings;   // trigger source/edge/mode come from Settings
+#include "Settings.h"
 
 class Acquisition {
 public:
     // Set ADC resolution to 10 bits (0..1023).  Call once in setup().
     void begin();
 
-    // Capture one full sweep into buf.
-    // For Triggered mode: pre-scans the trigger source channel (settings
-    // .trigSource) for a settings.trigEdge crossing of trigger_level_mv and
-    // aligns the sweep to it.  If none is found within the search window,
-    // behaviour depends on settings.trigMode:
-    //   Auto   — free-run a sweep anyway (never hangs; buf is refreshed).
-    //   Normal — leave buf untouched (hold the last trace) and return false.
-    // For other modes (Rolling, XY): free-runs immediately (no trigger search).
-    // Blocks for approximately N * sample_interval_us µs.
-    //
-    // Returns true when the sweep represents a "successful" capture for
-    // single-shot purposes: a real trigger crossing was found in Triggered
-    // mode, or any completed sweep in the free-running modes.  Returns false
-    // when Triggered mode found no crossing (Auto free-ran; Normal held), so
-    // single-shot keeps waiting for a genuine trigger.
-    bool capture(const ScopeState& state, const Settings& settings, SampleBuffers& buf);
+    // Advance the state machine by a bounded step (non-blocking).  Grabs the
+    // sample now due, if any, and progresses the search/sweep.  Returns true
+    // exactly once each time a full sweep completes (a new frame is ready).
+    bool update(const ScopeState& state, const Settings& settings);
+
+    // Most recently completed frame, for rendering.  count == 0 until the first
+    // sweep completes.
+    const SampleBuffers& frame() const { return _buf[_show]; }
+
+    // Whether the last completed frame was aligned to a real trigger (true for
+    // free-running modes).  Used by single-shot.
+    bool lastTriggered() const { return _lastTriggered; }
+
+private:
+    enum class Phase : uint8_t { Search, Sweep };
+
+    // Double buffer: one filling, one being shown.
+    SampleBuffers _buf[2];
+    uint8_t _show = 0;   // index of the last complete frame (rendered)
+    uint8_t _fill = 1;   // index currently being written
+
+    // Running state-machine position.
+    Phase    _phase       = Phase::Sweep;
+    uint16_t _idx         = 0;      // samples written in the current phase
+    uint16_t _searchCount = 0;      // trigger-search iterations so far
+    uint16_t _prevSample  = 0;      // previous trigger-pin sample (edge detect)
+    bool     _havePrev    = false;
+    bool     _currentTriggered = false;  // did the in-progress sweep trigger
+    bool     _lastTriggered    = false;  // did the last *published* frame trigger
+    uint32_t _nextSampleUs = 0;
+
+    // Snapshot of the acquisition-defining params; a change auto-restarts.
+    bool       _started    = false;
+    uint16_t   _sTimebase  = 0;
+    Mode       _sMode      = Mode::Triggered;
+    TrigSource _sSource    = TrigSource::A;
+    TrigEdge   _sEdge      = TrigEdge::Rising;
+    int16_t    _sTrigLevel = 0;
+
+    // Per-acquisition derived constants (recomputed on (re)start).
+    uint32_t _interval = 1;
+    uint16_t _trigAdc  = 512;
+    uint8_t  _trigPin  = 0;
+    bool     _rising   = true;
+
+    // (Re)start acquisition from current params; snapshot + derive constants.
+    void beginAcq(const ScopeState& state, const Settings& settings);
+    // True if any acquisition-defining param differs from the snapshot.
+    bool paramsChanged(const ScopeState& state, const Settings& settings) const;
+
+    void startSearch();  // enter Search phase (reset edge-detect state)
+    void startSweep();   // enter Sweep phase (reset sample index)
+
+    // Advance _nextSampleUs to the next due time.  Normally steps by one
+    // interval on the ideal grid (accurate spacing).  If we have fallen more
+    // than one interval behind — e.g. after the ~15 ms redraw blit or a menu
+    // visit — it resyncs to now + interval so the backlog can't fire as a
+    // timing-compressed burst.
+    void scheduleNext();
 };

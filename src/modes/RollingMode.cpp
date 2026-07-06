@@ -13,7 +13,7 @@
 #include "../Mapping.h"
 #include "../Theme.h"
 
-void RollingMode::ingest(const SampleBuffers& buf) {
+void RollingMode::onFrame(const SampleBuffers& buf) {
     // Samples arrive oldest→newest; append so the newest lands at the head.
     for (uint16_t i = 0; i < buf.count; ++i) {
         _ring[0][_head] = buf.ch[0][i];
@@ -40,10 +40,10 @@ void RollingMode::drawChannel(Renderer& r, uint8_t ch, uint16_t vscale,
 }
 
 void RollingMode::render(Renderer& r, const ScopeState& state,
-                         const SampleBuffers& buf) {
+                         const SampleBuffers& /*buf*/) {
     // Grid is drawn by RunScreen (gated on settings.grid) before this call.
-    // Fold this frame's fresh sweep into the persistent history.
-    ingest(buf);
+    // History is folded in by onFrame(); render only draws the retained ring so
+    // repeated (UI-triggered) redraws never double-count a frame.
     if (_count < 2) return;
 
     // Draw B first so A lands on top (matches Triggered mode's Z-order).

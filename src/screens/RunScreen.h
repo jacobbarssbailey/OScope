@@ -29,7 +29,11 @@ public:
     // Mutate ctx.state in response to button presses / encoder events.
     void handleEvent(const InputEvent& e, AppContext& ctx) override;
 
-    // Capture (if running) then render waveform + HUD into the framebuffer.
+    // Advance acquisition (when running); returns true when a new frame is
+    // ready.  Also handles per-frame work (rolling ingest, single-shot).
+    bool tick(AppContext& ctx) override;
+
+    // Render the last acquired frame + HUD into the framebuffer.
     void draw(Renderer& r, AppContext& ctx) override;
 
     // Wire the settings menu opened by B1 (Mode) long-press.
@@ -38,7 +42,6 @@ public:
 private:
     Screen*       _menu = nullptr;
     Acquisition   _acq;
-    SampleBuffers _buf;
     TriggeredMode _triggeredMode;
     RollingMode   _rollingMode;
     XYMode        _xyMode;
