@@ -67,6 +67,11 @@ private:
     bool     _started   = false;
     uint16_t _sTimebase = 0;   // timebase the timer is currently configured for
 
+    // Auto-mode trigger: consecutive frames with no crossing found.  Auto holds
+    // the last triggered frame through brief misses and only free-runs once this
+    // exceeds a threshold, so a single missed buffer doesn't flash unaligned.
+    uint16_t _autoMissCount = 0;
+
     // (Re)start the sample timer at the rate derived from timebase.
     void configureTimer(uint16_t timebase_us_per_div);
 };

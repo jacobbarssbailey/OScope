@@ -32,6 +32,11 @@ static constexpr int32_t ADC_MID = 512;
 // Full-scale ADC count (10-bit).  Used to invert the hardware-inverted input.
 static constexpr uint16_t kADCMax = 1023;
 
+// Auto mode holds the last triggered frame through this many consecutive trigger
+// misses before free-running, so a single missed buffer doesn't flash an
+// unaligned frame.  At typical frame rates this is a fraction of a second.
+static constexpr uint16_t kAutoFreerunMisses = 20;
+
 // DMA target buffers, double-buffered by AnalogBufferDMA — one pair per channel
 // (A on ADC0, B on ADC1).  Each buffer holds CAPTURE samples so a full N-sample
 // window can be extracted around a found trigger.  Must be in DMAMEM and 32-byte
@@ -161,9 +166,18 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
         if (t >= 0) {
             start     = (uint16_t)t;     // trigger at the left edge
             triggered = true;
+            _autoMissCount = 0;
         } else if (settings.trigMode == TrigMode::Auto) {
-            start     = 0;               // free-run this frame
-            triggered = false;
+            // Hold the last triggered frame through brief misses; only free-run
+            // once the trigger has been absent for kAutoFreerunMisses frames, so
+            // a single missed buffer doesn't flash an unaligned frame.
+            if (_autoMissCount < kAutoFreerunMisses) {
+                ++_autoMissCount;
+                produce = false;         // hold last frame
+            } else {
+                start     = 0;           // sustained no-trigger: free-run
+                triggered = false;
+            }
         } else {
             produce   = false;           // Normal: hold last frame, wait
         }
