@@ -151,6 +151,7 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
             case Btn::Encoder:
                 s.resetToDefaults();
                 clampSelectable(s);
+                Theme::applyPalette(s.colorScheme);   // reset restores Classic
                 break;
 
             // B1 long-press: open the settings menu.

@@ -83,6 +83,7 @@ void setup() {
 
     settings.load();   // stored settings, or defaults on first boot
     state.load();      // stored acquisition setup, or defaults on first boot
+    Theme::applyPalette(state.colorScheme);   // restore the saved color scheme
 
     // Wire the screen graph: RunScreen (root) → MenuScreen → EditValueScreen.
     menuScreen.setEditScreen(&editScreen);

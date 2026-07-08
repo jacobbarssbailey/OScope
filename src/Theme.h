@@ -9,14 +9,36 @@
 
 namespace Theme {
   // ---- Colors (RGB565) ----
-  constexpr uint16_t Background = 0x0000;  // Black
-  constexpr uint16_t Grid       = 0x18E3;  // Dark grey-green
-  constexpr uint16_t Frame      = 0xFFFF;  // White
-  constexpr uint16_t TraceA     = 0x07E0;  // Green (channel A)
-  constexpr uint16_t TraceB     = 0x07FF;  // Cyan  (channel B)
-  constexpr uint16_t Text       = 0xFFFF;  // White
-  constexpr uint16_t Dim        = 0xC618;  // Light grey (secondary labels)
-  constexpr uint16_t Highlight  = 0xFFE0;  // Yellow (selected item)
+  // These were compile-time constants until the color-scheme feature; they are
+  // now mutable globals so a palette can be swapped at runtime (see Palette
+  // below and applyPalette()).  Call sites are unchanged — they still read
+  // Theme::Background etc., now getting whatever the active palette last set.
+  // Defaults below reproduce the original "Classic" scheme exactly.
+  extern uint16_t Background;  // Black
+  extern uint16_t Grid;        // Dark grey-green
+  extern uint16_t Frame;       // White
+  extern uint16_t TraceA;      // Green (channel A)
+  extern uint16_t TraceB;      // Cyan  (channel B)
+  extern uint16_t Text;        // White
+  extern uint16_t Dim;         // Light grey (secondary labels)
+  extern uint16_t Highlight;   // Yellow (selected item)
+
+  // ---- Color schemes ----
+  // One immutable palette per selectable scheme.  Field order matches the color
+  // globals above.  applyPalette(i) copies palette i into those globals; the
+  // rest of the app then reads the new colors on its next draw.
+  struct Palette {
+    const char* name;
+    uint16_t background, grid, frame, traceA, traceB, text, dim, highlight;
+  };
+
+  // Number of available schemes, and the display name of scheme i (clamped).
+  uint8_t     paletteCount();
+  const char* paletteName(uint8_t i);
+
+  // Copy scheme i's colors into the active color globals.  Index is clamped to
+  // [0, paletteCount()-1] so an out-of-range stored value can't corrupt state.
+  void applyPalette(uint8_t i);
 
   // ---- Layout ----
   constexpr int16_t W         = 240;  // Display width  in pixels
