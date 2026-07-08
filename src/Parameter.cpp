@@ -99,12 +99,26 @@ static void fmtVScale(const ScopeState& s, char* b, uint8_t n) {
     }
 }
 
-// ---- Trigger level (–10 000 mV … +10 000 mV, 100 mV/step) ---------------
+// ---- Trigger level (screen-relative) ------------------------------------
+// The trigger level moves in proportion to what's on screen rather than in a
+// fixed 100 mV step over the full ±10 V input.  A flat step made the level feel
+// dead: on a typical signal one 100 mV click shifted the trigger point by well
+// under a pixel, and you'd never reach the trace's extremes in a sane number of
+// clicks.  Instead:
+//   step  = 0.2 division per detent   (vscale / 5)
+//   range = ±4 divisions (the visible half-screen), capped at the ±10 V hardware
+//           limit — so pushing the level off the top/bottom of the trace stops
+//           the trigger, which is the expected behavior.
+// Uses the lead channel's V/div (ch 0), matching the V/div readout.
 
 static void adjTrig(ScopeState& s, int8_t d) {
+    const int vdiv  = s.vscale_mv_per_div[0];
+    const int step  = vdiv / 5;                        // 0.2 div/detent (min via clamp below)
+    int       range = 4 * vdiv;                        // ±4 divisions
+    if (range > 10000) range = 10000;                  // cap at hardware ±10 V
     s.trigger_level_mv = (int16_t)clampi(
-        (int)s.trigger_level_mv + (int)d * 100,
-        -10000, 10000);
+        (int)s.trigger_level_mv + (int)d * (step > 0 ? step : 1),
+        -range, range);
 }
 
 static void fmtTrig(const ScopeState& s, char* b, uint8_t n) {
