@@ -8,7 +8,7 @@
 // uninitialised EEPROM or a stale layout (bump kStateVersion on field changes).
 static constexpr int      kEEStateAddr = 32;
 static constexpr uint16_t kStateMagic   = 0x05C1;
-static constexpr uint8_t  kStateVersion = 1;
+static constexpr uint8_t  kStateVersion = 2;   // bumped: new defaults (3 V/div, A+B)
 
 // Only the acquisition setup is persisted — not running / singleArmed.
 struct StoredState {
@@ -25,12 +25,12 @@ struct StoredState {
 
 void ScopeState::resetToDefaults() {
     mode                  = Mode::Triggered;
-    channel               = ChannelSel::A;
+    channel               = ChannelSel::Both;
     selected              = EncoderParam::Timebase;
     running               = true;
     timebase_us_per_div   = 500;
-    vscale_mv_per_div[0]  = 700;
-    vscale_mv_per_div[1]  = 700;
+    vscale_mv_per_div[0]  = 3000;
+    vscale_mv_per_div[1]  = 3000;
     trigger_level_mv      = 0;
     channelEnabled[0]     = true;
     channelEnabled[1]     = true;

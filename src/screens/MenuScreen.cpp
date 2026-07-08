@@ -4,14 +4,14 @@
 #include "EditValueScreen.h"
 #include "../Settings.h"
 #include "../Theme.h"
+#include "../Fonts.h"
 
-// Layout constants for the list (size-2 rows, tuned for the round face).
-static constexpr int16_t kTitleX = 72;
-static constexpr int16_t kTitleY = 18;
-static constexpr int16_t kRow0Y  = 54;
+// Layout constants for the list (Arial 16 rows, tuned for the round face).
+static constexpr int16_t kTitleY = 22;
+static constexpr int16_t kRow0Y  = 58;
 static constexpr int16_t kRowDy  = 34;
-static constexpr int16_t kNameX  = 20;
-static constexpr int16_t kValueX = 145;
+static constexpr int16_t kNameX  = 24;
+static constexpr int16_t kValueX = 150;
 
 void MenuScreen::onEnter(AppContext& /*ctx*/) {
     _sel = 0;
@@ -45,7 +45,7 @@ void MenuScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
 
 void MenuScreen::draw(Renderer& r, AppContext& ctx) {
     r.clear();
-    r.text(kTitleX, kTitleY, "SETTINGS", Theme::Text, 2);
+    r.textCenterX(kTitleY, "SETTINGS", Theme::Text, Arial_16);
 
     const SettingItem* items = settingItems();
     const uint8_t count = settingCount();
@@ -55,11 +55,11 @@ void MenuScreen::draw(Renderer& r, AppContext& ctx) {
         const bool sel = (i == _sel);
         const uint16_t nameColor = sel ? Theme::Highlight : Theme::Text;
         const uint16_t valColor  = sel ? Theme::Highlight : Theme::Dim;
-        r.text(kNameX, y, items[i].name, nameColor, 2);
+        r.text(kNameX, y, items[i].name, nameColor, Arial_16);
         items[i].format(ctx.settings, val, sizeof val);
-        r.text(kValueX, y, val, valColor, 2);
+        r.text(kValueX, y, val, valColor, Arial_16);
         y += kRowDy;
     }
 
-    r.text(52, 212, "ENC edit   B1 back", Theme::Dim, 1);
+    r.textCenterX(212, "ENC edit   B1 back", Theme::Dim, Arial_13);
 }

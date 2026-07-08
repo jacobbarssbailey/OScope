@@ -19,12 +19,12 @@ enum class EncoderParam : uint8_t { Timebase, VScale, TriggerLevel };
 
 struct ScopeState {
     Mode         mode     = Mode::Triggered;
-    ChannelSel   channel  = ChannelSel::A;
+    ChannelSel   channel  = ChannelSel::Both;   // A+B (channel select hidden in v2 UI)
     EncoderParam selected = EncoderParam::Timebase;
     bool         running  = true;
 
-    uint16_t timebase_us_per_div    = 500;        // µs/div
-    uint16_t vscale_mv_per_div[2]   = {700, 700};  // mV/div per channel
+    uint16_t timebase_us_per_div    = 500;          // µs/div
+    uint16_t vscale_mv_per_div[2]   = {3000, 3000};  // mV/div per channel (3 V/div default)
     int16_t  trigger_level_mv       = 0;           // mV
     bool     channelEnabled[2]      = {true, true};
 

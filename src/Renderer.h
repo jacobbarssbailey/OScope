@@ -3,9 +3,12 @@
 // Renderer does NOT own the framebuffer and does NOT call updateScreen().
 // The main loop calls tft.updateScreen() exactly once per frame after all
 // screens have finished drawing.  Screens draw exclusively through Renderer.
+//
+// Text is rendered with anti-aliased t3 fonts (see Fonts.h) — callers pass the
+// font (e.g. Arial_16) rather than a size multiplier.
 #pragma once
 
-#include <GC9A01A_t3n.h>
+#include <GC9A01A_t3n.h>   // defines GC9A01A_t3n and ILI9341_t3_font_t
 #include <stdint.h>
 
 class Renderer {
@@ -15,8 +18,13 @@ public:
     // Fill the framebuffer with the background color.
     void clear();
 
-    // Draw a string at (x, y) with the given RGB565 color and text size.
-    void text(int16_t x, int16_t y, const char* s, uint16_t color, uint8_t size = 1);
+    // Draw a string with its top-left at (x, y) in the given t3 font.
+    void text(int16_t x, int16_t y, const char* s, uint16_t color,
+              const ILI9341_t3_font_t& font);
+
+    // Draw a string horizontally centered on the display, top at y.
+    void textCenterX(int16_t y, const char* s, uint16_t color,
+                     const ILI9341_t3_font_t& font);
 
     // Draw a horizontal line of width w starting at (x, y).
     void hline(int16_t x, int16_t y, int16_t w, uint16_t c);

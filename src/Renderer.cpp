@@ -1,7 +1,7 @@
 // Renderer.cpp — Implementation of the Renderer drawing helper.
 //
-// All methods are thin pass-throughs to the GC9A01A_t3n driver.  The
-// framebuffer is owned by OScope.ino; Renderer never calls updateScreen().
+// Text methods use anti-aliased t3 fonts; the framebuffer is owned by
+// OScope.ino and Renderer never calls updateScreen().
 
 #include "Renderer.h"
 #include "Theme.h"
@@ -12,10 +12,20 @@ void Renderer::clear() {
     tft.fillScreen(Theme::Background);
 }
 
-void Renderer::text(int16_t x, int16_t y, const char* s, uint16_t color, uint8_t size) {
-    tft.setTextSize(size);
+void Renderer::text(int16_t x, int16_t y, const char* s, uint16_t color,
+                    const ILI9341_t3_font_t& font) {
+    tft.setFont(font);
     tft.setTextColor(color);
     tft.setCursor(x, y);
+    tft.print(s);
+}
+
+void Renderer::textCenterX(int16_t y, const char* s, uint16_t color,
+                           const ILI9341_t3_font_t& font) {
+    tft.setFont(font);
+    const int16_t w = tft.strPixelLen(s);
+    tft.setTextColor(color);
+    tft.setCursor(Theme::CX - w / 2, y);
     tft.print(s);
 }
 

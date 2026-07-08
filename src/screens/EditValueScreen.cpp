@@ -2,6 +2,7 @@
 
 #include "EditValueScreen.h"
 #include "../Theme.h"
+#include "../Fonts.h"
 
 void EditValueScreen::onEnter(AppContext& ctx) {
     // Snapshot the whole Settings so B1 can restore on cancel.  Only one field
@@ -34,14 +35,14 @@ void EditValueScreen::draw(Renderer& r, AppContext& ctx) {
     r.clear();
     if (!_item) return;
 
-    // Setting name near the top.
-    r.text(Theme::SafeInset, 50, _item->name, Theme::Text, 2);
+    // Setting name near the top, centered.
+    r.textCenterX(48, _item->name, Theme::Text, Arial_16);
 
-    // Current value, large and highlighted, in the centre band.
+    // Current value, large and highlighted, centered in the middle band.
     char val[16];
     _item->format(ctx.settings, val, sizeof val);
-    r.text(Theme::SafeInset, 104, val, Theme::Highlight, 3);
+    r.textCenterX(104, val, Theme::Highlight, Arial_24);
 
     // Control hint.
-    r.text(42, 212, "ENC ok   B1 cancel", Theme::Dim, 1);
+    r.textCenterX(212, "ENC ok   B1 cancel", Theme::Dim, Arial_13);
 }

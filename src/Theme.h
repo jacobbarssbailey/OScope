@@ -25,31 +25,17 @@ namespace Theme {
   constexpr int16_t CY        = 120;  // Centre Y
   constexpr int16_t SafeInset = 30;   // Min margin from edge for readable content
 
-  // ---- HUD text sizes (Adafruit GFX multiplier: 1 = 6×8 px glyphs) ----
-  constexpr uint8_t HudTitleSize = 2;  // Mode label
-  constexpr uint8_t HudTextSize  = 2;  // Readout rows (enlarged for legibility)
+  // ---- RunScreen HUD positions (v2, anti-aliased Arial fonts) ----
+  // The waveform fills the whole canvas; the HUD is minimal and mostly hidden.
+  // All these readouts are horizontally centered (textCenterX); the Y here is the
+  // top of the text.  Tuned for the round face — kept clear of the edges.
+  constexpr int16_t StopY   = 20;   // "STOP"/"ARM" top indicator (Arial 16)
+  constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (Arial 24)
+  constexpr int16_t ParamY  = 196;  // selected-param readout, near bottom (Arial 16)
 
-  // ---- RunScreen text-row positions (tuned for HudTextSize = 2) ----
-  // Rows use a 32 px pitch: 16 px-tall size-2 glyphs + 16 px gap.  X origins are
-  // pulled in slightly so the wider size-2 strings stay within the round face.
-  constexpr int16_t RunModeX      = 90;   // Mode label X
-  constexpr int16_t RunModeY      = SafeInset; // Mode label Y (top, y=30)
-  constexpr int16_t RunSelLabelX  = 30;   // "Sel:" label X
-  constexpr int16_t RunSelY       = 62;   // Selected-parameter row Y
-  constexpr int16_t RunSelValueX  = 90;   // Selected-parameter value X (clears "Sel:" at size 2)
-  constexpr int16_t RunChanX      = 30;   // Channel row X
-  constexpr int16_t RunChanY      = 94;   // Channel row Y
-  constexpr int16_t RunStopX      = 30;   // Run/stop indicator X
-  constexpr int16_t RunStopY      = 126;  // Run/stop indicator Y
-
-  // Row for the live formatted value of the selected parameter.
-  // The parameter name is shown in the "Sel:" row (RunSelY); no separate name row needed.
-  constexpr int16_t RunParamValX  = 30;   // Formatted value X
-  constexpr int16_t RunParamValY  = 162;  // Formatted value Y
-
-  // FPS readout (size-1 debug overlay), low in the central safe band.
-  constexpr int16_t RunFpsX       = 96;   // FPS readout X
-  constexpr int16_t RunFpsY       = 205;  // FPS readout Y
+  // FPS readout (Arial 13), top-left of the safe band — clear of the centered HUD.
+  constexpr int16_t FpsX    = 40;
+  constexpr int16_t FpsY    = 30;
 
   // ---- Oscilloscope plot area ----
   // The round display is 240×240.  The waveform occupies the full 240×240 canvas;

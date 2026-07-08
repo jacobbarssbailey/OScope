@@ -23,6 +23,7 @@
 #include "ScopeState.h"
 #include "Settings.h"
 #include "Theme.h"
+#include "Fonts.h"
 #include "screens/Screen.h"
 #include "screens/RunScreen.h"
 #include "screens/MenuScreen.h"
@@ -121,7 +122,7 @@ void loop() {
         if (screens.top() == &runScreen) {
             char fbuf[12];
             snprintf(fbuf, sizeof fbuf, "%d fps", (int)(fps + 0.5f));
-            renderer.text(Theme::RunFpsX, Theme::RunFpsY, fbuf, Theme::Dim, 1);
+            renderer.text(Theme::FpsX, Theme::FpsY, fbuf, Theme::Dim, Arial_13);
         }
 
         tft.updateScreen();

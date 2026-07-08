@@ -32,8 +32,12 @@
 #include "../Parameter.h"
 #include "../Settings.h"
 #include "../Mapping.h"
+#include "../Fonts.h"
 
 #include <Arduino.h>   // snprintf on Teensy
+
+// How long the large mode label stays up after a mode change.
+static constexpr uint32_t kModeFlashMs = 1500;
 
 // Channel index (0 or 1) that single-channel operations act on.  For Both,
 // the conventional lead channel (A = 0) is used, matching fmtVScale's display.
@@ -78,7 +82,11 @@ bool RunScreen::tick(AppContext& ctx) {
         _stateDirty = false;
     }
 
-    if (!s.running) return false;   // frozen: hold the last frame, no sampling
+    // Keep requesting redraws while the mode flash is up so it can time out on
+    // its own even when stopped/idle (draw() clears _modeFlash when it expires).
+    const bool flashActive = _modeFlash && (millis() - _modeFlashMs) < kModeFlashMs;
+
+    if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
     const bool newFrame = _acq.update(s, ctx.settings);
     if (newFrame) {
@@ -93,7 +101,7 @@ bool RunScreen::tick(AppContext& ctx) {
             s.singleArmed = false;
         }
     }
-    return newFrame;
+    return newFrame || flashActive;
 }
 
 // --------------------------------------------------------------------------
@@ -105,14 +113,19 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
     if (e.type == EventType::ShortPress) {
         switch (e.button) {
             // B1: advance acquisition mode, then fix selection if invalidated.
+            // Flash the large mode label briefly to confirm the change.
             case Btn::Mode:
                 s.mode = (Mode)(((int)s.mode + 1) % (int)Mode::COUNT);
                 clampSelectable(s);
+                _modeFlash   = true;
+                _modeFlashMs = millis();
                 break;
 
-            // B2: advance channel selection (three values: A, B, Both).
+            // B2: channel selection is fixed to A+B in the v2 UI, so short-press
+            // channel cycling is disabled (the ChannelSel logic is kept for a
+            // possible future per-channel view).  B2 long-press (enable toggle)
+            // still works.
             case Btn::Channel:
-                s.channel = (ChannelSel)(((int)s.channel + 1) % 3);
                 break;
 
             // B3: toggle run/stop.  A manual run/stop overrides any pending
@@ -199,29 +212,28 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     }
     // activeMode is never null (all modes registered); the guard is defensive.
 
-    // 4. HUD overlay — drawn last so it appears on top of the waveform.
+    // 4. Minimal HUD, drawn last (on top of the waveform).
 
-    // Mode label centred near the top (within the safe inset band).
-    r.text(Theme::RunModeX, Theme::RunModeY, modeName(s.mode), Theme::Text, Theme::HudTitleSize);
+    // Top indicator: "ARM" while a single-shot is pending, "STOP" when frozen.
+    // Nothing is shown while running normally.
+    if (s.singleArmed) {
+        r.textCenterX(Theme::StopY, "ARM", Theme::Highlight, Arial_16);
+    } else if (!s.running) {
+        r.textCenterX(Theme::StopY, "STOP", Theme::Highlight, Arial_16);
+    }
 
-    // Selected encoder parameter: name on the existing row.
-    r.text(Theme::RunSelLabelX, Theme::RunSelY, "Sel:", Theme::Dim, Theme::HudTextSize);
-    r.text(Theme::RunSelValueX, Theme::RunSelY, parameterFor(s.selected).name, Theme::Highlight, Theme::HudTextSize);
-
-    // Active channel.
-    char b[24];
-    snprintf(b, sizeof b, "Chan: %s", channelName(s.channel));
-    r.text(Theme::RunChanX, Theme::RunChanY, b, Theme::Text, Theme::HudTextSize);
-
-    // Run / stop indicator: "ARM" (yellow) while a single-shot is pending,
-    // else green "RUN" when running or yellow "STOP" when frozen.
-    const char* runLabel = s.singleArmed ? "ARM" : (s.running ? "RUN" : "STOP");
-    const uint16_t runColor = (s.running && !s.singleArmed) ? Theme::TraceA
-                                                            : Theme::Highlight;
-    r.text(Theme::RunStopX, Theme::RunStopY, runLabel, runColor, Theme::HudTextSize);
-
-    // Live formatted value for the selected parameter.
+    // Selected parameter readout (timebase / V/div / trigger), centered near the
+    // bottom.  No label — the units make it clear what is being adjusted.
     char val[24];
     parameterFor(s.selected).format(s, val, sizeof val);
-    r.text(Theme::RunParamValX, Theme::RunParamValY, val, Theme::Highlight, Theme::HudTextSize);
+    r.textCenterX(Theme::ParamY, val, Theme::Highlight, Arial_16);
+
+    // Large mode label, centered, for a moment after a mode change.
+    if (_modeFlash) {
+        if (millis() - _modeFlashMs < kModeFlashMs) {
+            r.textCenterX(Theme::ModeY, modeName(s.mode), Theme::Text, Arial_24);
+        } else {
+            _modeFlash = false;
+        }
+    }
 }
