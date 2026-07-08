@@ -61,5 +61,5 @@ void MenuScreen::draw(Renderer& r, AppContext& ctx) {
         y += kRowDy;
     }
 
-    r.textCenterX(212, "ENC edit   B1 back", Theme::Dim, Arial_13);
+    r.textCenterX(200, "ENC edit   B1 back", Theme::Dim, Arial_13);
 }

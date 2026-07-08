@@ -34,8 +34,8 @@ namespace Theme {
   constexpr int16_t ParamY  = 196;  // selected-param readout, near bottom (Arial 16)
 
   // FPS readout (Arial 13), top-left of the safe band — clear of the centered HUD.
-  constexpr int16_t FpsX    = 40;
-  constexpr int16_t FpsY    = 30;
+  constexpr int16_t FpsX    = 105;
+  constexpr int16_t FpsY    = 170;
 
   // ---- Oscilloscope plot area ----
   // The round display is 240×240.  The waveform occupies the full 240×240 canvas;

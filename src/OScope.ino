@@ -121,7 +121,7 @@ void loop() {
         // with the menu/edit bottom hints.  Reflects the redraw rate.
         if (screens.top() == &runScreen) {
             char fbuf[12];
-            snprintf(fbuf, sizeof fbuf, "%d fps", (int)(fps + 0.5f));
+            snprintf(fbuf, sizeof fbuf, "%d", (int)(fps + 0.5f));
             renderer.text(Theme::FpsX, Theme::FpsY, fbuf, Theme::Dim, Arial_13);
         }
 

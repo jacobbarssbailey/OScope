@@ -44,5 +44,5 @@ void EditValueScreen::draw(Renderer& r, AppContext& ctx) {
     r.textCenterX(104, val, Theme::Highlight, Arial_24);
 
     // Control hint.
-    r.textCenterX(212, "ENC ok   B1 cancel", Theme::Dim, Arial_13);
+    r.textCenterX(180, "ENC ok   B1 cancel", Theme::Dim, Arial_13);
 }
