@@ -23,6 +23,11 @@ void EditValueScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 break;
             case Btn::Mode:                          // cancel: restore, pop
                 ctx.settings = _backup;
+                // The Color setting previews live by mutating the active palette;
+                // restoring the backup value alone won't undo that, so re-apply
+                // the restored scheme.  Harmless (a no-op recolor) for other
+                // settings, which never touch the palette.
+                Theme::applyPalette(ctx.settings.colorScheme);
                 ctx.screens.pop(ctx);
                 break;
             default:

@@ -30,20 +30,23 @@ static const Palette kPalettes[] = {
   { "Phosphor",   0x0000, 0x09C1, 0x1AC3, 0x37E6, 0xB7EF, 0x37E6, 0x1BC3, 0xCFEC },
   // 2 — Aqua CRT: the phosphor look shifted toward blue/teal.
   { "Aqua CRT",   0x0042, 0x0988, 0x1ACD, 0x37FA, 0x5E5F, 0x4FFC, 0x1B90, 0xA7FE },
-  // 3 — WitchHazel: the witchhazel.thea.codes palette (purple/mint/pink).
-  { "WitchHazel", 0x41EA, 0x528E, 0xC51F, 0xC7FB, 0xFDDA, 0xFFDE, 0xAD39, 0xFFD7 },
+  // 3 — Hazel: the witchhazel.thea.codes palette (purple/mint/pink), with the
+  //     background deepened from the original #433E56 for stronger contrast.
+  { "Hazel",      0x20E6, 0x398A, 0xC51F, 0xC7FB, 0xFDDA, 0xFFDE, 0xAD39, 0xFFD7 },
   // 4 — Amber: classic amber monochrome terminal.
   { "Amber",      0x0820, 0x3920, 0x7A82, 0xFD80, 0xFECE, 0xFD80, 0x8AE2, 0xFF56 },
-  // 5 — Nord: cool arctic blues and muted aurora accents.
-  { "Nord",       0x29A8, 0x3A0A, 0x4AAD, 0x8E1A, 0xA5F1, 0xEF7E, 0x7C54, 0xEE51 },
+  // 5 — Nord: cool arctic blues and muted aurora accents (background darkened
+  //     below the standard #2E3440 polar night for stronger contrast).
+  { "Nord",       0x2125, 0x29A8, 0x4AAD, 0x8E1A, 0xA5F1, 0xEF7E, 0x7C54, 0xEE51 },
   // 6 — Synthwave: neon cyan/magenta on deep indigo.
   { "Synthwave",  0x1887, 0x28CB, 0xF814, 0x079F, 0xF972, 0xF73F, 0x8B57, 0xFF0C },
   // 7 — Solarized: Ethan Schoonover's Solarized Dark.
   { "Solarized",  0x0146, 0x01A8, 0x5B6E, 0x2D13, 0x84C0, 0x9514, 0x5B6E, 0xB440 },
   // 8 — Rose Pine: soft rose/foam/gold on a warm dark base.
   { "Rose Pine",  0x18A4, 0x2107, 0x6B50, 0x9E7B, 0xEDF7, 0xE6FE, 0x6B50, 0xF60E },
-  // 9 — Paper: an inverted light "plotter paper" look (dark traces on cream).
-  { "Paper",      0xF79D, 0xDE98, 0xB552, 0x1BE9, 0xB1C5, 0x2924, 0x8C2E, 0xCBA3 },
+  // 9 — Sepia: the warm "plotter paper" palette inverted to light-on-dark —
+  //     cream text and earthy green/terracotta traces on a warm near-black.
+  { "Sepia",      0x1081, 0x2923, 0x6AC8, 0x5DEF, 0xE38A, 0xEF3A, 0x8C0D, 0xE508 },
 };
 
 static constexpr uint8_t kCount = sizeof(kPalettes) / sizeof(kPalettes[0]);

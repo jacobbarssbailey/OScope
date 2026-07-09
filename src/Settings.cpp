@@ -1,14 +1,16 @@
 // Settings.cpp — Settings defaults, persistence, and the descriptor table.
 
 #include "Settings.h"
+#include "Theme.h"      // palette table + applyPalette for the color-scheme setting
 #include <Arduino.h>   // snprintf on Teensy
 #include <EEPROM.h>
 
 void Settings::defaults() {
-    trigSource = TrigSource::A;
-    trigEdge   = TrigEdge::Rising;
-    trigMode   = TrigMode::Auto;
-    grid       = true;
+    trigSource  = TrigSource::A;
+    trigEdge    = TrigEdge::Rising;
+    trigMode    = TrigMode::Auto;
+    grid        = true;
+    colorScheme = 0;
 }
 
 // ---- Persistence ----------------------------------------------------------
@@ -18,7 +20,7 @@ void Settings::defaults() {
 
 static constexpr int      kEEAddr  = 0;
 static constexpr uint16_t kMagic   = 0x05C0;   // "OScope settings"
-static constexpr uint8_t  kVersion = 1;
+static constexpr uint8_t  kVersion = 2;   // bumped: added colorScheme field
 
 struct StoredSettings {
     uint16_t   magic;
@@ -27,16 +29,18 @@ struct StoredSettings {
     TrigEdge   trigEdge;
     TrigMode   trigMode;
     bool       grid;
+    uint8_t    colorScheme;
 };
 
 void Settings::load() {
     StoredSettings s;
     EEPROM.get(kEEAddr, s);
     if (s.magic == kMagic && s.version == kVersion) {
-        trigSource = s.trigSource;
-        trigEdge   = s.trigEdge;
-        trigMode   = s.trigMode;
-        grid       = s.grid;
+        trigSource  = s.trigSource;
+        trigEdge    = s.trigEdge;
+        trigMode    = s.trigMode;
+        grid        = s.grid;
+        colorScheme = s.colorScheme;
     } else {
         defaults();
         save();   // initialise EEPROM so subsequent boots read a valid record
@@ -44,7 +48,7 @@ void Settings::load() {
 }
 
 void Settings::save() const {
-    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid};
+    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid, colorScheme};
     EEPROM.put(kEEAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
@@ -79,11 +83,27 @@ static void fmtGrid(const Settings& s, char* b, uint8_t n) {
     snprintf(b, n, "%s", s.grid ? "On" : "Off");
 }
 
+// Color scheme cycles through the palette table (wrapping at both ends) and
+// applies the new palette immediately, so the whole UI recolors live while the
+// value is being edited.  EditValueScreen re-applies the stored scheme if the
+// edit is cancelled.
+static void adjColor(Settings& s, int8_t d) {
+    const int count = Theme::paletteCount();
+    int i = ((int)s.colorScheme + (d > 0 ? 1 : (d < 0 ? -1 : 0))) % count;
+    if (i < 0) i += count;
+    s.colorScheme = (uint8_t)i;
+    Theme::applyPalette(s.colorScheme);
+}
+static void fmtColor(const Settings& s, char* b, uint8_t n) {
+    snprintf(b, n, "%s", Theme::paletteName(s.colorScheme));
+}
+
 // ---- Descriptor table -----------------------------------------------------
 static const SettingItem kItems[] = {
     { "Trig Src",  adjSource, fmtSource },
     { "Trig Edge", adjEdge,   fmtEdge   },
     { "Trig Mode", adjMode,   fmtMode   },
+    { "Color",     adjColor,  fmtColor  },
     { "Grid",      adjGrid,   fmtGrid   },
 };
 

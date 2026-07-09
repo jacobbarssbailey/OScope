@@ -8,7 +8,7 @@
 // uninitialised EEPROM or a stale layout (bump kStateVersion on field changes).
 static constexpr int      kEEStateAddr = 32;
 static constexpr uint16_t kStateMagic   = 0x05C1;
-static constexpr uint8_t  kStateVersion = 3;   // bumped: added colorScheme field
+static constexpr uint8_t  kStateVersion = 2;   // bumped: new defaults (3 V/div, A+B)
 
 // Only the acquisition setup is persisted — not running / singleArmed.
 struct StoredState {
@@ -21,7 +21,6 @@ struct StoredState {
     uint16_t     vscale_mv_per_div[2];
     int16_t      trigger_level_mv;
     bool         channelEnabled[2];
-    uint8_t      colorScheme;
 };
 
 void ScopeState::resetToDefaults() {
@@ -35,7 +34,6 @@ void ScopeState::resetToDefaults() {
     trigger_level_mv      = 0;
     channelEnabled[0]     = true;
     channelEnabled[1]     = true;
-    colorScheme           = 0;
     singleArmed           = false;
 }
 
@@ -52,7 +50,6 @@ void ScopeState::load() {
         trigger_level_mv     = s.trigger_level_mv;
         channelEnabled[0]    = s.channelEnabled[0];
         channelEnabled[1]    = s.channelEnabled[1];
-        colorScheme          = s.colorScheme;
     } else {
         resetToDefaults();
         save();   // initialise EEPROM so subsequent boots read a valid record
@@ -65,7 +62,7 @@ void ScopeState::load() {
 void ScopeState::save() const {
     StoredState s{kStateMagic, kStateVersion, mode, channel, selected,
                   timebase_us_per_div, {vscale_mv_per_div[0], vscale_mv_per_div[1]},
-                  trigger_level_mv, {channelEnabled[0], channelEnabled[1]}, colorScheme};
+                  trigger_level_mv, {channelEnabled[0], channelEnabled[1]}};
     EEPROM.put(kEEStateAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 

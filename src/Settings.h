@@ -21,6 +21,7 @@ struct Settings {
     TrigEdge   trigEdge   = TrigEdge::Rising;
     TrigMode   trigMode   = TrigMode::Auto;
     bool       grid       = true;
+    uint8_t    colorScheme = 0;   // index into Theme's palette table (0 = Classic)
 
     // Restore all fields to the compile-time defaults above.
     void defaults();

@@ -15,7 +15,7 @@ enum class Mode : uint8_t { Triggered, Rolling, XY, COUNT };
 enum class ChannelSel : uint8_t { A, B, Both };
 
 // Which parameter the encoder currently controls.
-enum class EncoderParam : uint8_t { Timebase, VScale, TriggerLevel, ColorScheme };
+enum class EncoderParam : uint8_t { Timebase, VScale, TriggerLevel };
 
 struct ScopeState {
     Mode         mode     = Mode::Triggered;
@@ -27,7 +27,6 @@ struct ScopeState {
     uint16_t vscale_mv_per_div[2]   = {3000, 3000};  // mV/div per channel (3 V/div default)
     int16_t  trigger_level_mv       = 0;           // mV
     bool     channelEnabled[2]      = {true, true};
-    uint8_t  colorScheme            = 0;           // index into Theme's palette table (0 = Classic)
 
     // Single-shot: when true, the next successful triggered capture freezes the
     // display (running → false) and disarms.  Set by B3 long-press.

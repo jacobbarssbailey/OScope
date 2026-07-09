@@ -5,7 +5,6 @@
 // access or wrap-around occurs.
 
 #include "Parameter.h"
-#include "Theme.h"      // palette table + applyPalette for the ColorScheme param
 #include <Arduino.h>   // snprintf on Teensy
 
 // ---- Local helpers --------------------------------------------------------
@@ -126,24 +125,6 @@ static void fmtTrig(const ScopeState& s, char* b, uint8_t n) {
     snprintf(b, n, "%d mV", s.trigger_level_mv);
 }
 
-// ---- Color scheme (cyclic) -----------------------------------------------
-// Unlike the acquisition params (clamped step tables), the palette wraps: it is
-// a small ring of equivalent choices, so turning past either end continues into
-// the other schemes.  Applied immediately so the display updates on the detent.
-
-static void adjColor(ScopeState& s, int8_t d) {
-    const int count = Theme::paletteCount();
-    // Positive modulo so a negative delta wraps cleanly to the top of the ring.
-    int i = ((int)s.colorScheme + d) % count;
-    if (i < 0) i += count;
-    s.colorScheme = (uint8_t)i;
-    Theme::applyPalette(s.colorScheme);
-}
-
-static void fmtColor(const ScopeState& s, char* b, uint8_t n) {
-    snprintf(b, n, "%s", Theme::paletteName(s.colorScheme));
-}
-
 // ---- Static descriptor table (order matches EncoderParam enum) ------------
 // The table is indexed directly by (uint8_t)EncoderParam, so the order MUST
 // match the enum declaration in ScopeState.h:
@@ -152,13 +133,11 @@ static void fmtColor(const ScopeState& s, char* b, uint8_t n) {
 static_assert((uint8_t)EncoderParam::Timebase == 0, "kParams order must match EncoderParam");
 static_assert((uint8_t)EncoderParam::VScale == 1, "kParams order must match EncoderParam");
 static_assert((uint8_t)EncoderParam::TriggerLevel == 2, "kParams order must match EncoderParam");
-static_assert((uint8_t)EncoderParam::ColorScheme == 3, "kParams order must match EncoderParam");
 
 static const Parameter kParams[] = {
     { EncoderParam::Timebase,     "Time",   adjTime,   fmtTime   },
     { EncoderParam::VScale,       "V/div",  adjVScale, fmtVScale },
     { EncoderParam::TriggerLevel, "Trig",   adjTrig,   fmtTrig   },
-    { EncoderParam::ColorScheme,  "Color",  adjColor,  fmtColor  },
 };
 
 // ---- Public API -----------------------------------------------------------
@@ -168,11 +147,9 @@ const Parameter& parameterFor(EncoderParam id) {
 }
 
 bool paramAppliesInMode(EncoderParam id, Mode m) {
-    // ColorScheme is a display setting, meaningful in every mode.
-    if (id == EncoderParam::ColorScheme) return true;
     switch (m) {
         case Mode::Triggered:
-            // Timebase, VScale and TriggerLevel all apply in Triggered mode.
+            // All three parameters apply in Triggered mode.
             return true;
         case Mode::Rolling:
             // TriggerLevel has no meaning when free-running.
@@ -189,9 +166,9 @@ bool paramAppliesInMode(EncoderParam id, Mode m) {
 }
 
 EncoderParam nextSelectable(const ScopeState& s) {
-    // VScale and ColorScheme always apply in every mode, so this loop is
-    // guaranteed to terminate within at most kCount iterations.
-    const int kCount = 4;
+    // There are exactly three parameters.  VScale always applies in every mode,
+    // so this loop is guaranteed to terminate within at most 3 iterations.
+    const int kCount = 3;
     int i = ((int)s.selected + 1) % kCount;
     for (int guard = 0; guard < kCount; ++guard, i = (i + 1) % kCount) {
         if (paramAppliesInMode((EncoderParam)i, s.mode))
