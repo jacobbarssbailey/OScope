@@ -62,6 +62,10 @@ public:
     const AcqStats& stats() const { return _stats; }
     AcqStats&       statsMutable() { return _stats; }
 
+    // Print a 1 Hz stats line to Serial while diagnostics are enabled.
+    // Call once per loop; cheap no-op between reports.
+    void reportDiag(bool enabled);
+
 private:
     // Acquisition health stats (tear detection, trigger misses, etc).
     AcqStats _stats;
@@ -80,6 +84,14 @@ private:
     // the last triggered frame through brief misses and only free-runs once this
     // exceeds a threshold, so a single missed buffer doesn't flash unaligned.
     uint16_t _autoMissCount = 0;
+
+    // 1 Hz diagnostics reporter state (deltas since the previous report).
+    uint32_t _repLastMs      = 0;
+    uint32_t _repLastFrames  = 0;
+    uint32_t _repLastTears   = 0;
+    uint32_t _repLastMisses  = 0;
+    uint32_t _repLastWaits   = 0;
+    uint32_t _repLastOver    = 0;
 
     // (Re)start the sample timer at the rate derived from timebase.
     void configureTimer(uint16_t timebase_us_per_div);

@@ -89,6 +89,7 @@ bool RunScreen::tick(AppContext& ctx) {
     if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
     const bool newFrame = _acq.update(s, ctx.settings);
+    _acq.reportDiag(ctx.settings.diag);
     if (newFrame) {
         // Let the active mode fold the completed sweep into any history it keeps
         // (Rolling); others no-op.  Done here (once per frame), not in draw().
@@ -227,6 +228,18 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     char val[24];
     parameterFor(s.selected).format(s, val, sizeof val);
     r.textCenterX(Theme::ParamY, val, Theme::Highlight, Arial_16);
+
+    // Capture diagnostics overlay: cumulative tears, frames/s consumed, and
+    // the worst inter-frame gap in the last report window.
+    if (ctx.settings.diag) {
+        const AcqStats& st = _acq.stats();
+        char d[40];
+        snprintf(d, sizeof d, "T%lu F%lu G%lums",
+                 (unsigned long)st.tearEvents,
+                 (unsigned long)st.framesProduced,
+                 (unsigned long)(st.gapMaxUs / 1000));
+        r.textCenterX(Theme::DiagY, d, Theme::Dim, Arial_13);
+    }
 
     // Large mode label, centered, for a moment after a mode change.
     if (_modeFlash) {

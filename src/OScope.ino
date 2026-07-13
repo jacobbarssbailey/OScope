@@ -115,6 +115,7 @@ void loop() {
     //    blit (~10-15 ms) is the loop's one expensive step; gating it here is
     //    what keeps the UI responsive at long timebases.
     if (uiDirty || newFrame) {
+        const uint32_t drawStart = micros();
         screens.draw(renderer, ctx);
 
         // FPS overlay (debug) — only over the run screen, so it doesn't collide
@@ -126,6 +127,18 @@ void loop() {
         }
 
         tft.updateScreen();
+
+        // Diag: track the slowest draw+blit each second — this is the time
+        // the loop cannot consume DMA buffers.
+        static uint32_t drawMaxUs = 0, drawRepMs = 0;
+        const uint32_t drawUs = micros() - drawStart;
+        if (drawUs > drawMaxUs) drawMaxUs = drawUs;
+        if (settings.diag && millis() - drawRepMs >= 1000) {
+            Serial.printf("draw: max=%lums\n", (unsigned long)(drawMaxUs / 1000));
+            drawMaxUs = 0;
+            drawRepMs = millis();
+        }
+
         countFrame();
         uiDirty = false;
     }

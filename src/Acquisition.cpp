@@ -215,3 +215,35 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
 
     return produce;
 }
+
+void Acquisition::reportDiag(bool enabled) {
+    if (!enabled) return;
+    const uint32_t now = millis();
+    if (_repLastMs != 0 && now - _repLastMs < 1000) return;
+    if (_repLastMs == 0) { _repLastMs = now; return; }   // first call: arm only
+
+    // Expected buffer completion rate at the current timebase: one buffer per
+    // CAPTURE samples.  fps well below exp = the reader is missing buffers.
+    const uint32_t interval = ((uint32_t)_sTimebase * Theme::GridCols)
+                              / SampleBuffers::N;
+    const uint32_t exp = (1000000UL / (interval < 1 ? 1 : interval)) / CAPTURE;
+
+    Serial.printf("acq: fps=%lu exp=%lu frames=%lu tears=%lu(%lu) miss=%lu pairwait=%lu over=%lu gapmax=%lums\n",
+        (unsigned long)(_stats.framesProduced - _repLastFrames),
+        (unsigned long)exp,
+        (unsigned long)_stats.framesProduced,
+        (unsigned long)(_stats.tearEvents - _repLastTears),
+        (unsigned long)_stats.tearEvents,
+        (unsigned long)(_stats.trigMisses - _repLastMisses),
+        (unsigned long)(_stats.pairWaits - _repLastWaits),
+        (unsigned long)(_stats.overruns - _repLastOver),
+        (unsigned long)(_stats.gapMaxUs / 1000));
+
+    _repLastMs     = now;
+    _repLastFrames = _stats.framesProduced;
+    _repLastTears  = _stats.tearEvents;
+    _repLastMisses = _stats.trigMisses;
+    _repLastWaits  = _stats.pairWaits;
+    _repLastOver   = _stats.overruns;
+    _stats.resetWindow();
+}
