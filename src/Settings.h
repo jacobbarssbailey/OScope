@@ -21,6 +21,7 @@ struct Settings {
     TrigEdge   trigEdge   = TrigEdge::Rising;
     TrigMode   trigMode   = TrigMode::Auto;
     bool       grid       = true;
+    bool       diag       = false;   // capture diagnostics (serial + overlay)
 
     // Restore all fields to the compile-time defaults above.
     void defaults();
