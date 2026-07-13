@@ -18,6 +18,7 @@
 #include "Config.h"
 #include "Theme.h"
 
+#include <AcqCore.h>
 #include <Arduino.h>
 #include <ADC.h>
 #include <ADC_util.h>
@@ -64,18 +65,6 @@ static uint16_t triggerADC(int16_t trigger_level_mv) {
     if (adc < 0)    adc = 0;
     if (adc > 1023) adc = 1023;
     return (uint16_t)adc;
-}
-
-// Scan src[1..searchLen] for the first edge crossing of `thr` in the given
-// direction.  Returns the crossing index, or -1 if none.
-static int findTrigger(volatile uint16_t* src, uint16_t searchLen,
-                       uint16_t thr, bool rising) {
-    for (uint16_t t = 1; t <= searchLen; ++t) {
-        const bool cross = rising ? (src[t - 1] < thr && src[t] >= thr)
-                                  : (src[t - 1] > thr && src[t] <= thr);
-        if (cross) return (int)t;
-    }
-    return -1;
 }
 
 // --------------------------------------------------------------------------
@@ -162,7 +151,7 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
         const uint16_t rawThr    = (uint16_t)(kADCMax - triggerADC(state.trigger_level_mv));
         const bool     rawRising = (settings.trigEdge != TrigEdge::Rising);
 
-        const int t = findTrigger(trigSrc, searchLen, rawThr, rawRising);
+        const int t = AcqCore::findTrigger(trigSrc, searchLen, rawThr, rawRising);
         if (t >= 0) {
             start     = (uint16_t)t;     // trigger at the left edge
             triggered = true;
