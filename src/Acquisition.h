@@ -33,6 +33,7 @@
 // Changing the timebase reconfigures the timer on the next update().
 #pragma once
 
+#include "AcqStats.h"
 #include "modes/ScopeMode.h"
 #include "ScopeState.h"
 #include "Settings.h"
@@ -56,7 +57,15 @@ public:
     // fallback with no crossing → false).  Used by single-shot.
     bool lastTriggered() const { return _lastTriggered; }
 
+    // Capture-health counters (see AcqStats.h).  statsMutable() exists so the
+    // 1 Hz reporter can reset per-window maxima.
+    const AcqStats& stats() const { return _stats; }
+    AcqStats&       statsMutable() { return _stats; }
+
 private:
+    // Acquisition health stats (tear detection, trigger misses, etc).
+    AcqStats _stats;
+
     // Double buffer: one being shown, one being filled from the DMA buffer.
     SampleBuffers _buf[2];
     uint8_t _show = 0;

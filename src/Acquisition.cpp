@@ -117,7 +117,10 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     // Consume only when BOTH channels have a completed DMA buffer, so the two
     // traces stay paired.  At equal rates they complete within microseconds of
     // each other, so neither laps the other.
-    if (!s_abdmaA.interrupted() || !s_abdmaB.interrupted()) {
+    const bool readyA = s_abdmaA.interrupted();
+    const bool readyB = s_abdmaB.interrupted();
+    if (!readyA || !readyB) {
+        if (readyA != readyB) ++_stats.pairWaits;
         return false;
     }
 
@@ -152,6 +155,7 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
         const bool     rawRising = (settings.trigEdge != TrigEdge::Rising);
 
         const int t = AcqCore::findTrigger(trigSrc, searchLen, rawThr, rawRising);
+        if (t < 0) ++_stats.trigMisses;
         if (t >= 0) {
             start     = (uint16_t)t;     // trigger at the left edge
             triggered = true;
@@ -173,11 +177,14 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     }
 
     if (produce) {
-        // Copy the N-sample window (clamped to what the buffer holds), inverting
-        // each sample into normalized (higher = higher voltage) space here — a
-        // read of the DMA buffer plus a write to the frame, never a buffer write.
         uint16_t n = N;
         if (start + n > cap) n = (start < cap) ? (uint16_t)(cap - start) : 0;
+
+        // Tear detector: checksum the source region, copy, invalidate the
+        // cache over the region, checksum again.  A mismatch means the DMA
+        // engine lapped us and rewrote the region mid-copy.
+        const uint16_t sumA = AcqCore::checksum(srcA + start, n);
+        const uint16_t sumB = AcqCore::checksum(srcB + start, n);
 
         SampleBuffers& fb = _buf[_fill];
         for (uint16_t i = 0; i < n; ++i) {
@@ -185,9 +192,17 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
             fb.ch[1][i] = (uint16_t)(kADCMax - srcB[start + i]);
         }
         fb.count = n;
+
+        arm_dcache_delete((void*)(srcA + start), n * sizeof(uint16_t));
+        arm_dcache_delete((void*)(srcB + start), n * sizeof(uint16_t));
+        if (AcqCore::checksum(srcA + start, n) != sumA ||
+            AcqCore::checksum(srcB + start, n) != sumB) {
+            ++_stats.tearEvents;
+        }
+
+        _stats.noteConsume(micros());
         _lastTriggered = triggered;
 
-        // Publish: swap fill/show.
         const uint8_t tmp = _show;
         _show = _fill;
         _fill = tmp;

@@ -19,4 +19,15 @@ inline int findTrigger(const volatile uint16_t* src, uint16_t searchLen,
     return -1;
 }
 
+// 16-bit additive checksum over n samples.  Used as a tear detector: sum a
+// DMA region before and after copying it out; a mismatch means the DMA engine
+// overwrote the region mid-read.  Not cryptographic — collisions are
+// possible but vanishingly unlikely to hide a real tear (which changes many
+// samples).
+inline uint16_t checksum(const volatile uint16_t* src, uint16_t n) {
+    uint16_t s = 0;
+    for (uint16_t i = 0; i < n; ++i) s = (uint16_t)(s + src[i]);
+    return s;
+}
+
 }  // namespace AcqCore
