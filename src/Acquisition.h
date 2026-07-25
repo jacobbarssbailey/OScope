@@ -37,6 +37,7 @@
 
 #include "AcqStats.h"
 #include "modes/ScopeMode.h"
+#include "RingCapture.h"
 #include "ScopeState.h"
 #include "Settings.h"
 
@@ -78,6 +79,12 @@ public:
     // Current cell's running totals, for the on-screen diagnostics overlay.
     const AcqCore::CellStats& cell() const { return _cell; }
 
+    // The underlying capture rings.  Rolling and X-Y follow-ups consume these
+    // directly (contiguously, with their own cursor) rather than going through
+    // update()'s newest-window read; unused on this branch.
+    RingCapture& capA();
+    RingCapture& capB();
+
 private:
     // Acquisition health stats (tear detection, trigger misses, etc).
     AcqStats _stats;
@@ -96,6 +103,17 @@ private:
     // the last triggered frame through brief misses and only free-runs once this
     // exceeds a threshold, so a single missed buffer doesn't flash unaligned.
     uint16_t _autoMissCount = 0;
+
+    // Cumulative sample count at which the next frame may be produced.  The
+    // rings run continuously, so without this the display would re-read the same
+    // newest window every loop; pacing at one frame per CAPTURE new samples
+    // keeps the frame cadence comparable to the Phase 1 baseline.
+    uint64_t _nextProduceAt = 0;
+
+    // Re-read and compare the published region to prove no tear occurred.  The
+    // safe-region protocol makes tears structurally impossible, so this is
+    // verification, not detection; diag-only because it doubles the read cost.
+    bool _diagVerify = false;
 
     // 1 Hz diagnostics reporter state (deltas since the previous report).
     uint32_t _repLastMs      = 0;

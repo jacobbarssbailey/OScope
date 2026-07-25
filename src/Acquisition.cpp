@@ -20,11 +20,12 @@
 
 #include "Parameter.h"
 
+#include "RingCapture.h"
+
 #include <AcqCore.h>
 #include <Arduino.h>
 #include <ADC.h>
 #include <ADC_util.h>
-#include <AnalogBufferDMA.h>
 
 static constexpr uint16_t N       = SampleBuffers::N;   // 240 (display window)
 static constexpr uint16_t CAPTURE = 2 * N;             // 480 samples per DMA buffer
@@ -40,18 +41,20 @@ static constexpr uint16_t kADCMax = 1023;
 // unaligned frame.  At typical frame rates this is a fraction of a second.
 static constexpr uint16_t kAutoFreerunMisses = 20;
 
-// DMA target buffers, double-buffered by AnalogBufferDMA — one pair per channel
-// (A on ADC0, B on ADC1).  Each buffer holds CAPTURE samples so a full N-sample
-// window can be extracted around a found trigger.  Must be in DMAMEM and 32-byte
-// aligned so eDMA and the M7 data cache stay coherent.
-DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufA1[CAPTURE];
-DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufA2[CAPTURE];
-DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufB1[CAPTURE];
-DMAMEM static volatile uint16_t __attribute__((aligned(32))) s_dmaBufB2[CAPTURE];
+// Continuous capture rings, one per channel (A on ADC0/SIGNAL_A, B on
+// ADC1/SIGNAL_B).  DMAMEM keeps them out of the cached region the CPU writes;
+// aligned(8192) is required by the eDMA destination-modulo field, which works
+// in bytes (Size * sizeof(uint16_t)).
+DMAMEM static volatile uint16_t __attribute__((aligned(8192))) s_ringA[RingCapture::Size];
+DMAMEM static volatile uint16_t __attribute__((aligned(8192))) s_ringB[RingCapture::Size];
 
 static ADC s_adc;
-static AnalogBufferDMA s_abdmaA(s_dmaBufA1, CAPTURE, s_dmaBufA2, CAPTURE);  // ch A, ADC0
-static AnalogBufferDMA s_abdmaB(s_dmaBufB1, CAPTURE, s_dmaBufB2, CAPTURE);  // ch B, ADC1
+static RingCapture s_capA;
+static RingCapture s_capB;
+
+// How far the reader trails the DMA write head, in samples.  Two 32-byte cache
+// lines' worth: enough that any line still being filled is behind us.
+static constexpr uint32_t kGuard = 32;
 
 // Inter-sample interval in µs from the current timebase (min 1 µs).
 static uint32_t sampleIntervalUs(uint16_t timebase_us_per_div) {
@@ -85,11 +88,14 @@ void Acquisition::begin() {
     s_adc.adc1->setConversionSpeed(ADC_CONVERSION_SPEED::HIGH_SPEED);
     s_adc.adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::HIGH_SPEED);
 
-    s_abdmaA.init(&s_adc, ADC_0);
-    s_abdmaB.init(&s_adc, ADC_1);
+    s_capA.begin(&s_adc, 0, SIGNAL_A, s_ringA);
+    s_capB.begin(&s_adc, 1, SIGNAL_B, s_ringB);
 
     _started = false;   // configureTimer() runs on the first update()
 }
+
+RingCapture& Acquisition::capA() { return s_capA; }
+RingCapture& Acquisition::capB() { return s_capB; }
 
 void Acquisition::configureTimer(uint16_t timebase_us_per_div) {
     const uint32_t interval = sampleIntervalUs(timebase_us_per_div);
@@ -97,13 +103,13 @@ void Acquisition::configureTimer(uint16_t timebase_us_per_div) {
     if (freq == 0) freq = 1;
 
     // Point each ADC at its channel pin and (re)start its timer at the same
-    // rate.  Timer-triggered conversions stream into each channel's DMA buffer.
-    s_adc.adc0->stopTimer();
-    s_adc.adc1->stopTimer();
-    s_adc.adc0->startSingleRead(SIGNAL_A);
-    s_adc.adc1->startSingleRead(SIGNAL_B);
-    s_adc.adc0->startTimer(freq);
-    s_adc.adc1->startTimer(freq);
+    // rate.  Timer-triggered conversions stream continuously into each ring.
+    s_capA.start(freq);
+    s_capB.start(freq);
+
+    // The rings hold samples taken at the previous rate; produce again as soon
+    // as enough new ones exist rather than mixing two timebases into a frame.
+    _nextProduceAt = 0;
 }
 
 bool Acquisition::update(const ScopeState& state, const Settings& settings) {
@@ -116,29 +122,39 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
         _started   = true;
     }
 
-    // Consume only when BOTH channels have a completed DMA buffer, so the two
-    // traces stay paired.  At equal rates they complete within microseconds of
-    // each other, so neither laps the other.
-    const bool readyA = s_abdmaA.interrupted();
-    const bool readyB = s_abdmaB.interrupted();
-    if (!readyA || !readyB) {
-        if (readyA != readyB) ++_stats.pairWaits;
-        return false;
-    }
+    _diagVerify = settings.diag;
 
-    volatile uint16_t* srcA = s_abdmaA.bufferLastISRFilled();
-    volatile uint16_t* srcB = s_abdmaB.bufferLastISRFilled();
-    const uint16_t nA = s_abdmaA.bufferCountLastISRFilled();
-    const uint16_t nB = s_abdmaB.bufferCountLastISRFilled();
-    const uint16_t cap = nA < nB ? nA : nB;   // usable samples in this buffer pair
+    // Both rings are paced by independent timers at the same rate, so pair them
+    // by index at the lower of the two write heads.  The skew between them is
+    // the design spec's A/B criterion, so record it rather than waiting on it.
+    const uint64_t wA = s_capA.totalWritten();
+    const uint64_t wB = s_capB.totalWritten();
+    _stats.pairSkew = (uint32_t)((wA > wB) ? (wA - wB) : (wB - wA));
+    _cell.noteSkew(_stats.pairSkew);
+
+    const uint64_t safe = AcqCore::safeWatermark((wA < wB) ? wA : wB, kGuard);
+
+    // The rings never stop, so pace production: one frame per CAPTURE new
+    // samples, matching the old double-buffer cadence so frame rates stay
+    // comparable to the Phase 1 baseline.
+    if (safe < CAPTURE || safe < _nextProduceAt) return false;
+
+    // Copy the newest CAPTURE-sample window out of the rings into linear
+    // scratch, still raw (hardware-inverted).  Everything below is then plain
+    // linear indexing with no wrap cases, exactly as the old buffer path was.
+    uint64_t base = 0;
+    AcqCore::newestWindow(safe, CAPTURE, &base);
+    static uint16_t scratchA[CAPTURE];
+    static uint16_t scratchB[CAPTURE];
+    s_capA.read(base, scratchA, CAPTURE);
+    s_capB.read(base, scratchB, CAPTURE);
+    _nextProduceAt = safe + CAPTURE;
 
     // The input hardware inverts the signal: a HIGHER ADC count is a LOWER input
-    // voltage.  We must NOT normalize the buffer in place — it lives in cached
-    // RAM2, and the ADC library treats it as read-only (its completion ISR does
-    // no cache maintenance on Teensy 4).  A CPU write dirties cache lines that
-    // later write back over freshly DMA'd samples → intermittent stale values.
-    // Instead we invert only on the copy into the (non-DMA) frame, and search
-    // the still-raw buffer for the equivalent raw-space edge.
+    // voltage.  Invert only on the copy into the (non-DMA) frame, and search the
+    // still-raw scratch for the equivalent raw-space edge.  The scratch buffers
+    // are ordinary cached RAM the CPU owns, so unlike the old DMA buffers they
+    // could be normalized in place — kept raw so the search and the copy agree.
 
     // Decide the window start into the capture buffer.
     // Default (free-run / non-triggered): the first N samples.
@@ -147,12 +163,13 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     bool     produce   = true;
 
     if (state.mode == Mode::Triggered) {
-        // Search the trigger-source channel over the first N samples, leaving a
-        // full N-sample window after any crossing.  The buffer is still raw
-        // (inverted), so a rising input edge is a FALLING raw edge through the
-        // inverted threshold (kADCMax − thr).
-        const uint16_t searchLen = (cap > N) ? N : (cap ? (uint16_t)(cap - 1) : 0);
-        volatile uint16_t* trigSrc = (settings.trigSource == TrigSource::B) ? srcB : srcA;
+        // Search the trigger-source channel over the first N samples, which
+        // leaves a full N-sample window after any crossing.  The scratch is
+        // still raw (inverted), so a rising input edge is a FALLING raw edge
+        // through the inverted threshold (kADCMax − thr).
+        const uint16_t searchLen = N;
+        const uint16_t* trigSrc  = (settings.trigSource == TrigSource::B)
+                                   ? scratchB : scratchA;
         const uint16_t rawThr    = (uint16_t)(kADCMax - triggerADC(state.trigger_level_mv));
         const bool     rawRising = (settings.trigEdge != TrigEdge::Rising);
 
@@ -179,27 +196,25 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     }
 
     if (produce) {
-        uint16_t n = N;
-        if (start + n > cap) n = (start < cap) ? (uint16_t)(cap - start) : 0;
-
-        // Tear detector: checksum the source region, copy, invalidate the
-        // cache over the region, checksum again.  A mismatch means the DMA
-        // engine lapped us and rewrote the region mid-copy.
-        const uint16_t sumA = AcqCore::checksum(srcA + start, n);
-        const uint16_t sumB = AcqCore::checksum(srcB + start, n);
-
+        // start is bounded by searchLen == N and the scratch holds CAPTURE == 2N,
+        // so a full N-sample window always exists after the trigger.
         SampleBuffers& fb = _buf[_fill];
-        for (uint16_t i = 0; i < n; ++i) {
-            fb.ch[0][i] = (uint16_t)(kADCMax - srcA[start + i]);
-            fb.ch[1][i] = (uint16_t)(kADCMax - srcB[start + i]);
+        for (uint16_t i = 0; i < N; ++i) {
+            fb.ch[0][i] = (uint16_t)(kADCMax - scratchA[start + i]);
+            fb.ch[1][i] = (uint16_t)(kADCMax - scratchB[start + i]);
         }
-        fb.count = n;
+        fb.count = N;
 
-        arm_dcache_delete((void*)(srcA + start), n * sizeof(uint16_t));
-        arm_dcache_delete((void*)(srcB + start), n * sizeof(uint16_t));
-        if (AcqCore::checksum(srcA + start, n) != sumA ||
-            AcqCore::checksum(srcB + start, n) != sumB) {
-            ++_stats.tearEvents;
+        // Tear verification, not detection: trailing the write head by kGuard
+        // makes a torn read structurally impossible, so re-reading the same
+        // region must reproduce it.  Diag-only, since it doubles the read cost.
+        if (_diagVerify) {
+            static uint16_t verifyBuf[CAPTURE];
+            s_capA.read(base, verifyBuf, CAPTURE);
+            if (AcqCore::checksum(verifyBuf, CAPTURE) !=
+                AcqCore::checksum(scratchA, CAPTURE)) {
+                ++_stats.tearEvents;
+            }
         }
 
         _stats.noteConsume(micros());
@@ -209,11 +224,6 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
         _show = _fill;
         _fill = tmp;
     }
-
-    // Always release the buffers so the next capture is fresh (esp. Normal mode
-    // hold, which would otherwise re-scan the same stale buffer forever).
-    s_abdmaA.clearInterrupt();
-    s_abdmaB.clearInterrupt();
 
     return produce;
 }
@@ -249,7 +259,8 @@ void Acquisition::printCell(const ScopeState& state, const char* status) {
 
     // One line per cell, in the order of the protocol table's Record: list.
     Serial.printf("cell: %s t=%lu/%lus %s fps=%lu.%lu tears=%lu(%lu.%lu/s avg,%lu/s pk) "
-                  "miss=%lu(%lu/s pk) pairwait=%lu(%lu/s pk) over=%lu gapmax=%lums %s\n",
+                  "miss=%lu(%lu/s pk) pairwait=%lu(%lu/s pk) over=%lu gapmax=%lums "
+                  "skew=%lu pk %s\n",
         tag,
         (unsigned long)_cell.secs, (unsigned long)kCellTargetSecs, status,
         (unsigned long)(fps / 10), (unsigned long)(fps % 10),
@@ -260,6 +271,7 @@ void Acquisition::printCell(const ScopeState& state, const char* status) {
         (unsigned long)_cell.waits,  (unsigned long)_cell.waitPeak,
         (unsigned long)_cell.overruns,
         (unsigned long)(_cell.gapMaxUs / 1000),
+        (unsigned long)_cell.skewPeak,
         _cell.pass() ? "PASS" : (_cell.overruns ? "FAIL:tears+over" : "FAIL:tears"));
 }
 
@@ -318,7 +330,7 @@ void Acquisition::reportDiag(const ScopeState& state, const Settings& settings) 
 
     char tag[32];
     cellTag(state, tag, sizeof tag);
-    Serial.printf("acq: %s t=%lus fps=%lu bufs=%lu tears=%lu(%lu) miss=%lu pairwait=%lu over=%lu gap=%lums\n",
+    Serial.printf("acq: %s t=%lus fps=%lu bufs=%lu tears=%lu(%lu) miss=%lu pairwait=%lu over=%lu gap=%lums skew=%lu\n",
         tag,
         (unsigned long)_cell.secs,
         (unsigned long)framesD,
@@ -328,7 +340,8 @@ void Acquisition::reportDiag(const ScopeState& state, const Settings& settings) 
         (unsigned long)missD,
         (unsigned long)waitD,
         (unsigned long)overD,
-        (unsigned long)(_stats.gapMaxUs / 1000));
+        (unsigned long)(_stats.gapMaxUs / 1000),
+        (unsigned long)_stats.pairSkew);
 
     switch (AcqCore::cellReport(_cell.secs, kCellTargetSecs, kCellCheckpointSecs)) {
         case AcqCore::CellReport::Progress: printCell(state, "...");  break;

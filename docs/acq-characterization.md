@@ -17,7 +17,7 @@ pollutes a dwell. No reboot needed between cells.
 Once per second, the live line:
 
 ```
-acq: [50 us/div TRIG] t=92s fps=28 bufs=2083 tears=7(608) miss=141 pairwait=1329 over=0 gap=51ms
+acq: [50 us/div TRIG] t=92s fps=28 bufs=2083 tears=7(608) miss=141 pairwait=1329 over=0 gap=51ms skew=1
 ```
 
 `t` is seconds into the current cell. `tears=7(608)` is this second's delta and
@@ -30,7 +30,7 @@ in the reader.
 Every 30 s, and once at 150 s, the aggregate line:
 
 ```
-cell: [50 us/div TRIG] t=150/150s DONE fps=28.2 tears=608(6.6/s avg,10/s pk) miss=21150(178/s pk) pairwait=199500(1585/s pk) over=0 gapmax=81ms FAIL:tears
+cell: [50 us/div TRIG] t=150/150s DONE fps=28.2 tears=608(6.6/s avg,10/s pk) miss=21150(178/s pk) pairwait=199500(1585/s pk) over=0 gapmax=81ms skew=1 pk FAIL:tears
 ```
 
 That line **is** the table row. `DONE` means the dwell is complete, so move the
@@ -112,8 +112,10 @@ Notes:
   automatically: the `cell:` line ends in `PASS` or `FAIL`.
 - Triggered display visually rock-steady at every timebase. Subjective, hence
   the per-cell note.
-- A/B skew within ~1 sample (Phase 2 skew stat). Not yet instrumented; there is
-  no skew counter in `AcqStats` yet, so this stays a Phase 2 check.
+- A/B skew within ~1 sample. Measured from Phase 2 onward as the distance
+  between the two rings' write cursors, reported as `skew=N pk` (worst reading
+  in the cell). Not available for the Phase 1 baseline, which had no cursor to
+  compare: the old path waited on whole buffers instead.
 
 ## Preliminary (pre-instrumentation, Triggered only)
 

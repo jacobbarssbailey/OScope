@@ -15,6 +15,11 @@ struct AcqStats {
     uint32_t pairWaits      = 0;  // polls where exactly one channel was ready
     uint32_t overruns       = 0;  // Phase 2: reader resynced after losing data
 
+    // Instantaneous A/B write-cursor skew in samples (Phase 2).  The two rings
+    // are paced by independent timers at the same rate, so this is the design
+    // spec's "within ~1 sample" criterion made measurable.
+    uint32_t pairSkew       = 0;
+
     // Max gap between consumed frames (µs) within the current report window;
     // the 1 Hz reporter prints and resets it via resetWindow().
     uint32_t gapMaxUs      = 0;

@@ -75,6 +75,7 @@ struct CellStats {
     uint32_t missPeak = 0;
     uint32_t waitPeak = 0;
     uint32_t gapMaxUs = 0;      // worst inter-frame gap anywhere in the cell
+    uint32_t skewPeak = 0;      // worst A/B pair skew seen, in samples
 
     bool reported = false;      // the Done line has been printed for this cell
 
@@ -100,6 +101,10 @@ struct CellStats {
         if (waitD  > waitPeak) waitPeak = waitD;
         if (gapUs  > gapMaxUs) gapMaxUs = gapUs;
     }
+
+    // A/B skew is an instantaneous reading rather than a per-second delta, so it
+    // is folded in as it is sampled (every update, not every report window).
+    void noteSkew(uint32_t skew) { if (skew > skewPeak) skewPeak = skew; }
 
     // Mean frames/s over the cell, in tenths (integer math: no float printf).
     uint32_t fpsTenths() const { return secs ? (frames * 10) / secs : 0; }
