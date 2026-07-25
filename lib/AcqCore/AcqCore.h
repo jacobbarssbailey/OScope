@@ -30,6 +30,30 @@ inline uint16_t checksum(const volatile uint16_t* src, uint16_t n) {
     return s;
 }
 
+// ---- Ring cursor protocol -------------------------------------------------
+// Cumulative 64-bit sample counts never wrap in practice (2^64 samples at
+// 1 Msps is roughly 585,000 years); all reader/writer positions are counts,
+// converted to ring offsets only at the memory access.
+
+// Position of cumulative count within a power-of-two ring.
+inline uint32_t ringIndex(uint64_t count, uint32_t ringSize) {
+    return (uint32_t)(count & (uint64_t)(ringSize - 1));
+}
+
+// Newest cumulative count the reader may touch: the DMA write head minus a
+// guard band (whole dcache lines that may still be landing).
+inline uint64_t safeWatermark(uint64_t written, uint32_t guard) {
+    return written > guard ? written - guard : 0;
+}
+
+// Base of the newest len-sample window ending at `safe`.  False until enough
+// samples exist.
+inline bool newestWindow(uint64_t safe, uint32_t len, uint64_t* base) {
+    if (safe < len) return false;
+    *base = safe - len;
+    return true;
+}
+
 // ---- Characterization cells ----------------------------------------------
 
 // One characterization cell: a (timebase, mode) pair held steady for the

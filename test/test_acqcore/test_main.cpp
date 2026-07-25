@@ -176,6 +176,34 @@ static void test_window_is_stale_when_reporting_was_interrupted() {
     TEST_ASSERT_TRUE(AcqCore::diagWindowStale(20000, 2000));
 }
 
+// ---- Ring cursor protocol ------------------------------------------------
+
+static void test_ring_index_wraps_power_of_two() {
+    TEST_ASSERT_EQUAL_UINT32(0,    AcqCore::ringIndex(0, 4096));
+    TEST_ASSERT_EQUAL_UINT32(4095, AcqCore::ringIndex(4095, 4096));
+    TEST_ASSERT_EQUAL_UINT32(0,    AcqCore::ringIndex(4096, 4096));
+    TEST_ASSERT_EQUAL_UINT32(5,    AcqCore::ringIndex(4096ULL * 1000 + 5, 4096));
+}
+
+static void test_safe_watermark_trails_by_guard() {
+    TEST_ASSERT_EQUAL_UINT64(968, AcqCore::safeWatermark(1000, 32));
+}
+
+static void test_safe_watermark_clamps_to_zero() {
+    TEST_ASSERT_EQUAL_UINT64(0, AcqCore::safeWatermark(10, 32));
+}
+
+static void test_newest_window_when_enough_data() {
+    uint64_t base = 0;
+    TEST_ASSERT_TRUE(AcqCore::newestWindow(1000, 480, &base));
+    TEST_ASSERT_EQUAL_UINT64(520, base);
+}
+
+static void test_newest_window_insufficient_data() {
+    uint64_t base = 99;
+    TEST_ASSERT_FALSE(AcqCore::newestWindow(479, 480, &base));
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_rising_edge_found);
@@ -200,5 +228,10 @@ int main(int, char**) {
     RUN_TEST(test_report_is_silent_before_the_first_second);
     RUN_TEST(test_partial_is_worth_reporting_only_when_a_real_dwell_was_cut_short);
     RUN_TEST(test_window_is_stale_when_reporting_was_interrupted);
+    RUN_TEST(test_ring_index_wraps_power_of_two);
+    RUN_TEST(test_safe_watermark_trails_by_guard);
+    RUN_TEST(test_safe_watermark_clamps_to_zero);
+    RUN_TEST(test_newest_window_when_enough_data);
+    RUN_TEST(test_newest_window_insufficient_data);
     return UNITY_END();
 }
