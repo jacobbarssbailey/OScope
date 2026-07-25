@@ -96,7 +96,7 @@ Notes:
   speed and mode rather than capture behavior.
 - Subjective per-cell steadiness notes were not recorded during this run.
 
-## After ring capture — commit <hash>, date <date>
+## After ring capture — commit f4d64fd, date <date>
 
 | Timebase | Triggered | Rolling | X-Y |
 |----------|-----------|---------|-----|
