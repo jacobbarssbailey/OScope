@@ -1,0 +1,3122 @@
+Processing teensy40 (platform: teensy; board: teensy40; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/teensy/teensy40.html
+PLATFORM: Teensy (5.0.0) > Teensy 4.0
+HARDWARE: IMXRT1062 600MHz, 512KB RAM, 1.94MB Flash
+DEBUG: Current (jlink) External (jlink)
+PACKAGES: 
+ - framework-arduinoteensy @ 1.159.0 (1.59) 
+ - tool-teensy @ 1.159.0 (1.59) 
+ - toolchain-gccarmnoneeabi-teensy @ 1.110301.0 (11.3.1)
+Converting OScope.ino
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 97 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- Adafruit GFX Library @ 1.12.4
+|-- GC9A01A1_t3n @ 0.0.0+sha.11ceeed
+|-- Encoder @ 1.4.4
+|-- Teensy_ADC @ 9.1.0
+|-- AcqCore
+|-- SPI @ 1.0
+|-- EEPROM @ 2.0
+|-- ILI9341_t3
+Building in release mode
+Compiling .pio/build/teensy40/src/OScope.ino.cpp.o
+Linking .pio/build/teensy40/firmware.elf
+Checking size .pio/build/teensy40/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+Building .pio/build/teensy40/firmware.hex
+Configuring upload protocol...
+AVAILABLE: jlink, teensy-cli, teensy-gui
+CURRENT: upload_protocol = teensy-gui
+Uploading .pio/build/teensy40/firmware.hex
+========================= [SUCCESS] Took 2.73 seconds =========================
+
+Environment    Status    Duration
+-------------  --------  ------------
+teensy40       SUCCESS   00:00:02.727
+========================= 1 succeeded in 00:00:02.727 =========================
+--- Terminal on /dev/cu.usbmodem153882301 | 115200 8-N-1
+--- Available filters and text transformations: colorize, debug, default, direct, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+_t3n::begin mosi:11 SCLK:13 CS:9 DC:10 SPI clocks:30000000 2000000
+draw: max=31ms
+acq: [10 ms/div TRIG] t=1s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=2s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=3s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=4s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=5s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=6s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=7s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=8s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3604 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=9s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=10s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=11s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=12s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3604 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=13s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=14s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=15s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=16s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=17s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=18s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3086 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=19s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=20s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=21s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=22s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=23s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=24s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=25s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=26s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=27s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=28s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=29s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=30s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+cell: [10 ms/div TRIG] t=30/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=96773(3604/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div TRIG] t=31s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=32s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=33s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=34s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=35s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=36s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=37s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=38s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=39s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=40s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=41s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3601 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=42s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=43s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3086 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=44s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=45s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=46s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=47s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=48s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=49s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=50s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=51s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=52s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=53s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=54s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=55s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=56s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=57s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=58s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=59s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=60s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+cell: [10 ms/div TRIG] t=60/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=193530(3604/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div TRIG] t=61s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=62s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=63s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=64s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=65s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3086 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=66s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=67s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=68s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=69s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=70s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3599 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=71s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=72s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=73s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=74s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=75s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=76s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=77s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=78s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=79s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=80s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=81s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=82s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=83s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3086 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=84s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=85s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=86s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=87s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=88s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=89s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3604 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=90s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+cell: [10 ms/div TRIG] t=90/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=290292(3604/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div TRIG] t=91s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=92s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=93s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=94s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=95s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=96s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=97s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=98s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=99s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=100s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3605 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=101s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=102s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=103s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3605 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=104s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=105s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=106s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=107s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=108s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=109s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=110s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=111s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=112s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=113s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3086 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=114s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3600 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=115s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=116s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=117s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=118s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=119s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=120s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+cell: [10 ms/div TRIG] t=120/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=387059(3605/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div TRIG] t=121s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3086 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=122s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3601 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=123s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=124s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=125s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=126s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=127s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=128s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=129s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3600 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=130s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=131s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=132s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=133s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=134s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=135s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3086 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=136s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=137s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=138s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=139s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=140s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=141s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=142s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=143s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=144s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3604 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=145s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=146s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=147s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=148s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=149s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=150s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+cell: [10 ms/div TRIG] t=150/150s DONE fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=483818(3605/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div TRIG] t=151s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=152s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=153s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=154s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3090 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=155s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3605 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=156s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=157s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=158s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3602 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=159s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3087 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=160s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=161s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3088 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div TRIG] t=162s fps=7 bufs=6 tears=0(0) miss=0 pairwait=3603 over=0 gap=159ms
+acq: [10 ms/div TRIG] t=163s fps=6 bufs=6 tears=0(0) miss=0 pairwait=3089 over=0 gap=159ms
+draw: max=31ms
+draw: max=31ms
+draw: max=31ms
+draw: max=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=1s fps=32 bufs=130 tears=0(0) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=2s fps=32 bufs=130 tears=0(0) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=3s fps=32 bufs=130 tears=0(0) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=4s fps=32 bufs=130 tears=2(2) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=5s fps=32 bufs=130 tears=0(2) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=6s fps=32 bufs=130 tears=0(2) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=7s fps=32 bufs=130 tears=3(5) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=8s fps=32 bufs=130 tears=0(5) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=9s fps=32 bufs=130 tears=1(6) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=10s fps=32 bufs=130 tears=2(8) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=11s fps=32 bufs=130 tears=5(13) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=12s fps=32 bufs=130 tears=3(16) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=13s fps=32 bufs=130 tears=2(18) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=14s fps=32 bufs=130 tears=2(20) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=15s fps=32 bufs=130 tears=0(20) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=16s fps=32 bufs=130 tears=1(21) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=17s fps=32 bufs=130 tears=0(21) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=18s fps=32 bufs=130 tears=2(23) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=19s fps=32 bufs=130 tears=1(24) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=20s fps=32 bufs=130 tears=0(24) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=21s fps=32 bufs=130 tears=1(25) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=22s fps=32 bufs=130 tears=0(25) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=23s fps=32 bufs=130 tears=4(29) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=24s fps=32 bufs=130 tears=2(31) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=25s fps=32 bufs=130 tears=0(31) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=26s fps=32 bufs=130 tears=0(31) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=27s fps=32 bufs=130 tears=1(32) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=28s fps=32 bufs=130 tears=4(36) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=29s fps=32 bufs=130 tears=0(36) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=30s fps=32 bufs=130 tears=0(36) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div TRIG] t=30/150s ... fps=32.0 tears=36(1.2/s avg,5/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div TRIG] t=31s fps=32 bufs=130 tears=1(37) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=32s fps=32 bufs=130 tears=1(38) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=33s fps=32 bufs=130 tears=0(38) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=34s fps=32 bufs=130 tears=2(40) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=35s fps=32 bufs=130 tears=1(41) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=36s fps=32 bufs=130 tears=2(43) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=37s fps=32 bufs=130 tears=3(46) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=38s fps=32 bufs=130 tears=1(47) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=39s fps=32 bufs=130 tears=1(48) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=40s fps=32 bufs=130 tears=0(48) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=41s fps=32 bufs=130 tears=0(48) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=42s fps=32 bufs=130 tears=2(50) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=43s fps=32 bufs=130 tears=2(52) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=44s fps=32 bufs=130 tears=1(53) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=45s fps=32 bufs=130 tears=0(53) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=46s fps=32 bufs=130 tears=0(53) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=47s fps=32 bufs=130 tears=0(53) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=48s fps=32 bufs=130 tears=0(53) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=49s fps=32 bufs=130 tears=1(54) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=50s fps=32 bufs=130 tears=0(54) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=51s fps=32 bufs=130 tears=0(54) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=52s fps=32 bufs=130 tears=1(55) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=53s fps=32 bufs=130 tears=1(56) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=54s fps=32 bufs=130 tears=1(57) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=55s fps=32 bufs=130 tears=1(58) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=56s fps=32 bufs=130 tears=0(58) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=57s fps=32 bufs=130 tears=0(58) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=58s fps=32 bufs=130 tears=1(59) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=59s fps=32 bufs=130 tears=0(59) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=60s fps=32 bufs=130 tears=3(62) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div TRIG] t=60/150s ... fps=32.0 tears=62(1.0/s avg,5/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div TRIG] t=61s fps=32 bufs=130 tears=0(62) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=62s fps=32 bufs=130 tears=2(64) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=63s fps=32 bufs=130 tears=2(66) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=64s fps=32 bufs=130 tears=2(68) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=65s fps=32 bufs=130 tears=1(69) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=66s fps=32 bufs=130 tears=1(70) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=67s fps=32 bufs=130 tears=0(70) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=68s fps=32 bufs=130 tears=2(72) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=69s fps=32 bufs=130 tears=2(74) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=70s fps=32 bufs=130 tears=0(74) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=71s fps=32 bufs=130 tears=1(75) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=72s fps=32 bufs=130 tears=1(76) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=73s fps=32 bufs=130 tears=2(78) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=74s fps=32 bufs=130 tears=0(78) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=75s fps=32 bufs=130 tears=2(80) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=76s fps=32 bufs=130 tears=0(80) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=77s fps=32 bufs=130 tears=0(80) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=78s fps=32 bufs=130 tears=1(81) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=79s fps=32 bufs=130 tears=0(81) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=80s fps=32 bufs=130 tears=1(82) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=81s fps=32 bufs=130 tears=1(83) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=82s fps=32 bufs=130 tears=2(85) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=83s fps=32 bufs=130 tears=0(85) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=84s fps=32 bufs=130 tears=3(88) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=85s fps=32 bufs=130 tears=1(89) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=86s fps=32 bufs=130 tears=1(90) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=87s fps=32 bufs=130 tears=1(91) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=88s fps=32 bufs=130 tears=3(94) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=89s fps=32 bufs=130 tears=0(94) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=90s fps=32 bufs=130 tears=2(96) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div TRIG] t=90/150s ... fps=32.0 tears=96(1.0/s avg,5/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div TRIG] t=91s fps=32 bufs=130 tears=1(97) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=92s fps=32 bufs=130 tears=1(98) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=93s fps=32 bufs=130 tears=0(98) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=94s fps=32 bufs=130 tears=3(101) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=95s fps=32 bufs=130 tears=0(101) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=96s fps=32 bufs=130 tears=1(102) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=97s fps=32 bufs=130 tears=1(103) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=98s fps=32 bufs=130 tears=3(106) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=99s fps=32 bufs=130 tears=0(106) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=100s fps=32 bufs=130 tears=1(107) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=101s fps=32 bufs=130 tears=0(107) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=102s fps=32 bufs=130 tears=1(108) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=103s fps=32 bufs=130 tears=2(110) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=104s fps=32 bufs=130 tears=2(112) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=105s fps=32 bufs=130 tears=2(114) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=106s fps=32 bufs=130 tears=0(114) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=107s fps=32 bufs=130 tears=4(118) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=108s fps=32 bufs=130 tears=1(119) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=109s fps=32 bufs=130 tears=2(121) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=110s fps=32 bufs=130 tears=0(121) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=111s fps=32 bufs=130 tears=0(121) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=112s fps=32 bufs=130 tears=0(121) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=113s fps=32 bufs=130 tears=3(124) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=114s fps=32 bufs=130 tears=1(125) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=115s fps=32 bufs=130 tears=1(126) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=116s fps=32 bufs=130 tears=1(127) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=117s fps=32 bufs=130 tears=2(129) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=118s fps=32 bufs=130 tears=2(131) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=119s fps=32 bufs=130 tears=0(131) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=120s fps=32 bufs=130 tears=0(131) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div TRIG] t=120/150s ... fps=32.0 tears=131(1.0/s avg,5/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div TRIG] t=121s fps=32 bufs=130 tears=1(132) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=122s fps=32 bufs=130 tears=4(136) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=123s fps=32 bufs=130 tears=3(139) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=124s fps=32 bufs=130 tears=1(140) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=125s fps=32 bufs=130 tears=2(142) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=126s fps=32 bufs=130 tears=3(145) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=127s fps=32 bufs=130 tears=1(146) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=128s fps=32 bufs=130 tears=2(148) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=129s fps=32 bufs=130 tears=0(148) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=130s fps=32 bufs=130 tears=1(149) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=131s fps=32 bufs=130 tears=0(149) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=132s fps=32 bufs=130 tears=0(149) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=133s fps=32 bufs=130 tears=1(150) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=134s fps=32 bufs=130 tears=4(154) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=135s fps=32 bufs=130 tears=0(154) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=136s fps=32 bufs=130 tears=1(155) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=137s fps=32 bufs=130 tears=2(157) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=138s fps=32 bufs=130 tears=0(157) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=139s fps=32 bufs=130 tears=1(158) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=140s fps=32 bufs=130 tears=2(160) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=141s fps=32 bufs=130 tears=0(160) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=142s fps=32 bufs=130 tears=0(160) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=143s fps=32 bufs=130 tears=1(161) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=144s fps=32 bufs=130 tears=2(163) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=145s fps=32 bufs=130 tears=2(165) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=146s fps=32 bufs=130 tears=1(166) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=147s fps=32 bufs=130 tears=0(166) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=148s fps=32 bufs=130 tears=1(167) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=149s fps=32 bufs=130 tears=0(167) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=150s fps=32 bufs=130 tears=1(168) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div TRIG] t=150/150s DONE fps=32.0 tears=168(1.1/s avg,5/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div TRIG] t=151s fps=32 bufs=130 tears=0(168) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=152s fps=32 bufs=130 tears=2(170) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=153s fps=32 bufs=130 tears=0(170) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=154s fps=32 bufs=130 tears=2(172) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=155s fps=32 bufs=130 tears=0(172) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=156s fps=32 bufs=130 tears=0(172) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=157s fps=32 bufs=130 tears=1(173) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=158s fps=32 bufs=130 tears=0(173) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=159s fps=32 bufs=130 tears=1(174) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=160s fps=32 bufs=130 tears=4(178) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=161s fps=32 bufs=130 tears=3(181) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=162s fps=32 bufs=130 tears=0(181) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=163s fps=32 bufs=130 tears=3(184) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=164s fps=32 bufs=130 tears=0(184) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=165s fps=32 bufs=130 tears=1(185) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=166s fps=32 bufs=130 tears=1(186) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=167s fps=32 bufs=130 tears=1(187) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=168s fps=32 bufs=130 tears=1(188) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=169s fps=32 bufs=130 tears=1(189) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=170s fps=32 bufs=130 tears=1(190) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=171s fps=32 bufs=130 tears=0(190) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=172s fps=32 bufs=130 tears=2(192) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=173s fps=32 bufs=130 tears=1(193) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=174s fps=32 bufs=130 tears=2(195) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=175s fps=32 bufs=130 tears=2(197) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=176s fps=32 bufs=130 tears=2(199) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=177s fps=32 bufs=130 tears=2(201) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=178s fps=32 bufs=130 tears=0(201) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div TRIG] t=179s fps=32 bufs=130 tears=0(201) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+draw: max=31ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=1s fps=30 bufs=2083 tears=7(7) miss=97 pairwait=1763 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=2s fps=28 bufs=2083 tears=6(13) miss=105 pairwait=1948 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=3s fps=30 bufs=2083 tears=5(18) miss=106 pairwait=1965 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=4s fps=29 bufs=2083 tears=5(23) miss=122 pairwait=2301 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=5s fps=29 bufs=2083 tears=5(28) miss=86 pairwait=1648 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=6s fps=30 bufs=2083 tears=4(32) miss=96 pairwait=1811 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=7s fps=30 bufs=2083 tears=6(38) miss=99 pairwait=1870 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=8s fps=29 bufs=2083 tears=6(44) miss=121 pairwait=2203 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=9s fps=28 bufs=2083 tears=7(51) miss=131 pairwait=2560 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=10s fps=30 bufs=2083 tears=6(57) miss=127 pairwait=2277 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=11s fps=30 bufs=2083 tears=3(60) miss=82 pairwait=1418 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=12s fps=29 bufs=2083 tears=6(66) miss=121 pairwait=2182 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=13s fps=30 bufs=2083 tears=4(70) miss=82 pairwait=1498 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=14s fps=29 bufs=2083 tears=6(76) miss=122 pairwait=2186 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=15s fps=30 bufs=2083 tears=3(79) miss=81 pairwait=1460 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=16s fps=28 bufs=2083 tears=7(86) miss=118 pairwait=2235 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=17s fps=30 bufs=2083 tears=4(90) miss=85 pairwait=1424 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=18s fps=30 bufs=2083 tears=5(95) miss=102 pairwait=1813 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=19s fps=30 bufs=2083 tears=5(100) miss=95 pairwait=1833 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=20s fps=30 bufs=2083 tears=4(104) miss=99 pairwait=1834 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=21s fps=30 bufs=2083 tears=5(109) miss=97 pairwait=1856 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=22s fps=30 bufs=2083 tears=5(114) miss=111 pairwait=2044 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=23s fps=29 bufs=2083 tears=4(118) miss=96 pairwait=1867 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=24s fps=29 bufs=2083 tears=4(122) miss=103 pairwait=1945 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=25s fps=30 bufs=2083 tears=5(127) miss=86 pairwait=1560 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=26s fps=30 bufs=2083 tears=8(135) miss=136 pairwait=2552 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=27s fps=28 bufs=2083 tears=7(142) miss=138 pairwait=2578 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=28s fps=29 bufs=2083 tears=6(148) miss=98 pairwait=1853 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=29s fps=30 bufs=2083 tears=7(155) miss=120 pairwait=2287 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=30s fps=29 bufs=2083 tears=4(159) miss=96 pairwait=1695 over=0 gap=50ms
+cell: [50 us/div TRIG] t=30/150s ... fps=29.4 tears=159(5.3/s avg,8/s pk) miss=3158(138/s pk) pairwait=58466(2578/s pk) over=0 gapmax=51ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div TRIG] t=31s fps=30 bufs=2083 tears=8(167) miss=98 pairwait=1826 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=32s fps=28 bufs=2083 tears=6(173) miss=138 pairwait=2556 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=33s fps=30 bufs=2083 tears=4(177) miss=84 pairwait=1508 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=34s fps=30 bufs=2083 tears=6(183) miss=109 pairwait=2047 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=35s fps=29 bufs=2083 tears=4(187) miss=102 pairwait=1798 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=36s fps=30 bufs=2083 tears=4(191) miss=104 pairwait=1806 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=37s fps=31 bufs=2083 tears=6(197) miss=105 pairwait=1826 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=38s fps=29 bufs=2083 tears=6(203) miss=80 pairwait=1426 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=39s fps=30 bufs=2083 tears=5(208) miss=107 pairwait=2169 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=40s fps=29 bufs=2083 tears=7(215) miss=99 pairwait=1863 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=41s fps=30 bufs=2083 tears=4(219) miss=102 pairwait=1799 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=42s fps=30 bufs=2083 tears=4(223) miss=102 pairwait=1810 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=43s fps=30 bufs=2083 tears=5(228) miss=121 pairwait=2222 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=44s fps=28 bufs=2083 tears=7(235) miss=116 pairwait=2202 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=45s fps=31 bufs=2083 tears=4(239) miss=99 pairwait=1893 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=46s fps=29 bufs=2083 tears=4(243) miss=75 pairwait=1419 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=47s fps=29 bufs=2083 tears=6(249) miss=121 pairwait=2220 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=48s fps=28 bufs=2083 tears=9(258) miss=136 pairwait=2560 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=49s fps=30 bufs=2083 tears=6(264) miss=114 pairwait=2337 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=50s fps=29 bufs=2083 tears=6(270) miss=96 pairwait=1831 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=51s fps=30 bufs=2083 tears=5(275) miss=111 pairwait=2051 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=52s fps=29 bufs=2083 tears=4(279) miss=82 pairwait=1460 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=53s fps=30 bufs=2083 tears=5(284) miss=100 pairwait=1827 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=54s fps=30 bufs=2083 tears=4(288) miss=110 pairwait=2040 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=55s fps=29 bufs=2083 tears=3(291) miss=83 pairwait=1418 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=56s fps=30 bufs=2083 tears=3(294) miss=80 pairwait=1461 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=57s fps=29 bufs=2083 tears=4(298) miss=106 pairwait=1944 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=58s fps=30 bufs=2083 tears=4(302) miss=92 pairwait=1684 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=59s fps=30 bufs=2083 tears=4(306) miss=102 pairwait=1835 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=60s fps=30 bufs=2083 tears=6(312) miss=104 pairwait=2023 over=0 gap=51ms
+cell: [50 us/div TRIG] t=60/150s ... fps=29.5 tears=312(5.2/s avg,9/s pk) miss=6236(138/s pk) pairwait=115327(2578/s pk) over=0 gapmax=51ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div TRIG] t=61s fps=29 bufs=2083 tears=6(318) miss=95 pairwait=1798 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=62s fps=30 bufs=2083 tears=4(322) miss=104 pairwait=1813 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=63s fps=30 bufs=2083 tears=6(328) miss=105 pairwait=1908 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=64s fps=30 bufs=2083 tears=8(336) miss=122 pairwait=2288 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=65s fps=29 bufs=2083 tears=4(340) miss=97 pairwait=1889 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=66s fps=31 bufs=2083 tears=4(344) miss=98 pairwait=1808 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=67s fps=28 bufs=2083 tears=8(352) miss=112 pairwait=2233 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=68s fps=30 bufs=2083 tears=5(357) miss=97 pairwait=1828 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=69s fps=30 bufs=2083 tears=4(361) miss=83 pairwait=1440 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=70s fps=31 bufs=2083 tears=4(365) miss=100 pairwait=1871 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=71s fps=29 bufs=2083 tears=4(369) miss=95 pairwait=1869 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=72s fps=30 bufs=2083 tears=4(373) miss=76 pairwait=1438 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=73s fps=29 bufs=2083 tears=8(381) miss=142 pairwait=2725 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=74s fps=29 bufs=2083 tears=3(384) miss=81 pairwait=1421 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=75s fps=29 bufs=2083 tears=6(390) miss=121 pairwait=2356 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=76s fps=30 bufs=2083 tears=5(395) miss=103 pairwait=1816 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=77s fps=29 bufs=2083 tears=5(400) miss=119 pairwait=2240 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=78s fps=31 bufs=2083 tears=5(405) miss=97 pairwait=1668 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=79s fps=28 bufs=2083 tears=7(412) miss=123 pairwait=2255 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=80s fps=31 bufs=2083 tears=4(416) miss=105 pairwait=1811 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=81s fps=29 bufs=2083 tears=5(421) miss=101 pairwait=1875 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=82s fps=31 bufs=2083 tears=3(424) miss=79 pairwait=1466 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=83s fps=28 bufs=2083 tears=8(432) miss=119 pairwait=2196 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=84s fps=31 bufs=2083 tears=5(437) miss=80 pairwait=1440 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=85s fps=29 bufs=2083 tears=5(442) miss=105 pairwait=1806 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=86s fps=31 bufs=2083 tears=4(446) miss=85 pairwait=1448 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=87s fps=29 bufs=2083 tears=5(451) miss=100 pairwait=1828 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=88s fps=31 bufs=2083 tears=4(455) miss=83 pairwait=1439 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=89s fps=30 bufs=2083 tears=6(461) miss=103 pairwait=1807 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=90s fps=29 bufs=2083 tears=4(465) miss=77 pairwait=1486 over=0 gap=50ms
+cell: [50 us/div TRIG] t=90/150s ... fps=29.5 tears=465(5.1/s avg,9/s pk) miss=9243(142/s pk) pairwait=170593(2725/s pk) over=0 gapmax=51ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div TRIG] t=91s fps=30 bufs=2083 tears=5(470) miss=102 pairwait=1833 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=92s fps=30 bufs=2083 tears=3(473) miss=81 pairwait=1515 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=93s fps=30 bufs=2083 tears=5(478) miss=118 pairwait=2314 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=94s fps=28 bufs=2083 tears=4(482) miss=105 pairwait=1952 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=95s fps=30 bufs=2083 tears=7(489) miss=126 pairwait=2293 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=96s fps=27 bufs=2083 tears=8(497) miss=147 pairwait=2828 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=97s fps=30 bufs=2083 tears=6(503) miss=97 pairwait=1909 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=98s fps=31 bufs=2083 tears=4(507) miss=83 pairwait=1465 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=99s fps=30 bufs=2083 tears=5(512) miss=99 pairwait=1915 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=100s fps=29 bufs=2083 tears=5(517) miss=108 pairwait=1944 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=101s fps=29 bufs=2083 tears=5(522) miss=123 pairwait=2188 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=102s fps=29 bufs=2083 tears=7(529) miss=148 pairwait=2785 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=103s fps=29 bufs=2083 tears=5(534) miss=102 pairwait=1815 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=104s fps=30 bufs=2083 tears=7(541) miss=117 pairwait=2217 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=105s fps=29 bufs=2083 tears=4(545) miss=81 pairwait=1422 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=106s fps=29 bufs=2083 tears=8(553) miss=119 pairwait=2201 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=107s fps=30 bufs=2083 tears=6(559) miss=90 pairwait=1758 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=108s fps=31 bufs=2083 tears=4(563) miss=101 pairwait=1858 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=109s fps=29 bufs=2083 tears=5(568) miss=82 pairwait=1495 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=110s fps=30 bufs=2083 tears=7(575) miss=123 pairwait=2177 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=111s fps=28 bufs=2083 tears=6(581) miss=131 pairwait=2440 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=112s fps=31 bufs=2083 tears=5(586) miss=78 pairwait=1448 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=113s fps=29 bufs=2083 tears=9(595) miss=142 pairwait=2551 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=114s fps=28 bufs=2083 tears=5(600) miss=122 pairwait=2179 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=115s fps=29 bufs=2083 tears=8(608) miss=124 pairwait=2242 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=116s fps=30 bufs=2083 tears=6(614) miss=122 pairwait=2220 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=117s fps=30 bufs=2083 tears=4(618) miss=84 pairwait=1422 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=118s fps=29 bufs=2083 tears=5(623) miss=82 pairwait=1423 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=119s fps=31 bufs=2083 tears=4(627) miss=99 pairwait=1847 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=120s fps=30 bufs=2083 tears=6(633) miss=102 pairwait=1854 over=0 gap=51ms
+cell: [50 us/div TRIG] t=120/150s ... fps=29.5 tears=633(5.2/s avg,9/s pk) miss=12481(148/s pk) pairwait=230103(2828/s pk) over=0 gapmax=51ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div TRIG] t=121s fps=29 bufs=2083 tears=4(637) miss=84 pairwait=1542 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=122s fps=30 bufs=2083 tears=4(641) miss=78 pairwait=1444 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=123s fps=29 bufs=2083 tears=5(646) miss=121 pairwait=2199 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=124s fps=29 bufs=2083 tears=5(651) miss=119 pairwait=2201 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=125s fps=30 bufs=2083 tears=4(655) miss=81 pairwait=1463 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=126s fps=31 bufs=2083 tears=5(660) miss=102 pairwait=1948 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=127s fps=29 bufs=2083 tears=4(664) miss=102 pairwait=1795 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=128s fps=30 bufs=2083 tears=4(668) miss=87 pairwait=1496 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=129s fps=27 bufs=2083 tears=7(675) miss=170 pairwait=3162 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=130s fps=31 bufs=2083 tears=5(680) miss=103 pairwait=1793 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=131s fps=30 bufs=2083 tears=4(684) miss=104 pairwait=1810 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=132s fps=29 bufs=2083 tears=4(688) miss=80 pairwait=1519 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=133s fps=30 bufs=2083 tears=3(691) miss=80 pairwait=1499 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=134s fps=30 bufs=2083 tears=4(695) miss=102 pairwait=1853 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=135s fps=30 bufs=2083 tears=5(700) miss=85 pairwait=1505 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=136s fps=30 bufs=2083 tears=5(705) miss=103 pairwait=1825 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=137s fps=30 bufs=2083 tears=4(709) miss=99 pairwait=1913 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=138s fps=31 bufs=2083 tears=4(713) miss=78 pairwait=1488 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=139s fps=28 bufs=2083 tears=5(718) miss=105 pairwait=1948 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=140s fps=31 bufs=2083 tears=5(723) miss=108 pairwait=1889 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=141s fps=29 bufs=2083 tears=3(726) miss=73 pairwait=1341 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=142s fps=30 bufs=2083 tears=5(731) miss=87 pairwait=1622 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=143s fps=30 bufs=2083 tears=6(737) miss=119 pairwait=2260 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=144s fps=28 bufs=2083 tears=5(742) miss=102 pairwait=1955 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=145s fps=30 bufs=2083 tears=8(750) miss=132 pairwait=2470 over=0 gap=50ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=146s fps=29 bufs=2083 tears=7(757) miss=101 pairwait=1853 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=147s fps=29 bufs=2083 tears=5(762) miss=118 pairwait=2188 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=148s fps=31 bufs=2083 tears=5(767) miss=105 pairwait=1830 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=149s fps=29 bufs=2083 tears=3(770) miss=81 pairwait=1439 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=150s fps=29 bufs=2083 tears=7(777) miss=118 pairwait=2295 over=0 gap=51ms
+cell: [50 us/div TRIG] t=150/150s DONE fps=29.5 tears=777(5.1/s avg,9/s pk) miss=15508(170/s pk) pairwait=285648(3162/s pk) over=0 gapmax=51ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div TRIG] t=151s fps=31 bufs=2083 tears=4(781) miss=81 pairwait=1434 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=152s fps=28 bufs=2083 tears=4(785) miss=106 pairwait=1949 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=153s fps=31 bufs=2083 tears=5(790) miss=97 pairwait=1715 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div TRIG] t=154s fps=29 bufs=2083 tears=3(793) miss=82 pairwait=1407 over=0 gap=51ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=1s fps=16 bufs=2083 tears=0(0) miss=0 pairwait=1 over=0 gap=125ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=2s fps=25 bufs=2083 tears=1(1) miss=0 pairwait=126 over=0 gap=125ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=3s fps=32 bufs=2083 tears=2(3) miss=0 pairwait=308 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=4s fps=32 bufs=2083 tears=2(5) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=5s fps=32 bufs=2083 tears=1(6) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=6s fps=32 bufs=2083 tears=2(8) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=7s fps=32 bufs=2083 tears=2(10) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=8s fps=32 bufs=2083 tears=1(11) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=9s fps=32 bufs=2083 tears=0(11) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=10s fps=32 bufs=2083 tears=0(11) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=11s fps=32 bufs=2083 tears=2(13) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=12s fps=32 bufs=2083 tears=1(14) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=13s fps=32 bufs=2083 tears=2(16) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=14s fps=32 bufs=2083 tears=2(18) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=15s fps=32 bufs=2083 tears=0(18) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=16s fps=32 bufs=2083 tears=1(19) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=17s fps=32 bufs=2083 tears=2(21) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=18s fps=32 bufs=2083 tears=1(22) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=19s fps=32 bufs=2083 tears=1(23) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=20s fps=32 bufs=2083 tears=1(24) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=21s fps=32 bufs=2083 tears=1(25) miss=0 pairwait=306 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=22s fps=32 bufs=2083 tears=1(26) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=23s fps=32 bufs=2083 tears=2(28) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=24s fps=32 bufs=2083 tears=3(31) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=25s fps=32 bufs=2083 tears=1(32) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=26s fps=32 bufs=2083 tears=3(35) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=27s fps=32 bufs=2083 tears=2(37) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=28s fps=32 bufs=2083 tears=1(38) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=29s fps=32 bufs=2083 tears=1(39) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=30s fps=32 bufs=2083 tears=1(40) miss=0 pairwait=312 over=0 gap=32ms
+cell: [50 us/div ROLL] t=30/150s ... fps=31.2 tears=40(1.3/s avg,3/s pk) miss=0(0/s pk) pairwait=8848(314/s pk) over=0 gapmax=125ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div ROLL] t=31s fps=32 bufs=2083 tears=2(42) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=32s fps=32 bufs=2083 tears=0(42) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=33s fps=32 bufs=2083 tears=2(44) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=34s fps=32 bufs=2083 tears=0(44) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=35s fps=32 bufs=2083 tears=0(44) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=36s fps=32 bufs=2083 tears=1(45) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=37s fps=32 bufs=2083 tears=1(46) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=38s fps=32 bufs=2083 tears=1(47) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=39s fps=32 bufs=2083 tears=0(47) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=40s fps=32 bufs=2083 tears=1(48) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=41s fps=32 bufs=2083 tears=0(48) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=42s fps=32 bufs=2083 tears=0(48) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=43s fps=32 bufs=2083 tears=1(49) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=44s fps=32 bufs=2083 tears=1(50) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=45s fps=32 bufs=2083 tears=1(51) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=46s fps=32 bufs=2083 tears=0(51) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=47s fps=32 bufs=2083 tears=2(53) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=48s fps=32 bufs=2083 tears=0(53) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=49s fps=32 bufs=2083 tears=2(55) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=50s fps=32 bufs=2083 tears=0(55) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=51s fps=32 bufs=2083 tears=1(56) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=52s fps=32 bufs=2083 tears=0(56) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=53s fps=32 bufs=2083 tears=4(60) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=54s fps=32 bufs=2083 tears=1(61) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=55s fps=32 bufs=2083 tears=0(61) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=56s fps=32 bufs=2083 tears=1(62) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=57s fps=32 bufs=2083 tears=3(65) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=58s fps=32 bufs=2083 tears=1(66) miss=0 pairwait=308 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=59s fps=32 bufs=2083 tears=3(69) miss=0 pairwait=316 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=60s fps=32 bufs=2083 tears=1(70) miss=0 pairwait=313 over=0 gap=32ms
+cell: [50 us/div ROLL] t=60/150s ... fps=31.6 tears=70(1.1/s avg,4/s pk) miss=0(0/s pk) pairwait=18192(316/s pk) over=0 gapmax=125ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div ROLL] t=61s fps=32 bufs=2083 tears=2(72) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=62s fps=32 bufs=2083 tears=1(73) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=63s fps=32 bufs=2083 tears=0(73) miss=0 pairwait=315 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=64s fps=32 bufs=2083 tears=1(74) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=65s fps=32 bufs=2083 tears=2(76) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=66s fps=32 bufs=2083 tears=1(77) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=67s fps=32 bufs=2083 tears=0(77) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=68s fps=32 bufs=2083 tears=4(81) miss=0 pairwait=315 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=69s fps=32 bufs=2083 tears=2(83) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=70s fps=32 bufs=2083 tears=0(83) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=71s fps=32 bufs=2083 tears=2(85) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=72s fps=32 bufs=2083 tears=1(86) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=73s fps=32 bufs=2083 tears=1(87) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=74s fps=32 bufs=2083 tears=1(88) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=75s fps=32 bufs=2083 tears=0(88) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=76s fps=32 bufs=2083 tears=0(88) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=77s fps=32 bufs=2083 tears=1(89) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=78s fps=32 bufs=2083 tears=1(90) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=79s fps=32 bufs=2083 tears=0(90) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=80s fps=32 bufs=2083 tears=3(93) miss=0 pairwait=315 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=81s fps=32 bufs=2083 tears=1(94) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=82s fps=32 bufs=2083 tears=2(96) miss=0 pairwait=306 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=83s fps=32 bufs=2083 tears=3(99) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=84s fps=32 bufs=2083 tears=1(100) miss=0 pairwait=315 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=85s fps=32 bufs=2083 tears=0(100) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=86s fps=32 bufs=2083 tears=1(101) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=87s fps=32 bufs=2083 tears=2(103) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=88s fps=32 bufs=2083 tears=0(103) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=89s fps=32 bufs=2083 tears=0(103) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=90s fps=32 bufs=2083 tears=3(106) miss=0 pairwait=310 over=0 gap=32ms
+cell: [50 us/div ROLL] t=90/150s ... fps=31.7 tears=106(1.1/s avg,4/s pk) miss=0(0/s pk) pairwait=27543(316/s pk) over=0 gapmax=125ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div ROLL] t=91s fps=32 bufs=2083 tears=1(107) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=92s fps=32 bufs=2083 tears=0(107) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=93s fps=32 bufs=2083 tears=2(109) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=94s fps=32 bufs=2083 tears=0(109) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=95s fps=32 bufs=2083 tears=1(110) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=96s fps=32 bufs=2083 tears=2(112) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=97s fps=32 bufs=2083 tears=3(115) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=98s fps=32 bufs=2083 tears=0(115) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=99s fps=32 bufs=2083 tears=3(118) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=100s fps=32 bufs=2083 tears=1(119) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=101s fps=32 bufs=2083 tears=2(121) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=102s fps=32 bufs=2083 tears=2(123) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=103s fps=32 bufs=2083 tears=0(123) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=104s fps=32 bufs=2083 tears=0(123) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=105s fps=32 bufs=2083 tears=2(125) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=106s fps=32 bufs=2083 tears=1(126) miss=0 pairwait=317 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=107s fps=32 bufs=2083 tears=0(126) miss=0 pairwait=315 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=108s fps=32 bufs=2083 tears=2(128) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=109s fps=32 bufs=2083 tears=2(130) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=110s fps=32 bufs=2083 tears=1(131) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=111s fps=32 bufs=2083 tears=1(132) miss=0 pairwait=316 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=112s fps=32 bufs=2083 tears=1(133) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=113s fps=32 bufs=2083 tears=1(134) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=114s fps=32 bufs=2083 tears=0(134) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=115s fps=32 bufs=2083 tears=0(134) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=116s fps=32 bufs=2083 tears=0(134) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=117s fps=32 bufs=2083 tears=1(135) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=118s fps=32 bufs=2083 tears=2(137) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=119s fps=32 bufs=2083 tears=0(137) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=120s fps=32 bufs=2083 tears=0(137) miss=0 pairwait=311 over=0 gap=32ms
+cell: [50 us/div ROLL] t=120/150s ... fps=31.8 tears=137(1.1/s avg,4/s pk) miss=0(0/s pk) pairwait=36903(317/s pk) over=0 gapmax=125ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div ROLL] t=121s fps=32 bufs=2083 tears=2(139) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=122s fps=32 bufs=2083 tears=1(140) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=123s fps=32 bufs=2083 tears=2(142) miss=0 pairwait=315 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=124s fps=32 bufs=2083 tears=1(143) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=125s fps=32 bufs=2083 tears=0(143) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=126s fps=32 bufs=2083 tears=1(144) miss=0 pairwait=308 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=127s fps=32 bufs=2083 tears=1(145) miss=0 pairwait=308 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=128s fps=32 bufs=2083 tears=2(147) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=129s fps=32 bufs=2083 tears=0(147) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=130s fps=32 bufs=2083 tears=2(149) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=131s fps=32 bufs=2083 tears=0(149) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=132s fps=32 bufs=2083 tears=2(151) miss=0 pairwait=316 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=133s fps=32 bufs=2083 tears=1(152) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=134s fps=32 bufs=2083 tears=1(153) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=135s fps=32 bufs=2083 tears=1(154) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=136s fps=32 bufs=2083 tears=0(154) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=137s fps=32 bufs=2083 tears=1(155) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=138s fps=32 bufs=2083 tears=1(156) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=139s fps=32 bufs=2083 tears=2(158) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=140s fps=32 bufs=2083 tears=1(159) miss=0 pairwait=315 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=141s fps=32 bufs=2083 tears=1(160) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=142s fps=32 bufs=2083 tears=1(161) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=143s fps=32 bufs=2083 tears=1(162) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=144s fps=32 bufs=2083 tears=1(163) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=145s fps=32 bufs=2083 tears=1(164) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=146s fps=32 bufs=2083 tears=0(164) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=147s fps=32 bufs=2083 tears=2(166) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=148s fps=32 bufs=2083 tears=0(166) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=149s fps=32 bufs=2083 tears=1(167) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=150s fps=32 bufs=2083 tears=0(167) miss=0 pairwait=311 over=0 gap=32ms
+cell: [50 us/div ROLL] t=150/150s DONE fps=31.8 tears=167(1.1/s avg,4/s pk) miss=0(0/s pk) pairwait=46254(317/s pk) over=0 gapmax=125ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div ROLL] t=151s fps=32 bufs=2083 tears=0(167) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=152s fps=32 bufs=2083 tears=3(170) miss=0 pairwait=312 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=153s fps=32 bufs=2083 tears=0(170) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=154s fps=32 bufs=2083 tears=0(170) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=155s fps=32 bufs=2083 tears=3(173) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=156s fps=32 bufs=2083 tears=1(174) miss=0 pairwait=316 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=157s fps=32 bufs=2083 tears=2(176) miss=0 pairwait=315 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=158s fps=32 bufs=2083 tears=2(178) miss=0 pairwait=309 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=159s fps=32 bufs=2083 tears=0(178) miss=0 pairwait=316 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=160s fps=32 bufs=2083 tears=4(182) miss=0 pairwait=310 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=161s fps=32 bufs=2083 tears=0(182) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=162s fps=32 bufs=2083 tears=1(183) miss=0 pairwait=307 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=163s fps=32 bufs=2083 tears=0(183) miss=0 pairwait=313 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=164s fps=32 bufs=2083 tears=0(183) miss=0 pairwait=315 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=165s fps=32 bufs=2083 tears=2(185) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=166s fps=32 bufs=2083 tears=0(185) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=167s fps=32 bufs=2083 tears=2(187) miss=0 pairwait=314 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div ROLL] t=168s fps=32 bufs=2083 tears=0(187) miss=0 pairwait=311 over=0 gap=32ms
+draw: max=31ms
+draw: max=31ms
+draw: max=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=1s fps=32 bufs=130 tears=1(1) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=2s fps=32 bufs=130 tears=2(3) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=3s fps=32 bufs=130 tears=0(3) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=4s fps=32 bufs=130 tears=0(3) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=5s fps=32 bufs=130 tears=1(4) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=6s fps=32 bufs=130 tears=1(5) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=7s fps=32 bufs=130 tears=0(5) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=8s fps=32 bufs=130 tears=0(5) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=9s fps=32 bufs=130 tears=2(7) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=10s fps=32 bufs=130 tears=1(8) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=11s fps=32 bufs=130 tears=1(9) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=12s fps=32 bufs=130 tears=2(11) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=13s fps=32 bufs=130 tears=0(11) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=14s fps=32 bufs=130 tears=1(12) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=15s fps=32 bufs=130 tears=0(12) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=16s fps=32 bufs=130 tears=0(12) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=17s fps=32 bufs=130 tears=3(15) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=18s fps=32 bufs=130 tears=0(15) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=19s fps=32 bufs=130 tears=0(15) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=20s fps=32 bufs=130 tears=0(15) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=21s fps=32 bufs=130 tears=2(17) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=22s fps=32 bufs=130 tears=2(19) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=23s fps=32 bufs=130 tears=1(20) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=24s fps=32 bufs=130 tears=1(21) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=25s fps=32 bufs=130 tears=1(22) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=26s fps=32 bufs=130 tears=3(25) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=27s fps=32 bufs=130 tears=4(29) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=28s fps=32 bufs=130 tears=2(31) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=29s fps=32 bufs=130 tears=0(31) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=30s fps=32 bufs=130 tears=3(34) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div ROLL] t=30/150s ... fps=32.0 tears=34(1.1/s avg,4/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div ROLL] t=31s fps=32 bufs=130 tears=0(34) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=32s fps=32 bufs=130 tears=2(36) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=33s fps=32 bufs=130 tears=2(38) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=34s fps=32 bufs=130 tears=0(38) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=35s fps=32 bufs=130 tears=0(38) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=36s fps=32 bufs=130 tears=0(38) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=37s fps=32 bufs=130 tears=2(40) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=38s fps=32 bufs=130 tears=2(42) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=39s fps=32 bufs=130 tears=1(43) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=40s fps=32 bufs=130 tears=3(46) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=41s fps=32 bufs=130 tears=1(47) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=42s fps=32 bufs=130 tears=0(47) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=43s fps=32 bufs=130 tears=1(48) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=44s fps=32 bufs=130 tears=1(49) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=45s fps=32 bufs=130 tears=0(49) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=46s fps=32 bufs=130 tears=1(50) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=47s fps=32 bufs=130 tears=1(51) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=48s fps=32 bufs=130 tears=1(52) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=49s fps=32 bufs=130 tears=1(53) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=50s fps=32 bufs=130 tears=1(54) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=51s fps=32 bufs=130 tears=1(55) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=52s fps=32 bufs=130 tears=0(55) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=53s fps=32 bufs=130 tears=1(56) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=54s fps=32 bufs=130 tears=0(56) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=55s fps=32 bufs=130 tears=1(57) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=56s fps=32 bufs=130 tears=1(58) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=57s fps=32 bufs=130 tears=1(59) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=58s fps=32 bufs=130 tears=1(60) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=59s fps=32 bufs=130 tears=0(60) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=60s fps=32 bufs=130 tears=2(62) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div ROLL] t=60/150s ... fps=32.0 tears=62(1.0/s avg,4/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div ROLL] t=61s fps=32 bufs=130 tears=1(63) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=62s fps=32 bufs=130 tears=1(64) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=63s fps=32 bufs=130 tears=1(65) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=64s fps=32 bufs=130 tears=3(68) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=65s fps=32 bufs=130 tears=0(68) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=66s fps=32 bufs=130 tears=1(69) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=67s fps=32 bufs=130 tears=0(69) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=68s fps=32 bufs=130 tears=0(69) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=69s fps=32 bufs=130 tears=3(72) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=70s fps=32 bufs=130 tears=1(73) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=71s fps=32 bufs=130 tears=1(74) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=72s fps=32 bufs=130 tears=2(76) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=73s fps=32 bufs=130 tears=4(80) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=74s fps=32 bufs=130 tears=0(80) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=75s fps=32 bufs=130 tears=2(82) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=76s fps=32 bufs=130 tears=1(83) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=77s fps=32 bufs=130 tears=1(84) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=78s fps=32 bufs=130 tears=2(86) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=79s fps=32 bufs=130 tears=0(86) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=80s fps=32 bufs=130 tears=1(87) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=81s fps=32 bufs=130 tears=3(90) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=82s fps=32 bufs=130 tears=2(92) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=83s fps=32 bufs=130 tears=1(93) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=84s fps=32 bufs=130 tears=0(93) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=85s fps=32 bufs=130 tears=0(93) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=86s fps=32 bufs=130 tears=2(95) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=87s fps=32 bufs=130 tears=1(96) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=88s fps=32 bufs=130 tears=0(96) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=89s fps=32 bufs=130 tears=1(97) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=90s fps=32 bufs=130 tears=1(98) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div ROLL] t=90/150s ... fps=32.0 tears=98(1.0/s avg,4/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div ROLL] t=91s fps=32 bufs=130 tears=1(99) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=92s fps=32 bufs=130 tears=1(100) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=93s fps=32 bufs=130 tears=2(102) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=94s fps=32 bufs=130 tears=2(104) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=95s fps=32 bufs=130 tears=1(105) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=96s fps=32 bufs=130 tears=2(107) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=97s fps=32 bufs=130 tears=1(108) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=98s fps=32 bufs=130 tears=1(109) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=99s fps=32 bufs=130 tears=0(109) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=100s fps=32 bufs=130 tears=0(109) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=101s fps=32 bufs=130 tears=0(109) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=102s fps=32 bufs=130 tears=2(111) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=103s fps=32 bufs=130 tears=2(113) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=104s fps=32 bufs=130 tears=4(117) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=105s fps=32 bufs=130 tears=1(118) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=106s fps=32 bufs=130 tears=0(118) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=107s fps=32 bufs=130 tears=0(118) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=108s fps=32 bufs=130 tears=2(120) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=109s fps=32 bufs=130 tears=0(120) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=110s fps=32 bufs=130 tears=2(122) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=111s fps=32 bufs=130 tears=1(123) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=112s fps=32 bufs=130 tears=2(125) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=113s fps=32 bufs=130 tears=4(129) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=114s fps=32 bufs=130 tears=0(129) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=115s fps=32 bufs=130 tears=0(129) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=116s fps=32 bufs=130 tears=1(130) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=117s fps=32 bufs=130 tears=1(131) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=118s fps=32 bufs=130 tears=0(131) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=119s fps=32 bufs=130 tears=0(131) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=120s fps=32 bufs=130 tears=1(132) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div ROLL] t=120/150s ... fps=32.0 tears=132(1.1/s avg,4/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div ROLL] t=121s fps=32 bufs=130 tears=1(133) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=122s fps=32 bufs=130 tears=1(134) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=123s fps=32 bufs=130 tears=0(134) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=124s fps=32 bufs=130 tears=0(134) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=125s fps=32 bufs=130 tears=1(135) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=126s fps=32 bufs=130 tears=0(135) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=127s fps=32 bufs=130 tears=2(137) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=128s fps=32 bufs=130 tears=1(138) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=129s fps=32 bufs=130 tears=2(140) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=130s fps=32 bufs=130 tears=0(140) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=131s fps=32 bufs=130 tears=1(141) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=132s fps=32 bufs=130 tears=2(143) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=133s fps=32 bufs=130 tears=1(144) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=134s fps=32 bufs=130 tears=2(146) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=135s fps=32 bufs=130 tears=0(146) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=136s fps=32 bufs=130 tears=0(146) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=137s fps=32 bufs=130 tears=2(148) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=138s fps=32 bufs=130 tears=2(150) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=139s fps=32 bufs=130 tears=0(150) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=140s fps=32 bufs=130 tears=0(150) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=141s fps=32 bufs=130 tears=3(153) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=142s fps=32 bufs=130 tears=1(154) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=143s fps=32 bufs=130 tears=2(156) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=144s fps=32 bufs=130 tears=1(157) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=145s fps=32 bufs=130 tears=1(158) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=146s fps=32 bufs=130 tears=0(158) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=147s fps=32 bufs=130 tears=1(159) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=148s fps=32 bufs=130 tears=0(159) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=149s fps=32 bufs=130 tears=1(160) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=150s fps=32 bufs=130 tears=1(161) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div ROLL] t=150/150s DONE fps=32.0 tears=161(1.0/s avg,4/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div ROLL] t=151s fps=32 bufs=130 tears=1(162) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=152s fps=32 bufs=130 tears=1(163) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=153s fps=32 bufs=130 tears=1(164) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=154s fps=32 bufs=130 tears=2(166) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=155s fps=32 bufs=130 tears=1(167) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=156s fps=32 bufs=130 tears=0(167) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=157s fps=32 bufs=130 tears=0(167) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=158s fps=32 bufs=130 tears=2(169) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=159s fps=32 bufs=130 tears=0(169) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=160s fps=32 bufs=130 tears=1(170) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=161s fps=32 bufs=130 tears=2(172) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=162s fps=32 bufs=130 tears=0(172) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=163s fps=32 bufs=130 tears=1(173) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=164s fps=32 bufs=130 tears=1(174) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=165s fps=32 bufs=130 tears=1(175) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=166s fps=32 bufs=130 tears=2(177) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=167s fps=32 bufs=130 tears=1(178) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=168s fps=32 bufs=130 tears=2(180) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=169s fps=32 bufs=130 tears=1(181) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=170s fps=32 bufs=130 tears=0(181) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=171s fps=32 bufs=130 tears=0(181) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=172s fps=32 bufs=130 tears=3(184) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=173s fps=32 bufs=130 tears=0(184) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=174s fps=32 bufs=130 tears=1(185) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div ROLL] t=175s fps=32 bufs=130 tears=0(185) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+draw: max=31ms
+draw: max=31ms
+draw: max=31ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=1s fps=6 bufs=6 tears=0(0) miss=0 pairwait=404612 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=2s fps=7 bufs=6 tears=0(0) miss=0 pairwait=408646 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=3s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=4s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=5s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483909 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=6s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430066 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=7s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=8s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426531 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=9s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485410 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=10s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423854 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=11s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=12s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432740 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=13s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481232 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=14s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=15s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=16s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483971 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=17s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430002 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=18s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=19s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426590 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=20s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485411 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=21s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423789 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=22s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=23s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432800 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=24s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481173 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=25s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=26s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=27s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484036 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=28s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429938 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=29s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=30s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426653 over=0 gap=159ms
+cell: [10 ms/div ROLL] t=30/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=13121647(485411/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div ROLL] t=31s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485382 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=32s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423730 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=33s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421842 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=34s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432865 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=35s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481110 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=36s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421842 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=37s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=38s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484096 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=39s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429876 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=40s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=41s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426716 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=42s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485412 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=43s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423666 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=44s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=45s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432926 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=46s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481046 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=47s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=48s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=49s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484160 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=50s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429813 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=51s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=52s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426779 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=53s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485413 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=54s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423606 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=55s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=56s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432988 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=57s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480987 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=58s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421842 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=59s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=60s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484222 over=0 gap=159ms
+cell: [10 ms/div ROLL] t=60/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=26396721(485413/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div ROLL] t=61s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429725 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=62s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=63s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426840 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=64s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485412 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=65s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423541 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=66s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=67s fps=6 bufs=6 tears=0(0) miss=0 pairwait=433050 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=68s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480922 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=69s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=70s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=71s fps=6 bufs=6 tears=0(0) miss=0 pairwait=482730 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=72s fps=7 bufs=6 tears=0(0) miss=0 pairwait=431244 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=73s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=74s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425350 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=75s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485411 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=76s fps=7 bufs=6 tears=0(0) miss=0 pairwait=425034 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=77s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=78s fps=6 bufs=6 tears=0(0) miss=0 pairwait=431559 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=79s fps=7 bufs=6 tears=0(0) miss=0 pairwait=482411 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=80s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=81s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=82s fps=6 bufs=6 tears=0(0) miss=0 pairwait=482794 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=83s fps=7 bufs=6 tears=0(0) miss=0 pairwait=431182 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=84s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=85s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425410 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=86s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485413 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=87s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424974 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=88s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=89s fps=6 bufs=6 tears=0(0) miss=0 pairwait=431623 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=90s fps=7 bufs=6 tears=0(0) miss=0 pairwait=482354 over=0 gap=159ms
+cell: [10 ms/div ROLL] t=90/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=39622143(485413/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div ROLL] t=91s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=92s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=93s fps=6 bufs=6 tears=0(0) miss=0 pairwait=482855 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=94s fps=7 bufs=6 tears=0(0) miss=0 pairwait=431119 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=95s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=96s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425475 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=97s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485412 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=98s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424909 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=99s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421842 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=100s fps=6 bufs=6 tears=0(0) miss=0 pairwait=431683 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=101s fps=7 bufs=6 tears=0(0) miss=0 pairwait=482292 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=102s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=103s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=104s fps=6 bufs=6 tears=0(0) miss=0 pairwait=482917 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=105s fps=7 bufs=6 tears=0(0) miss=0 pairwait=431056 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=106s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=107s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425537 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=108s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485413 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=109s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424846 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=110s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=111s fps=6 bufs=6 tears=0(0) miss=0 pairwait=431748 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=112s fps=7 bufs=6 tears=0(0) miss=0 pairwait=482226 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=113s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=114s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=115s fps=6 bufs=6 tears=0(0) miss=0 pairwait=482982 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=116s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430992 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=117s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=118s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425599 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=119s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485410 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=120s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424786 over=0 gap=159ms
+cell: [10 ms/div ROLL] t=120/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=52839680(485413/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div ROLL] t=121s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421847 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=122s fps=6 bufs=6 tears=0(0) miss=0 pairwait=431809 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=123s fps=7 bufs=6 tears=0(0) miss=0 pairwait=482167 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=124s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=125s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=126s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483041 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=127s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430934 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=128s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=129s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425660 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=130s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485411 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=131s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424721 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=132s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=133s fps=6 bufs=6 tears=0(0) miss=0 pairwait=431872 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=134s fps=7 bufs=6 tears=0(0) miss=0 pairwait=482102 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=135s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421842 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=136s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=137s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483101 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=138s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430870 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=139s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=140s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425723 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=141s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485413 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=142s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424663 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=143s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=144s fps=6 bufs=6 tears=0(0) miss=0 pairwait=431931 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=145s fps=7 bufs=6 tears=0(0) miss=0 pairwait=482041 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=146s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=147s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=148s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483166 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=149s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430809 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=150s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+cell: [10 ms/div ROLL] t=150/150s DONE fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=66057245(485413/s pk) over=0 gapmax=159ms PASS
+draw: max=31ms
+acq: [10 ms/div ROLL] t=151s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425786 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=152s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485414 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=153s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424599 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=154s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=155s fps=6 bufs=6 tears=0(0) miss=0 pairwait=431996 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=156s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481978 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=157s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=158s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=159s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483228 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=160s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430745 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=161s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=162s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=163s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485410 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=164s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424536 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=165s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=166s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432057 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=167s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481918 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=168s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=169s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=170s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483289 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=171s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430683 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=172s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=173s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425910 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=174s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485415 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=175s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424474 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=176s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=177s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432118 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=178s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481855 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=179s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421842 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=180s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=181s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483351 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=182s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430620 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=183s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=184s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425972 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=185s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485412 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=186s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424411 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=187s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=188s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432182 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=189s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481793 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=190s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+acq: [10 ms/div ROLL] t=191s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=31ms
+acq: [10 ms/div ROLL] t=192s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483415 over=0 gap=159ms
+draw: max=31ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=1s fps=6 bufs=6 tears=0(0) miss=0 pairwait=9 over=0 gap=161ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=2s fps=7 bufs=6 tears=0(0) miss=0 pairwait=206572 over=0 gap=161ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=3s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421842 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=4s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=5s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484344 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=6s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429628 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=7s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=8s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426965 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=9s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485411 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=10s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423417 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=11s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421842 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=12s fps=6 bufs=6 tears=0(0) miss=0 pairwait=433174 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=13s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480799 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=14s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=15s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=16s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484407 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=17s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429566 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=18s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=19s fps=6 bufs=6 tears=0(0) miss=0 pairwait=427027 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=20s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485413 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=21s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423357 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=22s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=23s fps=6 bufs=6 tears=0(0) miss=0 pairwait=433235 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=24s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480737 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=25s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=26s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=27s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484468 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=28s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429503 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=29s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=30s fps=6 bufs=6 tears=0(0) miss=0 pairwait=427091 over=0 gap=159ms
+cell: [10 ms/div X-Y] t=30/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=12515402(485413/s pk) over=0 gapmax=161ms PASS
+draw: max=32ms
+acq: [10 ms/div X-Y] t=31s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485381 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=32s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423294 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=33s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=34s fps=6 bufs=6 tears=0(0) miss=0 pairwait=433299 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=35s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480674 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=36s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=37s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=38s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484531 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=39s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429442 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=40s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=41s fps=6 bufs=6 tears=0(0) miss=0 pairwait=427150 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=42s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485411 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=43s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423232 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=44s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=45s fps=6 bufs=6 tears=0(0) miss=0 pairwait=433361 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=46s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480612 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=47s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=48s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=49s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484595 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=50s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429379 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=51s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=52s fps=6 bufs=6 tears=0(0) miss=0 pairwait=427212 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=53s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485412 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=54s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423169 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=55s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=56s fps=6 bufs=6 tears=0(0) miss=0 pairwait=433422 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=57s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480549 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=58s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=59s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421842 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=60s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484654 over=0 gap=159ms
+cell: [10 ms/div X-Y] t=60/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=25790463(485413/s pk) over=0 gapmax=161ms PASS
+draw: max=32ms
+acq: [10 ms/div X-Y] t=61s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429291 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=62s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=63s fps=6 bufs=6 tears=0(0) miss=0 pairwait=427274 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=64s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485411 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=65s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423111 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=66s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=67s fps=6 bufs=6 tears=0(0) miss=0 pairwait=433485 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=68s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480488 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=69s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=70s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=71s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484718 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=72s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429256 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=73s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421847 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=74s fps=6 bufs=6 tears=0(0) miss=0 pairwait=427337 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=75s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485414 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=76s fps=7 bufs=6 tears=0(0) miss=0 pairwait=423046 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=77s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=78s fps=6 bufs=6 tears=0(0) miss=0 pairwait=433547 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=79s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480426 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=80s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=81s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=82s fps=6 bufs=6 tears=0(0) miss=0 pairwait=484779 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=83s fps=7 bufs=6 tears=0(0) miss=0 pairwait=429194 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=84s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=85s fps=6 bufs=6 tears=0(0) miss=0 pairwait=427399 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=86s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485412 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=87s fps=7 bufs=6 tears=0(0) miss=0 pairwait=422983 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=88s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=89s fps=6 bufs=6 tears=0(0) miss=0 pairwait=433609 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=90s fps=7 bufs=6 tears=0(0) miss=0 pairwait=480364 over=0 gap=159ms
+cell: [10 ms/div X-Y] t=90/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=39015448(485414/s pk) over=0 gapmax=161ms PASS
+draw: max=32ms
+acq: [10 ms/div X-Y] t=91s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=92s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=93s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483287 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=94s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430684 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=95s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=96s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425909 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=97s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485411 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=98s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424474 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=99s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=100s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432120 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=101s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481853 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=102s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=103s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=104s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483352 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=105s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430620 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=106s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=107s fps=6 bufs=6 tears=0(0) miss=0 pairwait=425972 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=108s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485412 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=109s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424410 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=110s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=111s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432181 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=112s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481793 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=113s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=114s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421847 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=115s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483413 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=116s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430560 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=117s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=118s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426032 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=119s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485411 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=120s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424349 over=0 gap=159ms
+cell: [10 ms/div X-Y] t=120/150s ... fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=52232983(485414/s pk) over=0 gapmax=161ms PASS
+acq: [10 ms/div X-Y] t=121s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=122s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432243 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=123s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481730 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=124s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=125s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=126s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483476 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=127s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430497 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=128s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=129s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426094 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=130s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485412 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=131s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424286 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=132s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=133s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432303 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=134s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481668 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=135s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=136s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=137s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483536 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=138s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430435 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=139s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421846 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=140s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426156 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=141s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485413 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=142s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424226 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=143s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=144s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432367 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=145s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481607 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=146s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=147s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421843 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=148s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483598 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=149s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430375 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=150s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+cell: [10 ms/div X-Y] t=150/150s DONE fps=6.2 tears=0(0.0/s avg,0/s pk) miss=0(0/s pk) pairwait=65450538(485414/s pk) over=0 gapmax=161ms PASS
+draw: max=32ms
+acq: [10 ms/div X-Y] t=151s fps=6 bufs=6 tears=0(0) miss=0 pairwait=426219 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=152s fps=6 bufs=6 tears=0(0) miss=0 pairwait=485410 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=153s fps=7 bufs=6 tears=0(0) miss=0 pairwait=424161 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=154s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421845 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=155s fps=6 bufs=6 tears=0(0) miss=0 pairwait=432432 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=156s fps=7 bufs=6 tears=0(0) miss=0 pairwait=481543 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=157s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=158s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+acq: [10 ms/div X-Y] t=159s fps=6 bufs=6 tears=0(0) miss=0 pairwait=483661 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=160s fps=7 bufs=6 tears=0(0) miss=0 pairwait=430315 over=0 gap=159ms
+draw: max=32ms
+acq: [10 ms/div X-Y] t=161s fps=6 bufs=6 tears=0(0) miss=0 pairwait=421844 over=0 gap=159ms
+draw: max=32ms
+draw: max=32ms
+draw: max=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=1s fps=32 bufs=130 tears=1(1) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=2s fps=33 bufs=130 tears=5(6) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=3s fps=32 bufs=130 tears=2(8) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=4s fps=32 bufs=130 tears=2(10) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=5s fps=32 bufs=130 tears=2(12) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=6s fps=32 bufs=130 tears=2(14) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=7s fps=32 bufs=130 tears=5(19) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=8s fps=32 bufs=130 tears=4(23) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=9s fps=32 bufs=130 tears=3(26) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=10s fps=32 bufs=130 tears=3(29) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=11s fps=32 bufs=130 tears=1(30) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=12s fps=32 bufs=130 tears=1(31) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=13s fps=32 bufs=130 tears=2(33) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=14s fps=32 bufs=130 tears=1(34) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=15s fps=32 bufs=130 tears=3(37) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=16s fps=32 bufs=130 tears=1(38) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=17s fps=32 bufs=130 tears=0(38) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=18s fps=32 bufs=130 tears=2(40) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=19s fps=32 bufs=130 tears=2(42) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=20s fps=32 bufs=130 tears=4(46) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=21s fps=32 bufs=130 tears=4(50) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=22s fps=32 bufs=130 tears=2(52) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=23s fps=32 bufs=130 tears=2(54) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=24s fps=32 bufs=130 tears=3(57) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=25s fps=32 bufs=130 tears=4(61) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=26s fps=32 bufs=130 tears=4(65) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=27s fps=32 bufs=130 tears=4(69) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=28s fps=32 bufs=130 tears=4(73) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=29s fps=32 bufs=130 tears=6(79) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=30s fps=32 bufs=130 tears=5(84) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div X-Y] t=30/150s ... fps=32.0 tears=84(2.8/s avg,6/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div X-Y] t=31s fps=32 bufs=130 tears=0(84) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=32s fps=32 bufs=130 tears=3(87) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=33s fps=32 bufs=130 tears=4(91) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=34s fps=32 bufs=130 tears=4(95) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=35s fps=32 bufs=130 tears=3(98) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=36s fps=32 bufs=130 tears=1(99) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=37s fps=32 bufs=130 tears=3(102) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=38s fps=32 bufs=130 tears=3(105) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=39s fps=32 bufs=130 tears=1(106) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=40s fps=32 bufs=130 tears=3(109) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=41s fps=32 bufs=130 tears=5(114) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=42s fps=32 bufs=130 tears=2(116) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=43s fps=32 bufs=130 tears=3(119) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=44s fps=32 bufs=130 tears=3(122) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=45s fps=32 bufs=130 tears=4(126) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=46s fps=32 bufs=130 tears=2(128) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=47s fps=32 bufs=130 tears=0(128) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=48s fps=32 bufs=130 tears=3(131) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=49s fps=32 bufs=130 tears=6(137) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=50s fps=32 bufs=130 tears=2(139) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=51s fps=32 bufs=130 tears=3(142) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=52s fps=32 bufs=130 tears=3(145) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=53s fps=32 bufs=130 tears=3(148) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=54s fps=32 bufs=130 tears=2(150) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=55s fps=32 bufs=130 tears=2(152) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=56s fps=32 bufs=130 tears=3(155) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=57s fps=32 bufs=130 tears=2(157) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=58s fps=32 bufs=130 tears=3(160) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=59s fps=32 bufs=130 tears=2(162) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=60s fps=32 bufs=130 tears=1(163) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div X-Y] t=60/150s ... fps=32.0 tears=163(2.7/s avg,6/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div X-Y] t=61s fps=32 bufs=130 tears=1(164) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=62s fps=32 bufs=130 tears=1(165) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=63s fps=32 bufs=130 tears=0(165) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=64s fps=32 bufs=130 tears=3(168) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=65s fps=32 bufs=130 tears=2(170) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=66s fps=32 bufs=130 tears=2(172) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=67s fps=32 bufs=130 tears=5(177) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=68s fps=32 bufs=130 tears=4(181) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=69s fps=32 bufs=130 tears=1(182) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=70s fps=32 bufs=130 tears=0(182) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=71s fps=32 bufs=130 tears=5(187) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=72s fps=32 bufs=130 tears=4(191) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=73s fps=32 bufs=130 tears=2(193) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=74s fps=32 bufs=130 tears=5(198) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=75s fps=32 bufs=130 tears=1(199) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=76s fps=32 bufs=130 tears=2(201) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=77s fps=32 bufs=130 tears=3(204) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=78s fps=32 bufs=130 tears=4(208) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=79s fps=32 bufs=130 tears=3(211) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=80s fps=32 bufs=130 tears=3(214) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=81s fps=32 bufs=130 tears=1(215) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=82s fps=32 bufs=130 tears=5(220) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=83s fps=32 bufs=130 tears=0(220) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=84s fps=32 bufs=130 tears=6(226) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=85s fps=32 bufs=130 tears=1(227) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=86s fps=32 bufs=130 tears=0(227) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=87s fps=32 bufs=130 tears=2(229) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=88s fps=32 bufs=130 tears=2(231) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=89s fps=32 bufs=130 tears=1(232) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=90s fps=32 bufs=130 tears=1(233) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div X-Y] t=90/150s ... fps=32.0 tears=233(2.5/s avg,6/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div X-Y] t=91s fps=32 bufs=130 tears=6(239) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=92s fps=32 bufs=130 tears=5(244) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=93s fps=32 bufs=130 tears=2(246) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=94s fps=32 bufs=130 tears=3(249) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=95s fps=32 bufs=130 tears=5(254) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=96s fps=32 bufs=130 tears=5(259) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=97s fps=32 bufs=130 tears=0(259) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=98s fps=32 bufs=130 tears=2(261) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=99s fps=32 bufs=130 tears=1(262) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=100s fps=32 bufs=130 tears=3(265) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=101s fps=32 bufs=130 tears=4(269) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=102s fps=32 bufs=130 tears=4(273) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=103s fps=32 bufs=130 tears=1(274) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=104s fps=32 bufs=130 tears=1(275) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=105s fps=32 bufs=130 tears=3(278) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=106s fps=32 bufs=130 tears=2(280) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=107s fps=32 bufs=130 tears=2(282) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=108s fps=32 bufs=130 tears=1(283) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=109s fps=32 bufs=130 tears=3(286) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=110s fps=32 bufs=130 tears=3(289) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=111s fps=32 bufs=130 tears=1(290) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=112s fps=32 bufs=130 tears=1(291) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=113s fps=32 bufs=130 tears=0(291) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=114s fps=32 bufs=130 tears=4(295) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=115s fps=32 bufs=130 tears=2(297) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=116s fps=32 bufs=130 tears=5(302) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=117s fps=32 bufs=130 tears=1(303) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=118s fps=32 bufs=130 tears=3(306) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=119s fps=32 bufs=130 tears=4(310) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=120s fps=32 bufs=130 tears=3(313) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div X-Y] t=120/150s ... fps=32.0 tears=313(2.6/s avg,6/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div X-Y] t=121s fps=32 bufs=130 tears=3(316) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=122s fps=32 bufs=130 tears=1(317) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=123s fps=32 bufs=130 tears=3(320) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=124s fps=32 bufs=130 tears=3(323) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=125s fps=32 bufs=130 tears=3(326) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=126s fps=32 bufs=130 tears=4(330) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=127s fps=32 bufs=130 tears=5(335) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=128s fps=32 bufs=130 tears=3(338) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=129s fps=32 bufs=130 tears=3(341) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=130s fps=32 bufs=130 tears=0(341) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=131s fps=32 bufs=130 tears=1(342) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=132s fps=32 bufs=130 tears=3(345) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=133s fps=32 bufs=130 tears=2(347) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=134s fps=32 bufs=130 tears=1(348) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=135s fps=32 bufs=130 tears=0(348) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=136s fps=32 bufs=130 tears=2(350) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=137s fps=32 bufs=130 tears=2(352) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=138s fps=32 bufs=130 tears=2(354) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=139s fps=32 bufs=130 tears=2(356) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=140s fps=32 bufs=130 tears=5(361) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=141s fps=32 bufs=130 tears=5(366) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=142s fps=32 bufs=130 tears=4(370) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=143s fps=32 bufs=130 tears=4(374) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=144s fps=32 bufs=130 tears=3(377) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=145s fps=32 bufs=130 tears=1(378) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=146s fps=32 bufs=130 tears=2(380) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=147s fps=32 bufs=130 tears=3(383) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=148s fps=32 bufs=130 tears=6(389) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=149s fps=32 bufs=130 tears=1(390) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=150s fps=32 bufs=130 tears=3(393) miss=0 pairwait=0 over=0 gap=31ms
+cell: [500 us/div X-Y] t=150/150s DONE fps=32.0 tears=393(2.6/s avg,6/s pk) miss=0(0/s pk) pairwait=0(0/s pk) over=0 gapmax=31ms FAIL:tears
+draw: max=31ms
+acq: [500 us/div X-Y] t=151s fps=32 bufs=130 tears=3(396) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=152s fps=32 bufs=130 tears=3(399) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=153s fps=32 bufs=130 tears=0(399) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=154s fps=32 bufs=130 tears=3(402) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=155s fps=32 bufs=130 tears=2(404) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=156s fps=32 bufs=130 tears=1(405) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=157s fps=32 bufs=130 tears=2(407) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=158s fps=32 bufs=130 tears=1(408) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=159s fps=32 bufs=130 tears=1(409) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=160s fps=32 bufs=130 tears=5(414) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=161s fps=32 bufs=130 tears=2(416) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=162s fps=32 bufs=130 tears=3(419) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=163s fps=32 bufs=130 tears=5(424) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=164s fps=32 bufs=130 tears=0(424) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=165s fps=32 bufs=130 tears=2(426) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=166s fps=32 bufs=130 tears=2(428) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=167s fps=32 bufs=130 tears=2(430) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=168s fps=32 bufs=130 tears=3(433) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=169s fps=32 bufs=130 tears=5(438) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=170s fps=32 bufs=130 tears=2(440) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=171s fps=32 bufs=130 tears=2(442) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=172s fps=32 bufs=130 tears=4(446) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=173s fps=32 bufs=130 tears=3(449) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+acq: [500 us/div X-Y] t=174s fps=32 bufs=130 tears=2(451) miss=0 pairwait=0 over=0 gap=31ms
+draw: max=31ms
+draw: max=31ms
+acq: [70 us/div X-Y] t=1s fps=33 bufs=1041 tears=6(6) miss=0 pairwait=1508 over=0 gap=31ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=1s fps=32 bufs=2083 tears=0(0) miss=0 pairwait=6047 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=2s fps=32 bufs=2083 tears=3(3) miss=0 pairwait=6687 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=3s fps=32 bufs=2083 tears=0(3) miss=0 pairwait=6893 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=4s fps=32 bufs=2083 tears=1(4) miss=0 pairwait=6999 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=5s fps=32 bufs=2083 tears=4(8) miss=0 pairwait=7012 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=6s fps=32 bufs=2083 tears=1(9) miss=0 pairwait=7038 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=7s fps=32 bufs=2083 tears=1(10) miss=0 pairwait=6933 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=8s fps=32 bufs=2083 tears=0(10) miss=0 pairwait=6984 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=9s fps=32 bufs=2083 tears=0(10) miss=0 pairwait=6858 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=10s fps=32 bufs=2083 tears=2(12) miss=0 pairwait=6796 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=11s fps=32 bufs=2083 tears=0(12) miss=0 pairwait=6552 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=12s fps=32 bufs=2083 tears=0(12) miss=0 pairwait=6564 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=13s fps=32 bufs=2083 tears=3(15) miss=0 pairwait=6503 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=14s fps=32 bufs=2083 tears=1(16) miss=0 pairwait=6514 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=15s fps=32 bufs=2083 tears=1(17) miss=0 pairwait=6520 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=16s fps=32 bufs=2083 tears=2(19) miss=0 pairwait=6616 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=17s fps=32 bufs=2083 tears=1(20) miss=0 pairwait=6498 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=18s fps=32 bufs=2083 tears=1(21) miss=0 pairwait=6564 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=19s fps=32 bufs=2083 tears=2(23) miss=0 pairwait=6553 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=20s fps=32 bufs=2083 tears=0(23) miss=0 pairwait=6345 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=21s fps=32 bufs=2083 tears=2(25) miss=0 pairwait=6341 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=22s fps=32 bufs=2083 tears=2(27) miss=0 pairwait=6361 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=23s fps=32 bufs=2083 tears=2(29) miss=0 pairwait=6400 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=24s fps=32 bufs=2083 tears=0(29) miss=0 pairwait=6265 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=25s fps=32 bufs=2083 tears=0(29) miss=0 pairwait=6273 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=26s fps=32 bufs=2083 tears=3(32) miss=0 pairwait=6285 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=27s fps=32 bufs=2083 tears=0(32) miss=0 pairwait=6228 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=28s fps=32 bufs=2083 tears=2(34) miss=0 pairwait=6399 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=29s fps=32 bufs=2083 tears=2(36) miss=0 pairwait=6413 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=30s fps=32 bufs=2083 tears=1(37) miss=0 pairwait=6290 over=0 gap=32ms
+cell: [50 us/div X-Y] t=30/150s ... fps=32.0 tears=37(1.2/s avg,4/s pk) miss=0(0/s pk) pairwait=196731(7038/s pk) over=0 gapmax=32ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div X-Y] t=31s fps=32 bufs=2083 tears=1(38) miss=0 pairwait=6437 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=32s fps=32 bufs=2083 tears=0(38) miss=0 pairwait=6445 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=33s fps=32 bufs=2083 tears=2(40) miss=0 pairwait=6345 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=34s fps=32 bufs=2083 tears=3(43) miss=0 pairwait=6379 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=35s fps=32 bufs=2083 tears=2(45) miss=0 pairwait=6371 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=36s fps=32 bufs=2083 tears=1(46) miss=0 pairwait=6295 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=37s fps=32 bufs=2083 tears=2(48) miss=0 pairwait=6253 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=38s fps=32 bufs=2083 tears=1(49) miss=0 pairwait=6509 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=39s fps=32 bufs=2083 tears=2(51) miss=0 pairwait=6419 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=40s fps=32 bufs=2083 tears=2(53) miss=0 pairwait=6366 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=41s fps=32 bufs=2083 tears=0(53) miss=0 pairwait=6393 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=42s fps=32 bufs=2083 tears=0(53) miss=0 pairwait=6454 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=43s fps=32 bufs=2083 tears=3(56) miss=0 pairwait=6277 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=44s fps=32 bufs=2083 tears=0(56) miss=0 pairwait=6263 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=45s fps=32 bufs=2083 tears=0(56) miss=0 pairwait=6336 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=46s fps=32 bufs=2083 tears=2(58) miss=0 pairwait=6317 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=47s fps=32 bufs=2083 tears=1(59) miss=0 pairwait=6298 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=48s fps=32 bufs=2083 tears=1(60) miss=0 pairwait=6409 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=49s fps=32 bufs=2083 tears=1(61) miss=0 pairwait=6389 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=50s fps=32 bufs=2083 tears=1(62) miss=0 pairwait=6410 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=51s fps=32 bufs=2083 tears=1(63) miss=0 pairwait=6294 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=52s fps=32 bufs=2083 tears=2(65) miss=0 pairwait=6414 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=53s fps=32 bufs=2083 tears=0(65) miss=0 pairwait=6262 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=54s fps=32 bufs=2083 tears=3(68) miss=0 pairwait=6280 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=55s fps=32 bufs=2083 tears=1(69) miss=0 pairwait=6358 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=56s fps=32 bufs=2083 tears=1(70) miss=0 pairwait=6257 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=57s fps=32 bufs=2083 tears=1(71) miss=0 pairwait=6414 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=58s fps=32 bufs=2083 tears=2(73) miss=0 pairwait=6590 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=59s fps=32 bufs=2083 tears=1(74) miss=0 pairwait=6484 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=60s fps=32 bufs=2083 tears=1(75) miss=0 pairwait=6402 over=0 gap=32ms
+cell: [50 us/div X-Y] t=60/150s ... fps=32.0 tears=75(1.2/s avg,4/s pk) miss=0(0/s pk) pairwait=387851(7038/s pk) over=0 gapmax=32ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div X-Y] t=61s fps=32 bufs=2083 tears=0(75) miss=0 pairwait=6374 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=62s fps=32 bufs=2083 tears=2(77) miss=0 pairwait=6491 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=63s fps=32 bufs=2083 tears=1(78) miss=0 pairwait=6447 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=64s fps=32 bufs=2083 tears=2(80) miss=0 pairwait=6428 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=65s fps=32 bufs=2083 tears=1(81) miss=0 pairwait=6393 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=66s fps=32 bufs=2083 tears=1(82) miss=0 pairwait=6458 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=67s fps=32 bufs=2083 tears=0(82) miss=0 pairwait=6307 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=68s fps=32 bufs=2083 tears=0(82) miss=0 pairwait=6362 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=69s fps=32 bufs=2083 tears=2(84) miss=0 pairwait=6376 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=70s fps=32 bufs=2083 tears=1(85) miss=0 pairwait=6367 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=71s fps=32 bufs=2083 tears=1(86) miss=0 pairwait=6486 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=72s fps=32 bufs=2083 tears=3(89) miss=0 pairwait=6565 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=73s fps=32 bufs=2083 tears=1(90) miss=0 pairwait=6463 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=74s fps=32 bufs=2083 tears=1(91) miss=0 pairwait=6478 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=75s fps=32 bufs=2083 tears=0(91) miss=0 pairwait=6544 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=76s fps=32 bufs=2083 tears=1(92) miss=0 pairwait=6503 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=77s fps=32 bufs=2083 tears=1(93) miss=0 pairwait=6398 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=78s fps=32 bufs=2083 tears=1(94) miss=0 pairwait=6444 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=79s fps=32 bufs=2083 tears=3(97) miss=0 pairwait=6476 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=80s fps=32 bufs=2083 tears=1(98) miss=0 pairwait=6490 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=81s fps=32 bufs=2083 tears=1(99) miss=0 pairwait=6499 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=82s fps=32 bufs=2083 tears=3(102) miss=0 pairwait=6501 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=83s fps=32 bufs=2083 tears=0(102) miss=0 pairwait=6121 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=84s fps=32 bufs=2083 tears=2(104) miss=0 pairwait=6196 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=85s fps=32 bufs=2083 tears=1(105) miss=0 pairwait=6281 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=86s fps=32 bufs=2083 tears=1(106) miss=0 pairwait=6191 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=87s fps=32 bufs=2083 tears=1(107) miss=0 pairwait=6165 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=88s fps=32 bufs=2083 tears=0(107) miss=0 pairwait=6373 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=89s fps=32 bufs=2083 tears=4(111) miss=0 pairwait=6450 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=90s fps=32 bufs=2083 tears=3(114) miss=0 pairwait=6397 over=0 gap=32ms
+cell: [50 us/div X-Y] t=90/150s ... fps=32.0 tears=114(1.2/s avg,4/s pk) miss=0(0/s pk) pairwait=579875(7038/s pk) over=0 gapmax=32ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div X-Y] t=91s fps=32 bufs=2083 tears=1(115) miss=0 pairwait=6262 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=92s fps=32 bufs=2083 tears=0(115) miss=0 pairwait=6275 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=93s fps=32 bufs=2083 tears=2(117) miss=0 pairwait=6174 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=94s fps=32 bufs=2083 tears=1(118) miss=0 pairwait=6230 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=95s fps=32 bufs=2083 tears=0(118) miss=0 pairwait=6291 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=96s fps=32 bufs=2083 tears=2(120) miss=0 pairwait=6223 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=97s fps=32 bufs=2083 tears=2(122) miss=0 pairwait=6114 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=98s fps=32 bufs=2083 tears=2(124) miss=0 pairwait=6077 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=99s fps=32 bufs=2083 tears=1(125) miss=0 pairwait=6217 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=100s fps=32 bufs=2083 tears=1(126) miss=0 pairwait=6030 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=101s fps=32 bufs=2083 tears=2(128) miss=0 pairwait=5979 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=102s fps=32 bufs=2083 tears=2(130) miss=0 pairwait=6092 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=103s fps=32 bufs=2083 tears=0(130) miss=0 pairwait=5958 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=104s fps=32 bufs=2083 tears=2(132) miss=0 pairwait=5971 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=105s fps=32 bufs=2083 tears=1(133) miss=0 pairwait=5930 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=106s fps=32 bufs=2083 tears=0(133) miss=0 pairwait=5957 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=107s fps=32 bufs=2083 tears=0(133) miss=0 pairwait=5876 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=108s fps=32 bufs=2083 tears=1(134) miss=0 pairwait=5975 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=109s fps=32 bufs=2083 tears=2(136) miss=0 pairwait=6031 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=110s fps=32 bufs=2083 tears=2(138) miss=0 pairwait=5845 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=111s fps=32 bufs=2083 tears=2(140) miss=0 pairwait=6102 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=112s fps=32 bufs=2083 tears=2(142) miss=0 pairwait=6193 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=113s fps=32 bufs=2083 tears=1(143) miss=0 pairwait=5950 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=114s fps=32 bufs=2083 tears=2(145) miss=0 pairwait=6037 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=115s fps=32 bufs=2083 tears=0(145) miss=0 pairwait=6011 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=116s fps=32 bufs=2083 tears=0(145) miss=0 pairwait=5980 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=117s fps=32 bufs=2083 tears=0(145) miss=0 pairwait=5919 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=118s fps=32 bufs=2083 tears=0(145) miss=0 pairwait=6038 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=119s fps=32 bufs=2083 tears=0(145) miss=0 pairwait=6031 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=120s fps=32 bufs=2083 tears=1(146) miss=0 pairwait=6012 over=0 gap=32ms
+cell: [50 us/div X-Y] t=120/150s ... fps=32.0 tears=146(1.2/s avg,4/s pk) miss=0(0/s pk) pairwait=761655(7038/s pk) over=0 gapmax=32ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div X-Y] t=121s fps=32 bufs=2083 tears=1(147) miss=0 pairwait=5873 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=122s fps=32 bufs=2083 tears=0(147) miss=0 pairwait=6066 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=123s fps=32 bufs=2083 tears=3(150) miss=0 pairwait=5898 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=124s fps=32 bufs=2083 tears=0(150) miss=0 pairwait=5899 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=125s fps=32 bufs=2083 tears=0(150) miss=0 pairwait=5938 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=126s fps=32 bufs=2083 tears=2(152) miss=0 pairwait=5929 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=127s fps=32 bufs=2083 tears=0(152) miss=0 pairwait=5838 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=128s fps=32 bufs=2083 tears=0(152) miss=0 pairwait=5969 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=129s fps=32 bufs=2083 tears=1(153) miss=0 pairwait=5912 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=130s fps=32 bufs=2083 tears=2(155) miss=0 pairwait=5853 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=131s fps=32 bufs=2083 tears=0(155) miss=0 pairwait=5862 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=132s fps=32 bufs=2083 tears=1(156) miss=0 pairwait=5957 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=133s fps=32 bufs=2083 tears=0(156) miss=0 pairwait=5792 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=134s fps=32 bufs=2083 tears=2(158) miss=0 pairwait=5856 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=135s fps=32 bufs=2083 tears=1(159) miss=0 pairwait=5934 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=136s fps=32 bufs=2083 tears=2(161) miss=0 pairwait=5832 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=137s fps=32 bufs=2083 tears=0(161) miss=0 pairwait=5914 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=138s fps=32 bufs=2083 tears=1(162) miss=0 pairwait=5995 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=139s fps=32 bufs=2083 tears=2(164) miss=0 pairwait=5889 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=140s fps=32 bufs=2083 tears=2(166) miss=0 pairwait=5783 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=141s fps=32 bufs=2083 tears=2(168) miss=0 pairwait=5876 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=142s fps=32 bufs=2083 tears=1(169) miss=0 pairwait=5968 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=143s fps=32 bufs=2083 tears=3(172) miss=0 pairwait=5833 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=144s fps=32 bufs=2083 tears=0(172) miss=0 pairwait=5952 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=145s fps=32 bufs=2083 tears=5(177) miss=0 pairwait=5987 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=146s fps=32 bufs=2083 tears=0(177) miss=0 pairwait=6087 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=147s fps=32 bufs=2083 tears=1(178) miss=0 pairwait=6018 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=148s fps=32 bufs=2083 tears=0(178) miss=0 pairwait=6154 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=149s fps=32 bufs=2083 tears=1(179) miss=0 pairwait=6102 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=150s fps=32 bufs=2083 tears=2(181) miss=0 pairwait=5952 over=0 gap=32ms
+cell: [50 us/div X-Y] t=150/150s DONE fps=32.0 tears=181(1.2/s avg,5/s pk) miss=0(0/s pk) pairwait=939573(7038/s pk) over=0 gapmax=32ms FAIL:tears
+draw: max=31ms
+acq: [50 us/div X-Y] t=151s fps=32 bufs=2083 tears=3(184) miss=0 pairwait=5275 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=152s fps=32 bufs=2083 tears=4(188) miss=0 pairwait=5268 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=153s fps=32 bufs=2083 tears=3(191) miss=0 pairwait=5221 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=154s fps=32 bufs=2083 tears=6(197) miss=0 pairwait=5197 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=155s fps=32 bufs=2083 tears=6(203) miss=0 pairwait=5230 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=156s fps=32 bufs=2083 tears=9(212) miss=0 pairwait=5082 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=157s fps=32 bufs=2083 tears=8(220) miss=0 pairwait=5065 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=158s fps=32 bufs=2083 tears=7(227) miss=0 pairwait=6672 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=159s fps=32 bufs=2083 tears=5(232) miss=0 pairwait=5227 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=160s fps=31 bufs=2083 tears=7(239) miss=0 pairwait=6002 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=161s fps=33 bufs=2083 tears=10(249) miss=0 pairwait=5810 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=162s fps=31 bufs=2083 tears=6(255) miss=0 pairwait=5867 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=163s fps=32 bufs=2083 tears=9(264) miss=0 pairwait=6540 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=164s fps=33 bufs=2083 tears=13(277) miss=0 pairwait=6527 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=165s fps=32 bufs=2083 tears=5(282) miss=0 pairwait=5165 over=0 gap=32ms
+draw: max=31ms
+acq: [50 us/div X-Y] t=166s fps=31 bufs=2083 tears=9(291) miss=0 pairwait=5807 over=0 gap=32ms
+draw: max=31ms

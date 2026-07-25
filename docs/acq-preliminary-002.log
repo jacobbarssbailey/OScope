@@ -1,0 +1,451 @@
+Processing teensy40 (platform: teensy; board: teensy40; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/teensy/teensy40.html
+PLATFORM: Teensy (5.0.0) > Teensy 4.0
+HARDWARE: IMXRT1062 600MHz, 512KB RAM, 1.94MB Flash
+DEBUG: Current (jlink) External (jlink)
+PACKAGES: 
+ - framework-arduinoteensy @ 1.159.0 (1.59) 
+ - tool-teensy @ 1.159.0 (1.59) 
+ - toolchain-gccarmnoneeabi-teensy @ 1.110301.0 (11.3.1)
+Converting OScope.ino
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 97 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- Adafruit GFX Library @ 1.12.4
+|-- GC9A01A1_t3n @ 0.0.0+sha.11ceeed
+|-- Encoder @ 1.4.4
+|-- Teensy_ADC @ 9.1.0
+|-- AcqCore
+|-- SPI @ 1.0
+|-- EEPROM @ 2.0
+|-- ILI9341_t3
+Building in release mode
+Compiling .pio/build/teensy40/src/OScope.ino.cpp.o
+Linking .pio/build/teensy40/firmware.elf
+Checking size .pio/build/teensy40/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+Building .pio/build/teensy40/firmware.hex
+Configuring upload protocol...
+AVAILABLE: jlink, teensy-cli, teensy-gui
+CURRENT: upload_protocol = teensy-gui
+Uploading .pio/build/teensy40/firmware.hex
+========================= [SUCCESS] Took 2.81 seconds =========================
+
+Environment    Status    Duration
+-------------  --------  ------------
+teensy40       SUCCESS   00:00:02.805
+========================= 1 succeeded in 00:00:02.805 =========================
+--- Terminal on /dev/cu.usbmodem153882301 | 115200 8-N-1
+--- Available filters and text transformations: colorize, debug, default, direct, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
+_t3n::begin mosi:11 SCLK:13 CS:9 DC:10 SPI clocks:30000000 2000000
+draw: max=31ms
+acq: fps=32 exp=63 frames=32 tears=1(1) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=64 tears=0(1) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=96 tears=1(2) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=128 tears=0(2) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=160 tears=0(2) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=192 tears=1(3) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=224 tears=0(3) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=256 tears=1(4) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=288 tears=1(5) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=320 tears=2(7) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=352 tears=1(8) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=384 tears=1(9) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=416 tears=1(10) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=448 tears=1(11) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=480 tears=0(11) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=512 tears=0(11) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=544 tears=0(11) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=576 tears=0(11) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=608 tears=0(11) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=640 tears=2(13) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=672 tears=0(13) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=704 tears=1(14) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=63 frames=736 tears=0(14) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=41 frames=768 tears=1(15) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=800 tears=0(15) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=416 frames=832 tears=1(16) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=860 tears=3(19) miss=68 pairwait=669 over=0 gapmax=81ms
+draw: max=31ms
+acq: fps=26 exp=2083 frames=886 tears=6(25) miss=108 pairwait=922 over=0 gapmax=62ms
+draw: max=31ms
+acq: fps=31 exp=2083 frames=917 tears=5(30) miss=96 pairwait=789 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=945 tears=6(36) miss=122 pairwait=1038 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=974 tears=7(43) miss=127 pairwait=1130 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=30 exp=2083 frames=1004 tears=7(50) miss=124 pairwait=1081 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1033 tears=5(55) miss=104 pairwait=897 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1062 tears=7(62) miss=160 pairwait=1450 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=1089 tears=7(69) miss=145 pairwait=1321 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1118 tears=6(75) miss=114 pairwait=1008 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1147 tears=6(81) miss=152 pairwait=1338 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1175 tears=8(89) miss=150 pairwait=1329 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=1202 tears=7(96) miss=169 pairwait=1554 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1230 tears=7(103) miss=161 pairwait=1429 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1258 tears=6(109) miss=125 pairwait=1071 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1287 tears=7(116) miss=146 pairwait=1336 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=1314 tears=7(123) miss=141 pairwait=1250 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=30 exp=2083 frames=1344 tears=8(131) miss=123 pairwait=1070 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=1371 tears=7(138) miss=135 pairwait=1212 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1399 tears=8(146) miss=152 pairwait=1352 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=1426 tears=8(154) miss=170 pairwait=1536 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1455 tears=7(161) miss=127 pairwait=1131 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1483 tears=7(168) miss=151 pairwait=1367 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1512 tears=4(172) miss=129 pairwait=1192 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1540 tears=5(177) miss=133 pairwait=1208 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1569 tears=7(184) miss=157 pairwait=1382 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1597 tears=8(192) miss=160 pairwait=1480 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=1624 tears=5(197) miss=143 pairwait=1324 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1652 tears=9(206) miss=148 pairwait=1358 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1680 tears=7(213) miss=148 pairwait=1293 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1709 tears=5(218) miss=135 pairwait=1201 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1738 tears=6(224) miss=141 pairwait=1284 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=1765 tears=7(231) miss=158 pairwait=1447 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=1792 tears=9(240) miss=170 pairwait=1577 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1821 tears=6(246) miss=129 pairwait=1161 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1850 tears=6(252) miss=145 pairwait=1300 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1878 tears=5(257) miss=141 pairwait=1259 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=1905 tears=6(263) miss=135 pairwait=1213 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=1934 tears=7(270) miss=136 pairwait=1213 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1962 tears=6(276) miss=155 pairwait=1380 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=1990 tears=4(280) miss=134 pairwait=1210 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2019 tears=8(288) miss=147 pairwait=1286 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=2046 tears=9(297) miss=148 pairwait=1345 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=30 exp=2083 frames=2076 tears=5(302) miss=130 pairwait=1186 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2104 tears=8(310) miss=159 pairwait=1413 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2132 tears=7(317) miss=138 pairwait=1282 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=2159 tears=6(323) miss=150 pairwait=1359 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2187 tears=7(330) miss=144 pairwait=1283 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2215 tears=6(336) miss=145 pairwait=1277 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2243 tears=6(342) miss=147 pairwait=1300 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=30 exp=2083 frames=2273 tears=5(347) miss=119 pairwait=1066 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2301 tears=7(354) miss=142 pairwait=1274 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=2328 tears=9(363) miss=149 pairwait=1349 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2357 tears=9(372) miss=165 pairwait=1453 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2386 tears=6(378) miss=124 pairwait=1108 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=2413 tears=9(387) miss=163 pairwait=1456 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=2440 tears=7(394) miss=172 pairwait=1584 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2469 tears=7(401) miss=146 pairwait=1285 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=2496 tears=7(408) miss=142 pairwait=1295 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2524 tears=8(416) miss=158 pairwait=1470 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=2551 tears=10(426) miss=167 pairwait=1499 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2579 tears=6(432) miss=148 pairwait=1317 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2608 tears=6(438) miss=142 pairwait=1237 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2637 tears=5(443) miss=126 pairwait=1138 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2666 tears=4(447) miss=109 pairwait=948 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2694 tears=6(453) miss=150 pairwait=1346 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2722 tears=7(460) miss=144 pairwait=1285 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2751 tears=7(467) miss=127 pairwait=1094 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2779 tears=7(474) miss=131 pairwait=1187 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2808 tears=9(483) miss=165 pairwait=1466 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=2835 tears=6(489) miss=155 pairwait=1411 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=2863 tears=8(497) miss=146 pairwait=1312 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=2890 tears=6(503) miss=167 pairwait=1488 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=30 exp=2083 frames=2920 tears=4(507) miss=92 pairwait=786 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2949 tears=7(514) miss=128 pairwait=1124 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=2978 tears=7(521) miss=129 pairwait=1141 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=30 exp=2083 frames=3008 tears=3(524) miss=92 pairwait=800 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=3035 tears=9(533) miss=171 pairwait=1557 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=3062 tears=7(540) miss=160 pairwait=1506 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=3090 tears=5(545) miss=142 pairwait=1209 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=3119 tears=6(551) miss=130 pairwait=1173 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=3148 tears=8(559) miss=126 pairwait=1122 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=3176 tears=6(565) miss=133 pairwait=1208 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=3205 tears=4(569) miss=106 pairwait=945 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=3234 tears=6(575) miss=126 pairwait=1080 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=3262 tears=7(582) miss=148 pairwait=1356 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=3291 tears=7(589) miss=130 pairwait=1162 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=2083 frames=3320 tears=6(595) miss=123 pairwait=1087 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=3347 tears=6(601) miss=164 pairwait=1493 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=27 exp=2083 frames=3374 tears=9(610) miss=167 pairwait=1502 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=3402 tears=9(619) miss=178 pairwait=1585 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=28 exp=2083 frames=3430 tears=5(624) miss=127 pairwait=1154 over=0 gapmax=51ms
+draw: max=31ms
+acq: fps=29 exp=1041 frames=3459 tears=4(628) miss=129 pairwait=9711 over=0 gapmax=82ms
+draw: max=31ms
+acq: fps=31 exp=416 frames=3490 tears=1(629) miss=5 pairwait=2577 over=0 gapmax=62ms
+draw: max=31ms
+acq: fps=32 exp=208 frames=3522 tears=1(630) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3554 tears=1(631) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3586 tears=2(633) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3618 tears=2(635) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3650 tears=1(636) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3682 tears=1(637) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3714 tears=1(638) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3746 tears=2(640) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3778 tears=1(641) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3810 tears=0(641) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3842 tears=0(641) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3874 tears=1(642) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3906 tears=1(643) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3938 tears=0(643) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=3970 tears=0(643) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4002 tears=0(643) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4034 tears=2(645) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4066 tears=1(646) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4098 tears=1(647) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4130 tears=1(648) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4162 tears=1(649) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4194 tears=0(649) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4226 tears=1(650) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4258 tears=0(650) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4290 tears=1(651) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4322 tears=1(652) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4354 tears=0(652) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4386 tears=3(655) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4418 tears=0(655) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4450 tears=2(657) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4482 tears=2(659) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4514 tears=2(661) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4546 tears=0(661) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4578 tears=1(662) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4610 tears=3(665) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4642 tears=1(666) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4674 tears=0(666) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4706 tears=1(667) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4738 tears=1(668) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=130 frames=4770 tears=2(670) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=41 frames=4802 tears=0(670) miss=0 pairwait=0 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=31 exp=31 frames=4833 tears=0(670) miss=0 pairwait=1633 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=32 exp=31 frames=4865 tears=0(670) miss=0 pairwait=11808 over=0 gapmax=31ms
+draw: max=31ms
+acq: fps=27 exp=12 frames=4892 tears=0(670) miss=0 pairwait=242143 over=0 gapmax=79ms
+draw: max=31ms
+acq: fps=12 exp=12 frames=4904 tears=0(670) miss=0 pairwait=1023142 over=0 gapmax=79ms
+draw: max=31ms
+acq: fps=13 exp=12 frames=4917 tears=0(670) miss=0 pairwait=974179 over=0 gapmax=79ms
+draw: max=31ms
+acq: fps=13 exp=12 frames=4930 tears=0(670) miss=0 pairwait=1031427 over=0 gapmax=79ms
+draw: max=31ms
+acq: fps=12 exp=12 frames=4942 tears=0(670) miss=0 pairwait=1036057 over=0 gapmax=79ms
+draw: max=31ms
+acq: fps=13 exp=12 frames=4955 tears=0(670) miss=0 pairwait=984266 over=0 gapmax=79ms
+draw: max=31ms
+acq: fps=13 exp=12 frames=4968 tears=0(670) miss=0 pairwait=1032841 over=0 gapmax=79ms
+draw: max=31ms
+acq: fps=11 exp=8 frames=4979 tears=0(670) miss=0 pairwait=989544 over=0 gapmax=111ms
+draw: max=31ms
+acq: fps=8 exp=6 frames=4987 tears=0(670) miss=0 pairwait=916612 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=4993 tears=0(670) miss=0 pairwait=1014950 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=7 exp=6 frames=5000 tears=0(670) miss=0 pairwait=979560 over=0 gapmax=159ms
+acq: fps=6 exp=6 frames=5006 tears=0(670) miss=0 pairwait=973311 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5012 tears=0(670) miss=0 pairwait=1029166 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5018 tears=0(670) miss=0 pairwait=1029163 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=7 exp=6 frames=5025 tears=0(670) miss=0 pairwait=969749 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5031 tears=0(670) miss=0 pairwait=980036 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5037 tears=0(670) miss=0 pairwait=1029164 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5043 tears=0(670) miss=0 pairwait=1029167 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=7 exp=6 frames=5050 tears=0(670) miss=0 pairwait=963027 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5056 tears=0(670) miss=0 pairwait=986756 over=0 gapmax=159ms
+acq: fps=6 exp=6 frames=5062 tears=0(670) miss=0 pairwait=1029166 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=7 exp=6 frames=5069 tears=0(670) miss=0 pairwait=1025141 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5075 tears=0(670) miss=0 pairwait=973379 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5081 tears=0(670) miss=0 pairwait=1029166 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5087 tears=0(670) miss=0 pairwait=1029166 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=7 exp=6 frames=5094 tears=0(670) miss=0 pairwait=969682 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5100 tears=0(670) miss=0 pairwait=980103 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5106 tears=0(670) miss=0 pairwait=1029165 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5112 tears=0(670) miss=0 pairwait=1029167 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=7 exp=6 frames=5119 tears=0(670) miss=0 pairwait=962959 over=0 gapmax=159ms
+acq: fps=6 exp=6 frames=5125 tears=0(670) miss=0 pairwait=986824 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5131 tears=0(670) miss=0 pairwait=1029166 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=7 exp=6 frames=5138 tears=0(670) miss=0 pairwait=1025074 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5144 tears=0(670) miss=0 pairwait=973447 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5150 tears=0(670) miss=0 pairwait=1029168 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5156 tears=0(670) miss=0 pairwait=1029165 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=7 exp=6 frames=5163 tears=0(670) miss=0 pairwait=969612 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5169 tears=0(670) miss=0 pairwait=980170 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=6 exp=6 frames=5175 tears=0(670) miss=0 pairwait=1029167 over=0 gapmax=159ms
+acq: fps=6 exp=6 frames=5181 tears=0(670) miss=0 pairwait=1029166 over=0 gapmax=159ms
+draw: max=31ms
+acq: fps=7 exp=6 frames=5188 tears=0(670) miss=0 pairwait=962892 over=0 gapmax=159ms
+draw: max=31ms
