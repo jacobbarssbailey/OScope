@@ -33,6 +33,8 @@
 // Changing the timebase reconfigures the timer on the next update().
 #pragma once
 
+#include <AcqCore.h>
+
 #include "AcqStats.h"
 #include "modes/ScopeMode.h"
 #include "ScopeState.h"
@@ -62,9 +64,19 @@ public:
     const AcqStats& stats() const { return _stats; }
     AcqStats&       statsMutable() { return _stats; }
 
-    // Print a 1 Hz stats line to Serial while diagnostics are enabled.
+    // Print a 1 Hz stats line to Serial while diagnostics are enabled, plus a
+    // per-cell aggregate line at each checkpoint and at the end of a dwell.
+    // A "cell" is one (timebase, mode) pair held steady — the unit of the
+    // characterization protocol (docs/acq-characterization.md).  Changing
+    // either one starts a new cell, so knob sweeps never pollute a dwell.
     // Call once per loop; cheap no-op between reports.
-    void reportDiag(bool enabled);
+    void reportDiag(const ScopeState& state, const Settings& settings);
+
+    // Dwell target for one protocol cell, in seconds (2.5 minutes).
+    static constexpr uint32_t kCellTargetSecs = 150;
+
+    // Current cell's running totals, for the on-screen diagnostics overlay.
+    const AcqCore::CellStats& cell() const { return _cell; }
 
 private:
     // Acquisition health stats (tear detection, trigger misses, etc).
@@ -93,6 +105,24 @@ private:
     uint32_t _repLastWaits   = 0;
     uint32_t _repLastOver    = 0;
 
+    // Aggregate for the cell currently being dwelt on.
+    AcqCore::CellStats _cell;
+
+    // Checkpoint cadence for the aggregate line, and the shortest dwell worth
+    // reporting when a cell is cut short (below this it is a knob transient).
+    static constexpr uint32_t kCellCheckpointSecs = 30;
+    static constexpr uint32_t kCellMinSecs        = 10;
+
+    // Longest 1 Hz window still treated as one second (see diagWindowStale).
+    static constexpr uint32_t kDiagWindowMaxMs = 2000;
+
     // (Re)start the sample timer at the rate derived from timebase.
     void configureTimer(uint16_t timebase_us_per_div);
+
+    // Print the aggregate line for the current cell, tagged with `status`.
+    void printCell(const ScopeState& state, const char* status);
+
+    // Restart the 1 Hz delta window at `now`, discarding the partial second
+    // and the gap/tear transient a timebase or mode change produces.
+    void rebaseDiagWindow(uint32_t now);
 };

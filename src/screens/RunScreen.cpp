@@ -89,7 +89,7 @@ bool RunScreen::tick(AppContext& ctx) {
     if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
     const bool newFrame = _acq.update(s, ctx.settings);
-    _acq.reportDiag(ctx.settings.diag);
+    _acq.reportDiag(s, ctx.settings);
     if (newFrame) {
         // Let the active mode fold the completed sweep into any history it keeps
         // (Rolling); others no-op.  Done here (once per frame), not in draw().
@@ -229,15 +229,19 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     parameterFor(s.selected).format(s, val, sizeof val);
     r.textCenterX(Theme::ParamY, val, Theme::Highlight, Arial_16);
 
-    // Capture diagnostics overlay: cumulative tears, frames/s consumed, and
-    // the worst inter-frame gap in the last report window.
+    // Capture diagnostics overlay: dwell progress for the current
+    // characterization cell, its tear count, and the worst inter-frame gap so
+    // far.  Cell-scoped rather than since-boot so the bench operator can read a
+    // 2.5-minute dwell straight off the screen without the serial log.
     if (ctx.settings.diag) {
-        const AcqStats& st = _acq.stats();
+        const AcqCore::CellStats& c = _acq.cell();
         char d[40];
-        snprintf(d, sizeof d, "T%lu F%lu G%lums",
-                 (unsigned long)st.tearEvents,
-                 (unsigned long)st.framesProduced,
-                 (unsigned long)(st.gapMaxUs / 1000));
+        snprintf(d, sizeof d, "%lu/%lus T%lu G%lums%s",
+                 (unsigned long)c.secs,
+                 (unsigned long)Acquisition::kCellTargetSecs,
+                 (unsigned long)c.tears,
+                 (unsigned long)(c.gapMaxUs / 1000),
+                 c.reported ? (c.pass() ? " PASS" : " FAIL") : "");
         r.textCenterX(Theme::DiagY, d, Theme::Dim, Arial_13);
     }
 

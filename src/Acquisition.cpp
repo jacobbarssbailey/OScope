@@ -18,6 +18,8 @@
 #include "Config.h"
 #include "Theme.h"
 
+#include "Parameter.h"
+
 #include <AcqCore.h>
 #include <Arduino.h>
 #include <ADC.h>
@@ -216,29 +218,15 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     return produce;
 }
 
-void Acquisition::reportDiag(bool enabled) {
-    if (!enabled) return;
-    const uint32_t now = millis();
-    if (_repLastMs != 0 && now - _repLastMs < 1000) return;
-    if (_repLastMs == 0) { _repLastMs = now; return; }   // first call: arm only
+// Compact "[500 us/div ROLL]" tag identifying a characterization cell.  Both
+// halves are reused from existing formatters so the log and the display agree.
+static void cellTag(const ScopeState& state, char* b, uint8_t n) {
+    char tb[16];
+    parameterFor(EncoderParam::Timebase).format(state, tb, sizeof tb);
+    snprintf(b, n, "[%s %s]", tb, modeName(state.mode));
+}
 
-    // Expected buffer completion rate at the current timebase: one buffer per
-    // CAPTURE samples.  fps well below exp = the reader is missing buffers.
-    const uint32_t interval = ((uint32_t)_sTimebase * Theme::GridCols)
-                              / SampleBuffers::N;
-    const uint32_t exp = (1000000UL / (interval < 1 ? 1 : interval)) / CAPTURE;
-
-    Serial.printf("acq: fps=%lu exp=%lu frames=%lu tears=%lu(%lu) miss=%lu pairwait=%lu over=%lu gapmax=%lums\n",
-        (unsigned long)(_stats.framesProduced - _repLastFrames),
-        (unsigned long)exp,
-        (unsigned long)_stats.framesProduced,
-        (unsigned long)(_stats.tearEvents - _repLastTears),
-        (unsigned long)_stats.tearEvents,
-        (unsigned long)(_stats.trigMisses - _repLastMisses),
-        (unsigned long)(_stats.pairWaits - _repLastWaits),
-        (unsigned long)(_stats.overruns - _repLastOver),
-        (unsigned long)(_stats.gapMaxUs / 1000));
-
+void Acquisition::rebaseDiagWindow(uint32_t now) {
     _repLastMs     = now;
     _repLastFrames = _stats.framesProduced;
     _repLastTears  = _stats.tearEvents;
@@ -246,4 +234,108 @@ void Acquisition::reportDiag(bool enabled) {
     _repLastWaits  = _stats.pairWaits;
     _repLastOver   = _stats.overruns;
     _stats.resetWindow();
+    // lastConsumeUs deliberately survives: a gap that straddles two report
+    // windows is still a real gap and must not be lost.  Only a cell change
+    // clears it (see reportDiag), because the timer reconfigure there produces
+    // one artificial gap that belongs to neither cell.
+}
+
+void Acquisition::printCell(const ScopeState& state, const char* status) {
+    char tag[32];
+    cellTag(state, tag, sizeof tag);
+
+    const uint32_t fps    = _cell.fpsTenths();
+    const uint32_t tearAvg = _cell.secs ? (_cell.tears * 10) / _cell.secs : 0;
+
+    // One line per cell, in the order of the protocol table's Record: list.
+    Serial.printf("cell: %s t=%lu/%lus %s fps=%lu.%lu tears=%lu(%lu.%lu/s avg,%lu/s pk) "
+                  "miss=%lu(%lu/s pk) pairwait=%lu(%lu/s pk) over=%lu gapmax=%lums %s\n",
+        tag,
+        (unsigned long)_cell.secs, (unsigned long)kCellTargetSecs, status,
+        (unsigned long)(fps / 10), (unsigned long)(fps % 10),
+        (unsigned long)_cell.tears,
+        (unsigned long)(tearAvg / 10), (unsigned long)(tearAvg % 10),
+        (unsigned long)_cell.tearPeak,
+        (unsigned long)_cell.misses, (unsigned long)_cell.missPeak,
+        (unsigned long)_cell.waits,  (unsigned long)_cell.waitPeak,
+        (unsigned long)_cell.overruns,
+        (unsigned long)(_cell.gapMaxUs / 1000),
+        _cell.pass() ? "PASS" : (_cell.overruns ? "FAIL:tears+over" : "FAIL:tears"));
+}
+
+void Acquisition::reportDiag(const ScopeState& state, const Settings& settings) {
+    if (!settings.diag) return;
+    const uint32_t now = millis();
+
+    if (_repLastMs == 0) {   // first call: arm the window and open a cell
+        _cell.restart(state.timebase_us_per_div, (uint8_t)state.mode);
+        rebaseDiagWindow(now);
+        _stats.lastConsumeUs = 0;
+        return;
+    }
+
+    // A timebase or mode change ends the dwell immediately, mid-second: the
+    // knob has moved, so nothing after this point belongs to the old cell.
+    if (state.timebase_us_per_div != _cell.timebase ||
+        (uint8_t)state.mode != _cell.mode) {
+        if (!_cell.reported &&
+            AcqCore::cellPartialWorth(_cell.secs, kCellMinSecs, kCellTargetSecs)) {
+            printCell(state, "CUT SHORT");
+        }
+        _cell.restart(state.timebase_us_per_div, (uint8_t)state.mode);
+        rebaseDiagWindow(now);
+        _stats.lastConsumeUs = 0;   // discard the reconfigure's artificial gap
+        return;
+    }
+
+    const uint32_t elapsed = now - _repLastMs;
+    if (elapsed < 1000) return;
+
+    // Reporting stops whenever the run screen is not live (settings menu, frozen
+    // trace, Diag toggled off and back on).  Discard that window rather than
+    // recording many seconds of deltas as one second.
+    if (AcqCore::diagWindowStale(elapsed, kDiagWindowMaxMs)) {
+        rebaseDiagWindow(now);
+        _stats.lastConsumeUs = 0;
+        return;
+    }
+
+    // Buffer completion rate at this timebase: one buffer per CAPTURE samples.
+    // This is the DMA's rate, not an achievable frame rate — at short timebases
+    // buffers complete far faster than the display can consume them, which is
+    // the tear mechanism rather than a fault in the reader.
+    const uint32_t interval = ((uint32_t)_sTimebase * Theme::GridCols)
+                              / SampleBuffers::N;
+    const uint32_t bufs = (1000000UL / (interval < 1 ? 1 : interval)) / CAPTURE;
+
+    const uint32_t framesD = _stats.framesProduced - _repLastFrames;
+    const uint32_t tearsD  = _stats.tearEvents     - _repLastTears;
+    const uint32_t missD   = _stats.trigMisses     - _repLastMisses;
+    const uint32_t waitD   = _stats.pairWaits      - _repLastWaits;
+    const uint32_t overD   = _stats.overruns       - _repLastOver;
+
+    _cell.addSecond(framesD, tearsD, missD, waitD, overD, _stats.gapMaxUs);
+
+    char tag[32];
+    cellTag(state, tag, sizeof tag);
+    Serial.printf("acq: %s t=%lus fps=%lu bufs=%lu tears=%lu(%lu) miss=%lu pairwait=%lu over=%lu gap=%lums\n",
+        tag,
+        (unsigned long)_cell.secs,
+        (unsigned long)framesD,
+        (unsigned long)bufs,
+        (unsigned long)tearsD,
+        (unsigned long)_cell.tears,
+        (unsigned long)missD,
+        (unsigned long)waitD,
+        (unsigned long)overD,
+        (unsigned long)(_stats.gapMaxUs / 1000));
+
+    switch (AcqCore::cellReport(_cell.secs, kCellTargetSecs, kCellCheckpointSecs)) {
+        case AcqCore::CellReport::Progress: printCell(state, "...");  break;
+        case AcqCore::CellReport::Done:     printCell(state, "DONE");
+                                            _cell.reported = true;    break;
+        case AcqCore::CellReport::None:                               break;
+    }
+
+    rebaseDiagWindow(now);
 }
