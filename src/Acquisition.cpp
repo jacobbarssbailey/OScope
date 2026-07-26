@@ -61,8 +61,8 @@ static RingCapture s_capB;
 static constexpr uint32_t kGuard = 32;
 
 // Inter-sample interval in µs from the current timebase (min 1 µs).
-static uint32_t sampleIntervalUs(uint16_t timebase_us_per_div) {
-    uint32_t interval = ((uint32_t)timebase_us_per_div * Theme::GridCols)
+static uint32_t sampleIntervalUs(uint32_t timebase_us_per_div) {
+    uint32_t interval = (timebase_us_per_div * Theme::GridCols)
                         / SampleBuffers::N;
     if (interval < 1) interval = 1;
     return interval;
@@ -101,7 +101,7 @@ void Acquisition::begin() {
 RingCapture& Acquisition::capA() { return s_capA; }
 RingCapture& Acquisition::capB() { return s_capB; }
 
-void Acquisition::configureTimer(uint16_t timebase_us_per_div) {
+void Acquisition::configureTimer(uint32_t timebase_us_per_div) {
     const uint32_t interval = sampleIntervalUs(timebase_us_per_div);
     uint32_t freq = 1000000UL / interval;
     if (freq == 0) freq = 1;
@@ -151,9 +151,9 @@ void Acquisition::ensureConfigured(const ScopeState& state) {
     // (Re)configure the sample timers on first run or when the timebase changes.
     // Trigger source/edge/level changes need no reconfigure — they only affect
     // the software search and take effect on the next buffer.
-    if (!_started || _sTimebase != state.timebase_us_per_div) {
-        configureTimer(state.timebase_us_per_div);
-        _sTimebase = state.timebase_us_per_div;
+    if (!_started || _sTimebase != state.timebase()) {
+        configureTimer(state.timebase());
+        _sTimebase = state.timebase();
         _started   = true;
     }
 }
@@ -300,36 +300,38 @@ bool Acquisition::updateFreeRunning(const ScopeState& state, const Settings& /*s
     const uint64_t safe = AcqCore::safeWatermark((availA < availB) ? availA : availB,
                                                  kGuard);
 
-    // Need a full display window, and only publish once new samples have arrived
-    // since the last frame — otherwise a paused input would re-blit an identical
-    // window at the full loop rate.  Unlike update() there is no CAPTURE gate, so
-    // the publish rate is bounded by the display blit, not the sample rate.
-    if (safe < N || safe <= _freeLastSafe) return false;
+    // Publish only once new samples have arrived since the last frame —
+    // otherwise a paused input would re-blit an identical window at the full loop
+    // rate.  Unlike update() there is no CAPTURE gate, so the publish rate is
+    // bounded by the display blit, not the sample rate.  Two samples is the
+    // minimum for a line segment.
+    if (safe < 2 || safe <= _freeLastSafe) return false;
 
-    // The newest N samples are the frame.  For Rolling, this window and the
-    // previous one overlap by (N − new samples), so drawing it each frame reads
-    // as a scroll — every point shifts left by the samples acquired since the
-    // last frame and the new ones enter at the right.  For XY it is simply the
-    // latest N A/B pairs.  Either way the DMA ring is the history — no separate
-    // ring, and no samples dropped between frames the way the CAPTURE path did.
-    uint64_t base = 0;
-    AcqCore::newestWindow(safe, N, &base);
-    const uint64_t absA = _originA + base;
-    const uint64_t absB = _originB + base;
+    // Normally the newest N samples are the frame: for Rolling this window and
+    // the previous one overlap by (N − new samples), so drawing it each frame
+    // reads as a scroll; for XY it is simply the latest N A/B pairs.  Before N
+    // samples exist — the first fill, which at 1 s/div takes ~8 s at ~30 Hz —
+    // show the partial trace growing from the left rather than a blank screen.
+    // Either way the DMA ring is the history: no separate ring, and no samples
+    // dropped between frames the way the CAPTURE path did.
+    const uint16_t count = (safe >= N) ? N : (uint16_t)safe;
+    const uint64_t base  = safe - count;
+    const uint64_t absA  = _originA + base;
+    const uint64_t absB  = _originB + base;
 
     static uint16_t scratchA[N];
     static uint16_t scratchB[N];
-    s_capA.read(absA, scratchA, N);
-    s_capB.read(absB, scratchB, N);
+    s_capA.read(absA, scratchA, count);
+    s_capB.read(absB, scratchB, count);
 
     // Invert the hardware-inverted input on the copy into the frame, exactly as
     // the triggered path does (a higher ADC count is a lower input voltage).
     SampleBuffers& fb = _buf[_fill];
-    for (uint16_t i = 0; i < N; ++i) {
+    for (uint16_t i = 0; i < count; ++i) {
         fb.ch[0][i] = (uint16_t)(kADCMax - scratchA[i]);
         fb.ch[1][i] = (uint16_t)(kADCMax - scratchB[i]);
     }
-    fb.count = N;
+    fb.count = count;
 
     _freeLastSafe  = safe;
     _lastTriggered = false;   // free-running; never trigger-aligned
@@ -395,7 +397,7 @@ void Acquisition::reportDiag(const ScopeState& state) {
     const uint32_t now = millis();
 
     if (_repLastMs == 0) {   // first call: arm the window and open a cell
-        _cell.restart(state.timebase_us_per_div, (uint8_t)state.mode);
+        _cell.restart(state.timebase(), (uint8_t)state.mode);
         rebaseDiagWindow(now);
         _stats.lastConsumeUs = 0;
         return;
@@ -403,13 +405,13 @@ void Acquisition::reportDiag(const ScopeState& state) {
 
     // A timebase or mode change ends the dwell immediately, mid-second: the
     // knob has moved, so nothing after this point belongs to the old cell.
-    if (state.timebase_us_per_div != _cell.timebase ||
+    if (state.timebase() != _cell.timebase ||
         (uint8_t)state.mode != _cell.mode) {
         if (!_cell.reported &&
             AcqCore::cellPartialWorth(_cell.secs, kCellMinSecs, kCellTargetSecs)) {
             printCell(state, "CUT SHORT");
         }
-        _cell.restart(state.timebase_us_per_div, (uint8_t)state.mode);
+        _cell.restart(state.timebase(), (uint8_t)state.mode);
         rebaseDiagWindow(now);
         _stats.lastConsumeUs = 0;   // discard the reconfigure's artificial gap
         return;

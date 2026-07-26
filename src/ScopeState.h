@@ -23,7 +23,12 @@ struct ScopeState {
     EncoderParam selected = EncoderParam::Timebase;
     bool         running  = true;
 
-    uint16_t timebase_us_per_div    = 500;          // µs/div
+    // Timebase is per-mode: the three modes now cover different ranges
+    // (Triggered 50 µs–10 ms, Rolling 500 µs–1 s, XY 500 µs–100 ms), so each
+    // remembers its own setting and switching modes restores it.  Indexed by
+    // (uint8_t)Mode; use timebase()/setTimebase() for the active mode.  uint32
+    // is wide enough for 1 s/div (1,000,000 µs overflows uint16_t).
+    uint32_t timebase_us_per_div[(uint8_t)Mode::COUNT] = {500, 500, 500};
     uint16_t vscale_mv_per_div[2]   = {3000, 3000};  // mV/div per channel (3 V/div default)
     int16_t  trigger_level_mv       = 0;           // mV
     bool     channelEnabled[2]      = {true, true};
@@ -31,6 +36,10 @@ struct ScopeState {
     // Single-shot: when true, the next successful triggered capture freezes the
     // display (running → false) and disarms.  Set by B3 long-press.
     bool     singleArmed            = false;
+
+    // Active timebase = the current mode's stored setting.
+    uint32_t timebase() const { return timebase_us_per_div[(uint8_t)mode]; }
+    void setTimebase(uint32_t us) { timebase_us_per_div[(uint8_t)mode] = us; }
 
     // Restore all fields to the compile-time defaults above.
     void resetToDefaults();

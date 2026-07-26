@@ -61,7 +61,7 @@ inline bool newestWindow(uint64_t safe, uint32_t len, uint64_t* base) {
 // and worst-second peaks so the reporter can print one line per cell that maps
 // straight onto the protocol table (docs/acq-characterization.md).
 struct CellStats {
-    uint16_t timebase = 0;      // µs/div this cell is for
+    uint32_t timebase = 0;      // µs/div this cell is for
     uint8_t  mode     = 0xFF;   // ScopeState Mode, as a plain byte (no Arduino dep)
 
     uint32_t secs     = 0;
@@ -81,7 +81,7 @@ struct CellStats {
 
     // Begin a fresh cell.  Called whenever the timebase or mode changes, so a
     // knob sweep through intermediate steps never pollutes a dwell.
-    void restart(uint16_t tb, uint8_t m) {
+    void restart(uint32_t tb, uint8_t m) {
         *this = CellStats{};
         timebase = tb;
         mode     = m;

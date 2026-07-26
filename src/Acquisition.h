@@ -113,7 +113,7 @@ private:
 
     // Sample-timer state.
     bool     _started   = false;
-    uint16_t _sTimebase = 0;   // timebase the timer is currently configured for
+    uint32_t _sTimebase = 0;   // timebase the timer is currently configured for
 
     // Auto-mode trigger: consecutive frames with no crossing found.  Auto holds
     // the last triggered frame through brief misses and only free-runs once this
@@ -171,7 +171,7 @@ private:
     static constexpr uint32_t kRestartSettleUs = 1000;
 
     // (Re)start the sample timer at the rate derived from timebase.
-    void configureTimer(uint16_t timebase_us_per_div);
+    void configureTimer(uint32_t timebase_us_per_div);
 
     // Reconfigure both sample timers on first run or a timebase change.  Shared
     // by update() and updateRolling() so the two paths agree on when the rings

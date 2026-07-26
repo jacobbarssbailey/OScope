@@ -28,31 +28,69 @@ static int indexOf(const uint16_t (&arr)[N], uint16_t needle) {
     return 0;
 }
 
-// ---- Timebase (50 µs/div … 10 ms/div, 15 steps) --------------------------
-// A 1-1.5-2-3-5-7 sequence per decade for fine control in the ms range.
-
-static void adjTime(ScopeState& s, int8_t d) {
-    static const uint16_t steps[] = {50, 70, 100, 150, 200, 300, 500, 700,
-                                     1000, 1500, 2000, 3000, 5000, 7000, 10000};
-    const int count = sizeof(steps) / sizeof(steps[0]);
-    int i = indexOf(steps, s.timebase_us_per_div);
-    i = clampi(i + d, 0, count - 1);
-    s.timebase_us_per_div = steps[i];
+static int indexOf(const uint32_t* arr, uint8_t n, uint32_t needle) {
+    for (uint8_t i = 0; i < n; ++i) {
+        if (arr[i] == needle) return i;
+    }
+    return 0;
 }
 
-// Render the timebase with one decimal of precision for non-integer ms values
-// (e.g. 1500 µs → "1.5 ms/div").  Sub-millisecond values stay in µs.
+// ---- Timebase (per-mode range) -------------------------------------------
+// A 1-1.5-2-3-5-7 sequence per decade for fine control.  The three modes cover
+// different ranges — Triggered is bounded by trigger-search cost at the fast end
+// and sweep-fill time at the slow end; the free-running modes can go much slower
+// now that their frame rate no longer falls with the sample rate (see
+// Acquisition::updateFreeRunning).  All three share the same sequence, so the
+// tables are prefixes/suffixes of one another and a value carried across a mode
+// switch usually lands on an exact step.
+//   Triggered : 50 µs … 10 ms
+//   Rolling   : 500 µs … 1 s
+//   XY        : 500 µs … 100 ms
+
+static const uint32_t kTimeTrig[] = {
+    50, 70, 100, 150, 200, 300, 500, 700,
+    1000, 1500, 2000, 3000, 5000, 7000, 10000};
+static const uint32_t kTimeRoll[] = {
+    500, 700, 1000, 1500, 2000, 3000, 5000, 7000,
+    10000, 15000, 20000, 30000, 50000, 70000,
+    100000, 150000, 200000, 300000, 500000, 700000, 1000000};
+static const uint32_t kTimeXY[] = {
+    500, 700, 1000, 1500, 2000, 3000, 5000, 7000,
+    10000, 15000, 20000, 30000, 50000, 70000, 100000};
+
+// Step table (values + length) for the given mode's timebase.
+static void timeStepsFor(Mode m, const uint32_t** v, uint8_t* n) {
+    switch (m) {
+        case Mode::Rolling: *v = kTimeRoll; *n = sizeof(kTimeRoll)/sizeof(kTimeRoll[0]); break;
+        case Mode::XY:      *v = kTimeXY;   *n = sizeof(kTimeXY)  /sizeof(kTimeXY[0]);   break;
+        default:            *v = kTimeTrig; *n = sizeof(kTimeTrig)/sizeof(kTimeTrig[0]); break;
+    }
+}
+
+static void adjTime(ScopeState& s, int8_t d) {
+    const uint32_t* steps; uint8_t count;
+    timeStepsFor(s.mode, &steps, &count);
+    int i = indexOf(steps, count, s.timebase());
+    i = clampi(i + d, 0, count - 1);
+    s.setTimebase(steps[i]);
+}
+
+// Render the timebase with one decimal for non-integer values (e.g. 1500 µs →
+// "1.5 ms/div").  µs below 1 ms, ms below 1 s, seconds at/above 1 s.
 static void fmtTime(const ScopeState& s, char* b, uint8_t n) {
-    uint16_t us = s.timebase_us_per_div;
-    if (us >= 1000) {
-        uint16_t whole = us / 1000;
-        uint16_t tenths = (us % 1000) / 100;   // step table never goes finer than 0.1 ms
-        if (tenths == 0)
-            snprintf(b, n, "%u ms/div", whole);
-        else
-            snprintf(b, n, "%u.%u ms/div", whole, tenths);
+    const uint32_t us = s.timebase();
+    if (us >= 1000000) {
+        uint32_t whole  = us / 1000000;
+        uint32_t tenths = (us % 1000000) / 100000;
+        if (tenths == 0) snprintf(b, n, "%lu s/div", (unsigned long)whole);
+        else             snprintf(b, n, "%lu.%lu s/div", (unsigned long)whole, (unsigned long)tenths);
+    } else if (us >= 1000) {
+        uint32_t whole  = us / 1000;
+        uint32_t tenths = (us % 1000) / 100;   // step table never goes finer than 0.1 ms
+        if (tenths == 0) snprintf(b, n, "%lu ms/div", (unsigned long)whole);
+        else             snprintf(b, n, "%lu.%lu ms/div", (unsigned long)whole, (unsigned long)tenths);
     } else {
-        snprintf(b, n, "%u us/div", us);
+        snprintf(b, n, "%lu us/div", (unsigned long)us);
     }
 }
 

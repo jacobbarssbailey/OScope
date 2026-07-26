@@ -8,7 +8,7 @@
 // uninitialised EEPROM or a stale layout (bump kStateVersion on field changes).
 static constexpr int      kEEStateAddr = 32;
 static constexpr uint16_t kStateMagic   = 0x05C1;
-static constexpr uint8_t  kStateVersion = 2;   // bumped: new defaults (3 V/div, A+B)
+static constexpr uint8_t  kStateVersion = 3;   // bumped: per-mode uint32 timebase
 
 // Only the acquisition setup is persisted — not running / singleArmed.
 struct StoredState {
@@ -17,7 +17,7 @@ struct StoredState {
     Mode         mode;
     ChannelSel   channel;
     EncoderParam selected;
-    uint16_t     timebase_us_per_div;
+    uint32_t     timebase_us_per_div[(uint8_t)Mode::COUNT];
     uint16_t     vscale_mv_per_div[2];
     int16_t      trigger_level_mv;
     bool         channelEnabled[2];
@@ -28,7 +28,9 @@ void ScopeState::resetToDefaults() {
     channel               = ChannelSel::Both;
     selected              = EncoderParam::Timebase;
     running               = true;
-    timebase_us_per_div   = 500;
+    // Each mode starts at 500 µs/div — the shared low end of every mode's range.
+    for (uint8_t m = 0; m < (uint8_t)Mode::COUNT; ++m)
+        timebase_us_per_div[m] = 500;
     vscale_mv_per_div[0]  = 3000;
     vscale_mv_per_div[1]  = 3000;
     trigger_level_mv      = 0;
@@ -44,7 +46,8 @@ void ScopeState::load() {
         mode                 = s.mode;
         channel              = s.channel;
         selected             = s.selected;
-        timebase_us_per_div  = s.timebase_us_per_div;
+        for (uint8_t m = 0; m < (uint8_t)Mode::COUNT; ++m)
+            timebase_us_per_div[m] = s.timebase_us_per_div[m];
         vscale_mv_per_div[0] = s.vscale_mv_per_div[0];
         vscale_mv_per_div[1] = s.vscale_mv_per_div[1];
         trigger_level_mv     = s.trigger_level_mv;
@@ -61,8 +64,10 @@ void ScopeState::load() {
 
 void ScopeState::save() const {
     StoredState s{kStateMagic, kStateVersion, mode, channel, selected,
-                  timebase_us_per_div, {vscale_mv_per_div[0], vscale_mv_per_div[1]},
+                  {timebase_us_per_div[0], timebase_us_per_div[1], timebase_us_per_div[2]},
+                  {vscale_mv_per_div[0], vscale_mv_per_div[1]},
                   trigger_level_mv, {channelEnabled[0], channelEnabled[1]}};
+    static_assert((uint8_t)Mode::COUNT == 3, "StoredState timebase initializer lists 3 modes");
     EEPROM.put(kEEStateAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 

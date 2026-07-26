@@ -62,7 +62,7 @@ static void test_restart_stores_cell_identity_and_clears_totals() {
     AcqCore::CellStats c;
     feed(c, 3, 30, 2, 5, 100, 1, 40000);
     c.restart(500, 1);
-    TEST_ASSERT_EQUAL_UINT16(500, c.timebase);
+    TEST_ASSERT_EQUAL_UINT32(500, c.timebase);
     TEST_ASSERT_EQUAL_UINT8(1, c.mode);
     TEST_ASSERT_EQUAL_UINT32(0, c.secs);
     TEST_ASSERT_EQUAL_UINT32(0, c.frames);
