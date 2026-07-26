@@ -110,26 +110,32 @@ Full run, all nine cells to 150 s. Raw log: `docs/acq-phase2-001.log`.
 cells**, against six of nine cells tearing in the baseline. Trailing the write
 cursor removed tearing as designed.
 
-**Criterion 3 fails in four cells.** See the skew defect below; it is a bug in
-the pairing, not a property of ring capture.
+**Criterion 3 failed in four cells at the time of this run — since fixed.** It
+was a pairing bug rather than a property of ring capture. Root cause and fix:
+`d8dbe54`, with the raw investigation in `docs/acq-skew-probe.log` and
+confirmation in `docs/acq-skew-verify.log` (max skew 1 across 89 readings,
+including 60 at 150 µs/div and 20 at 100 µs/div, both of which used to latch to
+30 and 52).
+
+**This table therefore predates the fix and is worth re-running on `d8dbe54`**
+for a clean record: the tears and frame-rate figures still stand, but the skew
+column does not.
 
 Notes:
 
-- **The A/B skew is cumulative and permanent, not drift.** It sat at 1-2 samples
-  for the first five cells, jumped to 80 during a fast encoder sweep back down
-  to 50 µs/div, and then stayed at 78-80 for every remaining cell regardless of
-  timebase. A read-timing artifact would scale with the sample rate and be
-  invisible at 10 ms/div; a fixed 78 at every rate means the two rings' *total*
-  sample counts have diverged and `update()` pairs them by cumulative index.
-  Suspected cause: `configureTimer()` calls `s_capA.start()` then
-  `s_capB.start()` sequentially, so channel A converts for the tens of
-  microseconds it takes to restart B. At 50 µs/div (1 µs interval) that is tens
-  of samples per timebase change, it accumulates across every change, and
-  nothing ever re-zeroes it. The old buffer-handover path was immune because it
-  paired whole buffers by completion, never by cumulative count.
-- Worth noting the verdict logic does not catch this: `PASS` on the `cell:` line
-  checks tears and overruns only, so all nine cells read PASS while four violate
-  the skew criterion. The verdict should include skew once the defect is fixed.
+- **The A/B skew turned out to be a shared-peripheral transient**, diagnosed
+  after this run. Both ADC modules share one `ADC_ETC` block, and each module's
+  `startTimer()` read-modify-writes the shared `ADC_ETC.CTRL`. Channel A is
+  brought up first, so bringing B up disturbs A's already-live trigger chain and
+  A loses a fixed ~150-157 µs of production — which reads as more samples the
+  faster the rate (8 at 500 µs/div, 30 at 150, 52 at 100, 157 at 50). Sampling
+  the pairing origins inside that window baked the missing samples in
+  permanently. Fixed by settling 1 ms before sampling the origins (`d8dbe54`).
+  The diagnostic tell was that drift was never positive across 149 reconfigures:
+  the loss was always on A, never B.
+- The verdict logic now includes skew (tolerance 2 samples). During this run it
+  checked tears and overruns only, which is why all nine cells printed `PASS`
+  while four violated the skew criterion.
 - **The baseline's Rolling 50 µs/div stall is fixed**: 125 ms worst gap against a
   31 ms frame period before, 31 ms now. It was capture-related after all, not
   the draw path.
