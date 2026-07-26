@@ -29,11 +29,12 @@
 #include "screens/MenuScreen.h"
 #include "screens/EditValueScreen.h"
 
-// Note: GC9A01A_SPICLOCK is also defined in the library header (30 MHz);
-// redefine here to use the faster 96 MHz rate the Teensy 4.0 can sustain.
-#ifndef GC9A01A_SPICLOCK
-#  define GC9A01A_SPICLOCK      96000000
-#endif
+// The library header (included above) already defines GC9A01A_SPICLOCK as
+// 30 MHz, so a plain #ifndef override never fires — the panel had been blitting
+// at 30 MHz (~30 ms/frame, capping the frame rate at ~32 fps).  #undef first so
+// the intended faster rate actually reaches tft.begin().
+#undef GC9A01A_SPICLOCK
+#define GC9A01A_SPICLOCK       48000000
 #define GC9A01A_SPICLOCK_READ  2000000
 
 // Framebuffer: all drawing targets this RAM buffer; tft.updateScreen() blits
