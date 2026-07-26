@@ -32,7 +32,6 @@ namespace Theme {
   constexpr int16_t StopY   = 20;   // "STOP"/"ARM" top indicator (Arial 16)
   constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (Arial 24)
   constexpr int16_t ParamY  = 196;  // selected-param readout, near bottom (Arial 16)
-  constexpr int16_t DiagY   = 50;   // capture-diagnostics overlay (Arial 13)
 
   // FPS readout (Arial 13), top-left of the safe band — clear of the centered HUD.
   constexpr int16_t FpsX    = 105;

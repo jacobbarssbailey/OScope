@@ -9,7 +9,6 @@ void Settings::defaults() {
     trigEdge   = TrigEdge::Rising;
     trigMode   = TrigMode::Auto;
     grid       = true;
-    diag       = false;
 }
 
 // ---- Persistence ----------------------------------------------------------
@@ -19,7 +18,7 @@ void Settings::defaults() {
 
 static constexpr int      kEEAddr  = 0;
 static constexpr uint16_t kMagic   = 0x05C0;   // "OScope settings"
-static constexpr uint8_t  kVersion = 2;
+static constexpr uint8_t  kVersion = 3;
 
 struct StoredSettings {
     uint16_t   magic;
@@ -28,7 +27,6 @@ struct StoredSettings {
     TrigEdge   trigEdge;
     TrigMode   trigMode;
     bool       grid;
-    bool       diag;
 };
 
 void Settings::load() {
@@ -39,7 +37,6 @@ void Settings::load() {
         trigEdge   = s.trigEdge;
         trigMode   = s.trigMode;
         grid       = s.grid;
-        diag       = s.diag;
     } else {
         defaults();
         save();   // initialise EEPROM so subsequent boots read a valid record
@@ -47,7 +44,7 @@ void Settings::load() {
 }
 
 void Settings::save() const {
-    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid, diag};
+    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid};
     EEPROM.put(kEEAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
@@ -82,12 +79,6 @@ static void fmtGrid(const Settings& s, char* b, uint8_t n) {
     snprintf(b, n, "%s", s.grid ? "On" : "Off");
 }
 
-static void adjDiag(Settings& s, int8_t d) {
-    if (d) s.diag = !s.diag;
-}
-static void fmtDiag(const Settings& s, char* b, uint8_t n) {
-    snprintf(b, n, "%s", s.diag ? "On" : "Off");
-}
 
 // ---- Descriptor table -----------------------------------------------------
 static const SettingItem kItems[] = {
@@ -95,7 +86,6 @@ static const SettingItem kItems[] = {
     { "Trig Edge", adjEdge,   fmtEdge   },
     { "Trig Mode", adjMode,   fmtMode   },
     { "Grid",      adjGrid,   fmtGrid   },
-    { "Diag",      adjDiag,   fmtDiag   },
 };
 
 const SettingItem* settingItems() { return kItems; }

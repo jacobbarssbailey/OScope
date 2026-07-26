@@ -114,13 +114,10 @@ void Acquisition::configureTimer(uint16_t timebase_us_per_div) {
     s_capA.run(freq);
     s_capB.run(freq);
 
-    // Re-zero the pairing origins.  Whatever divergence the restart above still
-    // injects — plus anything accumulated by previous restarts — is absorbed
-    // here: from now on A[originA + k] pairs with B[originB + k], and pairSkew
-    // measures only genuine drift since this reconfigure.  Without this the two
-    // rings' cumulative counts diverge a little on every timebase change and
-    // never recover, which is what Phase 2 measured as ~80 samples of skew.
-    // Let the restart transient pass before sampling the origins.
+    // Re-zero the pairing origins, but only after the restart transient has
+    // passed.  From here on A[originA + k] pairs with B[originB + k], and
+    // pairSkew measures genuine drift since this reconfigure rather than
+    // start-up divergence.
     //
     // Both ADC modules share one ADC_ETC block (module 0 drives trigger 0,
     // module 1 trigger 4) and each module's startTimer() does a
@@ -157,8 +154,6 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
         _sTimebase = state.timebase_us_per_div;
         _started   = true;
     }
-
-    _diagVerify = settings.diag;
 
     // Both rings are paced by independent timers at the same rate, so pair them
     // by index at the lower of the two write heads.  Counts are taken relative
@@ -258,7 +253,7 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
         // Tear verification, not detection: trailing the write head by kGuard
         // makes a torn read structurally impossible, so re-reading the same
         // region must reproduce it.  Diag-only, since it doubles the read cost.
-        if (_diagVerify) {
+        if (kDiagVerify) {
             static uint16_t verifyBuf[CAPTURE];
             s_capA.read(absA, verifyBuf, CAPTURE);
             if (AcqCore::checksum(verifyBuf, CAPTURE) !=
@@ -325,8 +320,10 @@ void Acquisition::printCell(const ScopeState& state, const char* status) {
         _cell.pass() ? "PASS" : (_cell.overruns ? "FAIL:tears+over" : "FAIL:tears"));
 }
 
-void Acquisition::reportDiag(const ScopeState& state, const Settings& settings) {
-    if (!settings.diag) return;
+void Acquisition::reportDiag(const ScopeState& state) {
+#if !ACQ_DIAG
+    (void)state;   // compiled out in shipping builds
+#else
     const uint32_t now = millis();
 
     if (_repLastMs == 0) {   // first call: arm the window and open a cell
@@ -354,7 +351,7 @@ void Acquisition::reportDiag(const ScopeState& state, const Settings& settings) 
     if (elapsed < 1000) return;
 
     // Reporting stops whenever the run screen is not live (settings menu, frozen
-    // trace, Diag toggled off and back on).  Discard that window rather than
+    // trace).  Discard that window rather than
     // recording many seconds of deltas as one second.
     if (AcqCore::diagWindowStale(elapsed, kDiagWindowMaxMs)) {
         rebaseDiagWindow(now);
@@ -401,4 +398,5 @@ void Acquisition::reportDiag(const ScopeState& state, const Settings& settings) 
     }
 
     rebaseDiagWindow(now);
+#endif
 }

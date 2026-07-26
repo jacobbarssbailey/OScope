@@ -1,9 +1,9 @@
 # Acquisition Characterization Protocol
 
-Feed a 1 kHz triangle (~±5 V) into channel A and channel B. Enable
-Settings → Diag. Then walk the 3 × 3 grid of timebases and modes below, holding
-each combination steady for **2.5 minutes (150 s)**. Nine cells, so about 23
-minutes of dwell plus knob time.
+Feed a 1 kHz triangle (~±5 V) into channel A and channel B. Build with
+`ACQ_DIAG 1` in `src/Config.h`. Then walk the 3 × 3 grid of timebases and modes
+below, holding each combination steady for **2.5 minutes (150 s)**. Nine cells,
+so about 23 minutes of dwell plus knob time.
 
 The firmware does the aggregation: hold a cell steady and it prints one `cell:`
 line per cell with every number the table wants. Nothing to postprocess.
@@ -39,24 +39,25 @@ moved before 150 s, but after at least 10 s) it prints `CUT SHORT` so the log
 says why a row is missing rather than silently dropping it. Sweeps shorter than
 10 s are silent.
 
-The on-screen overlay mirrors the dwell so the bench operator does not need the
-laptop: `92/150s T608 G81ms`, gaining ` PASS` or ` FAIL` when the cell completes.
-
-`PASS` / `FAIL` on the `cell:` line checks the two machine-checkable acceptance
-criteria only: zero tears and zero overruns. Trigger misses are *expected* at
-short timebases, where a 480-sample buffer spans less than one input period, and
-do not fail a cell.
+`PASS` / `FAIL` on the `cell:` line checks the machine-checkable acceptance
+criteria: zero tears, zero overruns, and A/B skew within 2 samples. Trigger
+misses are *expected* at short timebases, where a 480-sample buffer spans less
+than one input period, and do not fail a cell.
 
 ## Procedure
 
-1. `just debug` (uploads, then opens the serial monitor at 115200). Pipe to a
+1. Set `ACQ_DIAG 1` in `src/Config.h`. Diagnostics are compile-time rather than
+   a menu toggle: it is a bench tool, not a user feature, so there is nothing to
+   leave switched on by accident and the reporting drops out of shipping builds.
+2. `just debug` (uploads, then opens the serial monitor at 115200). Pipe to a
    file if you want to keep the log: `just debug | tee docs/acq-<label>.log`.
-2. Settings → Diag → On. Return to the run screen and leave it running: the
-   reporter is not called while the display is frozen or while you are in the
-   settings menu.
-3. For each of the nine cells: set the timebase and mode, wait for `DONE`, paste
+3. Leave the run screen up and running: the reporter is not called while the
+   display is frozen or while you are in the settings menu, and a gap longer
+   than 2 s is discarded rather than recorded as one very busy second.
+4. For each of the nine cells: set the timebase and mode, wait for `DONE`, paste
    the `cell:` line into the table below, and add a subjective note (steady /
    occasional jump / frequent glitches).
+5. Set `ACQ_DIAG` back to 0 before shipping.
 
 ## Baseline (before ring capture) — commit 46f8852, date 2026-07-25
 

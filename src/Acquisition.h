@@ -1,24 +1,31 @@
-// Acquisition.h — Timer-triggered, DMA-based ADC acquisition (Milestone A).
+// Acquisition.h — Timer-triggered, ring-based ADC acquisition.
 //
-// This is the option-4 acquisition: a hardware timer triggers ADC conversions
-// at the timebase-derived rate, and eDMA streams the results into memory with
-// zero CPU involvement during the sweep.  The pedvide Teensy ADC library
-// (AnalogBufferDMA) owns the ADC/DMA/timer plumbing and the cache maintenance
-// the M7 requires; this class is a thin controller over it.
+// A hardware timer triggers ADC conversions at the timebase-derived rate and
+// eDMA streams each channel into its own continuous RingCapture, with zero CPU
+// involvement.  Nothing is waited on and no buffer changes hands: update() reads
+// the newest window from behind the hardware write cursor, trailing it by a
+// guard band, which is what makes torn reads impossible rather than merely
+// detectable.  See RingCapture.h for the cursor contract.
 //
-// Interface is unchanged from the poll-based version so RunScreen and the modes
-// are untouched:
-//   update() — non-blocking; publishes a frame when a DMA buffer completes.
+// Interface is unchanged from the buffer-based version so RunScreen and the
+// modes are untouched:
+//   update() — non-blocking; publishes a frame when enough new samples exist.
 //   frame()  — the last complete frame, for rendering.
+// Rolling and X-Y follow-ups that want to consume the stream contiguously,
+// rather than only its newest window, should use capA()/capB() and drive
+// RingCapture::read() with their own cursor.
 //
 // Dual channel: channel A on ADC0 / SIGNAL_A, channel B on ADC1 / SIGNAL_B, each
-// with its own DMA stream, both clocked by a timer at the same rate.  The two
-// timers run independently at the same frequency, so A[i]/B[i] carry a small
-// constant sampling skew (fine for Y-t; acceptable for X-Y).
+// with its own ring and eDMA channel, both clocked at the same rate by
+// independent timers.  Because the timers are independent, pairing is done on
+// counts taken relative to per-channel origins sampled at the last reconfigure,
+// and the residual A[i]/B[i] skew is reported as pairSkew (0-1 samples in
+// practice; see docs/acq-characterization.md).
 //
-// Triggering (Milestone C) is done in software over the captured buffer.  Each
-// DMA buffer holds CAPTURE = 2*N samples per channel — two screen widths — so a
-// full N-sample display window can be extracted starting at a found trigger:
+// Triggering is done in software over a linear scratch copy of the newest
+// window.  That window holds CAPTURE = 2*N samples per channel — two screen
+// widths — so a full N-sample display window can always be extracted starting
+// at a found trigger:
 //   Triggered — scan the trigger-source channel (settings.trigSource) in the
 //     first N samples for a settings.trigEdge crossing of trigger_level_mv.
 //     On a hit, both channels' [t, t+N) window is published (trigger at the left
@@ -29,13 +36,15 @@
 // the window start to t - pretrigger.
 //
 // Sample rate: the timer runs at 1e6 / interval_us, where
-//   interval_us = timebase_us_per_div * GridCols / N  (same mapping as before).
-// Changing the timebase reconfigures the timer on the next update().
+//   interval_us = timebase_us_per_div * GridCols / N.
+// Changing the timebase reconfigures both timers on the next update() and
+// re-samples the pairing origins.
 #pragma once
 
 #include <AcqCore.h>
 
 #include "AcqStats.h"
+#include "Config.h"      // ACQ_DIAG
 #include "modes/ScopeMode.h"
 #include "RingCapture.h"
 #include "ScopeState.h"
@@ -46,13 +55,13 @@ public:
     // Configure the ADC + DMA + timer.  Call once in setup().
     void begin();
 
-    // Non-blocking: if a DMA buffer has completed, copy it into a frame and
-    // publish it (returns true once per completed buffer).  Reconfigures the
-    // sample timer when the timebase changes.
+    // Non-blocking: once CAPTURE new samples exist behind the guard band, copy
+    // the newest window out of the rings and publish a frame (returns true when
+    // it does).  Reconfigures both sample timers when the timebase changes.
     bool update(const ScopeState& state, const Settings& settings);
 
-    // Most recently completed frame, for rendering.  count == 0 until the first
-    // buffer completes.
+    // Most recently published frame, for rendering.  count == 0 until the rings
+    // hold enough samples for the first window.
     const SampleBuffers& frame() const { return _buf[_show]; }
 
     // Whether the last published frame was trigger-aligned: true for a real
@@ -65,19 +74,13 @@ public:
     const AcqStats& stats() const { return _stats; }
     AcqStats&       statsMutable() { return _stats; }
 
-    // Print a 1 Hz stats line to Serial while diagnostics are enabled, plus a
-    // per-cell aggregate line at each checkpoint and at the end of a dwell.
-    // A "cell" is one (timebase, mode) pair held steady — the unit of the
-    // characterization protocol (docs/acq-characterization.md).  Changing
-    // either one starts a new cell, so knob sweeps never pollute a dwell.
-    // Call once per loop; cheap no-op between reports.
-    void reportDiag(const ScopeState& state, const Settings& settings);
-
-    // Dwell target for one protocol cell, in seconds (2.5 minutes).
-    static constexpr uint32_t kCellTargetSecs = 150;
-
-    // Current cell's running totals, for the on-screen diagnostics overlay.
-    const AcqCore::CellStats& cell() const { return _cell; }
+    // Print a 1 Hz stats line to Serial, plus a per-cell aggregate line at each
+    // checkpoint and at the end of a dwell.  A "cell" is one (timebase, mode)
+    // pair held steady — the unit of the characterization protocol
+    // (docs/acq-characterization.md).  Changing either one starts a new cell, so
+    // knob sweeps never pollute a dwell.  Call once per loop; cheap no-op
+    // between reports, and compiled out entirely unless ACQ_DIAG is set.
+    void reportDiag(const ScopeState& state);
 
     // The underlying capture rings.  Rolling and X-Y follow-ups consume these
     // directly (contiguously, with their own cursor) rather than going through
@@ -89,7 +92,7 @@ private:
     // Acquisition health stats (tear detection, trigger misses, etc).
     AcqStats _stats;
 
-    // Double buffer: one being shown, one being filled from the DMA buffer.
+    // Double buffer: one being shown, one being filled from the ring window.
     SampleBuffers _buf[2];
     uint8_t _show = 0;
     uint8_t _fill = 1;
@@ -118,8 +121,9 @@ private:
 
     // Re-read and compare the published region to prove no tear occurred.  The
     // safe-region protocol makes tears structurally impossible, so this is
-    // verification, not detection; diag-only because it doubles the read cost.
-    bool _diagVerify = false;
+    // verification, not detection; ACQ_DIAG-only because it doubles the read
+    // cost of every frame.
+    static constexpr bool kDiagVerify = (ACQ_DIAG != 0);
 
     // 1 Hz diagnostics reporter state (deltas since the previous report).
     uint32_t _repLastMs      = 0;
@@ -132,8 +136,10 @@ private:
     // Aggregate for the cell currently being dwelt on.
     AcqCore::CellStats _cell;
 
-    // Checkpoint cadence for the aggregate line, and the shortest dwell worth
+    // Dwell target for one protocol cell, in seconds (2.5 minutes), the
+    // checkpoint cadence for the aggregate line, and the shortest dwell worth
     // reporting when a cell is cut short (below this it is a knob transient).
+    static constexpr uint32_t kCellTargetSecs     = 150;
     static constexpr uint32_t kCellCheckpointSecs = 30;
     static constexpr uint32_t kCellMinSecs        = 10;
 

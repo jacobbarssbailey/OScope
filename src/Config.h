@@ -32,3 +32,11 @@
 
 // ---- Timing constants ----
 #define LONG_PRESS_MS 500  // ms held before a LongPress event fires
+
+// ---- Capture diagnostics ----
+// Set to 1 to emit the 1 Hz `acq:` line and the per-cell `cell:` aggregate on
+// Serial, which is what docs/acq-characterization.md's bench protocol reads.
+// Off in shipping builds: it is a characterization tool, not a user feature, so
+// it is compile-time rather than a settings toggle (nothing to leave switched on
+// by accident, and the reporting code drops out entirely).
+#define ACQ_DIAG 0

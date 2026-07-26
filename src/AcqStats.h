@@ -2,7 +2,7 @@
 //
 // Cumulative event counters plus a per-report-window gap maximum.  Collected
 // unconditionally (they are a handful of increments per frame — negligible),
-// reported only when settings.diag is on.  Kept permanently so future
+// reported only in ACQ_DIAG builds.  Kept permanently so future
 // capture regressions are measurable, not mysterious.
 #pragma once
 #include <stdint.h>

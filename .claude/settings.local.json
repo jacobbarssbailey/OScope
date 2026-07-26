@@ -23,7 +23,22 @@
       "Bash(grep -n \"magic\\\\|0x[0-9A-Fa-f]\\\\{4\\\\}\\\\|[0-9]\\\\{2,3\\\\}\" /Users/jacob/github/OScope/src/screens/RunScreen.cpp)",
       "Bash($SKILL/scripts/review-package 7ed244a *)",
       "Skill(fewer-permission-prompts)",
-      "Bash($SKILL/scripts/review-package 0c5b3b0 *)"
+      "Bash($SKILL/scripts/review-package 0c5b3b0 *)",
+      "Bash(pio test *)",
+      "Bash(/Users/jacob/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package 424bdcf *)",
+      "Bash(/Users/jacob/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief docs/superpowers/plans/2026-07-13-acq-hardening.md 2)",
+      "Bash(/Users/jacob/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package b87a86f *)",
+      "Bash(/Users/jacob/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief docs/superpowers/plans/2026-07-13-acq-hardening.md 3)",
+      "Bash(/Users/jacob/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package df7f570 *)",
+      "Bash(/Users/jacob/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief docs/superpowers/plans/2026-07-13-acq-hardening.md 4)",
+      "Bash(/Users/jacob/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package a5146be *)",
+      "Bash(/Users/jacob/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief docs/superpowers/plans/2026-07-13-acq-hardening.md 5)",
+      "Bash(/Users/jacob/.claude/plugins/cache/claude-plugins-official/*)",
+      "Bash(awk ' *)",
+      "Bash(python3 scan.py)",
+      "Bash(python3 scan2.py)",
+      "Bash(python3 scan3.py)",
+      "Bash"
     ],
     "deny": [],
     "ask": []
