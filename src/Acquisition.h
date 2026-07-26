@@ -140,6 +140,12 @@ private:
     // Longest 1 Hz window still treated as one second (see diagWindowStale).
     static constexpr uint32_t kDiagWindowMaxMs = 2000;
 
+    // Settle time after restarting both ADC timers, before the pairing origins
+    // are sampled.  ~6x the ~157 µs transient measured in configureTimer's
+    // comment, so the margin does not depend on getting that number exactly
+    // right.
+    static constexpr uint32_t kRestartSettleUs = 1000;
+
     // (Re)start the sample timer at the rate derived from timebase.
     void configureTimer(uint16_t timebase_us_per_div);
 

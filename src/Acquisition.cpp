@@ -120,6 +120,26 @@ void Acquisition::configureTimer(uint16_t timebase_us_per_div) {
     // measures only genuine drift since this reconfigure.  Without this the two
     // rings' cumulative counts diverge a little on every timebase change and
     // never recover, which is what Phase 2 measured as ~80 samples of skew.
+    // Let the restart transient pass before sampling the origins.
+    //
+    // Both ADC modules share one ADC_ETC block (module 0 drives trigger 0,
+    // module 1 trigger 4) and each module's startTimer() does a
+    // read-modify-write on the shared ADC_ETC.CTRL — B's branch even clears the
+    // TSC_BYPASS bit A's branch set.  So bringing B up disturbs A's already-live
+    // trigger chain: A stops producing for a while and B does not, which is why
+    // the loss is always on A, never on B.
+    //
+    // Measured across 149 reconfigures (docs/acq-skew-probe.log): a fixed
+    // ~150-157 µs of lost production on A, independent of timebase, so it
+    // appears as more samples the faster the rate.  Sampling the origins inside
+    // that window bakes the missing samples into the pairing permanently, which
+    // is what showed up as bimodal skew — ~0 when the capture happened to land
+    // after the transient, tens of samples when it landed inside it.
+    //
+    // Waiting it out costs a millisecond per timebase change, invisible against
+    // the 31 ms frame period, and leaves the origins measuring a steady state.
+    delayMicroseconds(kRestartSettleUs);
+
     _originA = s_capA.totalWritten();
     _originB = s_capB.totalWritten();
 
