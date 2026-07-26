@@ -1,14 +1,18 @@
-// Acquisition.cpp — Timer-triggered, dual-channel DMA acquisition.
+// Acquisition.cpp — Timer-triggered, dual-channel ring acquisition.
 //
 // A hardware timer triggers ADC conversions on both ADCs (channel A on ADC0,
 // channel B on ADC1) at the timebase-derived rate; eDMA streams each channel
-// into its own CAPTURE-sample double buffer.  The pedvide Teensy ADC library
-// (AnalogBufferDMA) owns the DMA plumbing and the M7 cache invalidation, and
-// bufferLastISRFilled() hands back a coherent, complete buffer.
+// into its own continuous RingCapture.  Nothing is ever waited on and no buffer
+// changes hands: update() reads the newest CAPTURE-sample window from behind the
+// hardware write cursor, which is what makes a torn read impossible rather than
+// merely detectable (see RingCapture.h).
 //
-// update() consumes a completed buffer pair, extracts an N-sample display
-// window — trigger-aligned in Triggered mode via a software edge search over
-// the buffer, or the first N samples otherwise — and publishes it via frame().
+// The two rings are paced by independent timers, so pairing is done on counts
+// taken relative to per-channel origins captured at the last reconfigure.
+//
+// update() extracts an N-sample display window — trigger-aligned in Triggered
+// mode via a software edge search, or the first N samples otherwise — and
+// publishes it via frame().
 //
 // Voltage ↔ ADC mapping: 10-bit, 0..1023, mid-rail 512.
 // Sample rate: timer frequency = 1e6 / interval_us,
@@ -162,10 +166,18 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     // offset, which is what makes the two windows time-aligned.
     uint64_t base = 0;
     AcqCore::newestWindow(safe, CAPTURE, &base);
+
+    // Resolve each channel's absolute read position exactly once.  Anything that
+    // re-reads the same window (the diag verify below) must use these, not
+    // recompute the arithmetic: keeping two copies of it is what let the verify
+    // read drift onto an unrelated region when origins became nonzero.
+    const uint64_t absA = _originA + base;
+    const uint64_t absB = _originB + base;
+
     static uint16_t scratchA[CAPTURE];
     static uint16_t scratchB[CAPTURE];
-    s_capA.read(_originA + base, scratchA, CAPTURE);
-    s_capB.read(_originB + base, scratchB, CAPTURE);
+    s_capA.read(absA, scratchA, CAPTURE);
+    s_capB.read(absB, scratchB, CAPTURE);
     _nextProduceAt = safe + CAPTURE;
 
     // The input hardware inverts the signal: a HIGHER ADC count is a LOWER input
@@ -228,7 +240,7 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
         // region must reproduce it.  Diag-only, since it doubles the read cost.
         if (_diagVerify) {
             static uint16_t verifyBuf[CAPTURE];
-            s_capA.read(base, verifyBuf, CAPTURE);
+            s_capA.read(absA, verifyBuf, CAPTURE);
             if (AcqCore::checksum(verifyBuf, CAPTURE) !=
                 AcqCore::checksum(scratchA, CAPTURE)) {
                 ++_stats.tearEvents;
