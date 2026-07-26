@@ -1,14 +1,12 @@
 // modes/RollingMode.h — Free-running, right-to-left scrolling waveform mode.
 //
 // RollingMode implements the ScopeMode strategy for Mode::Rolling.  Unlike
-// Triggered mode it does not wait for a trigger; acquisition free-runs and each
-// fresh sweep is appended to a persistent history ring.  The ring is rendered
-// oldest→newest, left→right, so new data enters at the right edge and older
-// data scrolls off the left.
-//
-// Ring semantics: one slot per horizontal pixel (SampleBuffers::N).  Until the
-// ring fills, only the left portion is populated (trace grows rightward); once
-// full, the newest sample pins to the right edge.
+// Triggered mode it does not wait for a trigger; acquisition free-runs and
+// Acquisition::updateRolling() republishes the newest N-sample window each
+// frame.  Because consecutive windows overlap, drawing the published window
+// left→right reads as a scroll: new data enters at the right edge and older
+// data leaves at the left.  No cross-frame history is kept here — the capture
+// ring is the history, so there is nothing to accumulate in onFrame().
 #pragma once
 
 #include "ScopeMode.h"
@@ -20,15 +18,8 @@ public:
     void render(Renderer& r, const ScopeState& state,
                 const SampleBuffers& buf) override;
 
-    // Append the completed sweep into the history ring (once per new frame).
-    void onFrame(const SampleBuffers& buf) override;
-
 private:
-    static constexpr uint16_t N = SampleBuffers::N;
-    uint16_t _ring[2][N] = {{0}, {0}};  // per-channel history, indexed by write pos
-    uint16_t _head  = 0;                // next write position
-    uint16_t _count = 0;                // valid samples retained (≤ N)
-
-    // Plot one channel's retained history as a left→right polyline.
-    void drawChannel(Renderer& r, uint8_t ch, uint16_t vscale, uint16_t color) const;
+    // Plot one channel of the published window as a left→right polyline.
+    void drawChannel(Renderer& r, const SampleBuffers& buf, uint8_t ch,
+                     uint16_t vscale, uint16_t color) const;
 };

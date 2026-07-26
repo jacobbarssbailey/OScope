@@ -58,7 +58,20 @@ public:
     // Non-blocking: once CAPTURE new samples exist behind the guard band, copy
     // the newest window out of the rings and publish a frame (returns true when
     // it does).  Reconfigures both sample timers when the timebase changes.
+    // This is the Triggered/XY path: each frame is an independent sweep, so the
+    // CAPTURE-per-frame pacing is what keeps the cadence sane.
     bool update(const ScopeState& state, const Settings& settings);
+
+    // Free-running path (Rolling and XY): publish the newest N-sample window
+    // whenever any new samples have arrived, ungated by the CAPTURE accumulator.
+    // Neither mode is trigger-anchored, so the newest window is always the frame
+    // to show — for Rolling the overlap between consecutive windows reads as a
+    // scroll, for XY it is simply the latest A/B pairs.  The frame rate is
+    // therefore bounded by the display blit, not the sample rate, which is what
+    // keeps it consistent at long timebases where update()'s "one frame per
+    // CAPTURE samples" would crawl (6 fps at 10 ms/div).  Returns true when a
+    // new window was published.
+    bool updateFreeRunning(const ScopeState& state, const Settings& settings);
 
     // Most recently published frame, for rendering.  count == 0 until the rings
     // hold enough samples for the first window.
@@ -119,6 +132,11 @@ private:
     // keeps the frame cadence comparable to the Phase 1 baseline.
     uint64_t _nextProduceAt = 0;
 
+    // Free-running path (Rolling/XY): the safe watermark at the last published
+    // frame.  A new frame is published only once the watermark advances, so a
+    // paused input holds the trace instead of re-blitting an identical window.
+    uint64_t _freeLastSafe = 0;
+
     // Re-read and compare the published region to prove no tear occurred.  The
     // safe-region protocol makes tears structurally impossible, so this is
     // verification, not detection; ACQ_DIAG-only because it doubles the read
@@ -154,6 +172,11 @@ private:
 
     // (Re)start the sample timer at the rate derived from timebase.
     void configureTimer(uint16_t timebase_us_per_div);
+
+    // Reconfigure both sample timers on first run or a timebase change.  Shared
+    // by update() and updateRolling() so the two paths agree on when the rings
+    // are re-origined.
+    void ensureConfigured(const ScopeState& state);
 
     // Print the aggregate line for the current cell, tagged with `status`.
     void printCell(const ScopeState& state, const char* status);

@@ -88,7 +88,14 @@ bool RunScreen::tick(AppContext& ctx) {
 
     if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
-    const bool newFrame = _acq.update(s, ctx.settings);
+    // Rolling and XY are free-running: they republish the newest window each
+    // frame, so their rate is blit-bound rather than sample-bound.  Triggered
+    // still uses update()'s trigger-aligned, sweep-paced path.  Keeping the
+    // paths separate leaves the hardened triggered acquisition untouched.
+    const bool freeRunning = (s.mode == Mode::Rolling || s.mode == Mode::XY);
+    const bool newFrame = freeRunning
+                          ? _acq.updateFreeRunning(s, ctx.settings)
+                          : _acq.update(s, ctx.settings);
     _acq.reportDiag(s);
     if (newFrame) {
         // Let the active mode fold the completed sweep into any history it keeps

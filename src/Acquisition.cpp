@@ -142,18 +142,24 @@ void Acquisition::configureTimer(uint16_t timebase_us_per_div) {
 
     // The rings hold samples taken at the previous rate; produce again as soon
     // as enough new ones exist rather than mixing two timebases into a frame.
+    // Both pacing cursors are origin-relative, so re-zero them alongside.
     _nextProduceAt = 0;
+    _freeLastSafe  = 0;
 }
 
-bool Acquisition::update(const ScopeState& state, const Settings& settings) {
+void Acquisition::ensureConfigured(const ScopeState& state) {
     // (Re)configure the sample timers on first run or when the timebase changes.
     // Trigger source/edge/level changes need no reconfigure — they only affect
-    // the software search below and take effect on the next buffer.
+    // the software search and take effect on the next buffer.
     if (!_started || _sTimebase != state.timebase_us_per_div) {
         configureTimer(state.timebase_us_per_div);
         _sTimebase = state.timebase_us_per_div;
         _started   = true;
     }
+}
+
+bool Acquisition::update(const ScopeState& state, const Settings& settings) {
+    ensureConfigured(state);
 
     // Both rings are paced by independent timers at the same rate, so pair them
     // by index at the lower of the two write heads.  Counts are taken relative
@@ -169,9 +175,15 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     const uint64_t safe = AcqCore::safeWatermark((availA < availB) ? availA : availB,
                                                  kGuard);
 
-    // The rings never stop, so pace production: one frame per CAPTURE new
-    // samples, matching the old double-buffer cadence so frame rates stay
-    // comparable to the Phase 1 baseline.
+    // The rings never stop, so pace production.  The read needs a full CAPTURE
+    // (2N) window — N to search for the trigger, N of post-trigger data to
+    // display after a late crossing — but a genuinely new trigger-aligned frame
+    // only requires the window to advance by ONE screen (N), not two: pacing at
+    // +N (below) rather than +CAPTURE is what lets Triggered reach its natural
+    // ceiling of one fresh sweep per screen-acquisition-time.  At long timebases
+    // that ceiling is inherent (you cannot fill a screen faster than a screen's
+    // worth of samples arrives — ~12 fps at 10 ms/div); at short timebases the
+    // window advances faster than the blit, so the rate becomes blit-bound.
     if (safe < CAPTURE || safe < _nextProduceAt) return false;
 
     // Copy the newest CAPTURE-sample window out of the rings into linear
@@ -193,7 +205,7 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     static uint16_t scratchB[CAPTURE];
     s_capA.read(absA, scratchA, CAPTURE);
     s_capB.read(absB, scratchB, CAPTURE);
-    _nextProduceAt = safe + CAPTURE;
+    _nextProduceAt = safe + N;   // advance one screen; see the pacing note above
 
     // The input hardware inverts the signal: a HIGHER ADC count is a LOWER input
     // voltage.  Invert only on the copy into the (non-DMA) frame, and search the
@@ -271,6 +283,62 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     }
 
     return produce;
+}
+
+bool Acquisition::updateFreeRunning(const ScopeState& state, const Settings& /*settings*/) {
+    ensureConfigured(state);
+
+    // Same origin-relative pairing and safe-region read as update(); only the
+    // pacing differs.  The rings are independently timed, so pair by index at
+    // the lower head and record the residual skew exactly as the triggered path.
+    const uint64_t availA = s_capA.totalWritten() - _originA;
+    const uint64_t availB = s_capB.totalWritten() - _originB;
+    _stats.pairSkew = (uint32_t)((availA > availB) ? (availA - availB)
+                                                  : (availB - availA));
+    _cell.noteSkew(_stats.pairSkew);
+
+    const uint64_t safe = AcqCore::safeWatermark((availA < availB) ? availA : availB,
+                                                 kGuard);
+
+    // Need a full display window, and only publish once new samples have arrived
+    // since the last frame — otherwise a paused input would re-blit an identical
+    // window at the full loop rate.  Unlike update() there is no CAPTURE gate, so
+    // the publish rate is bounded by the display blit, not the sample rate.
+    if (safe < N || safe <= _freeLastSafe) return false;
+
+    // The newest N samples are the frame.  For Rolling, this window and the
+    // previous one overlap by (N − new samples), so drawing it each frame reads
+    // as a scroll — every point shifts left by the samples acquired since the
+    // last frame and the new ones enter at the right.  For XY it is simply the
+    // latest N A/B pairs.  Either way the DMA ring is the history — no separate
+    // ring, and no samples dropped between frames the way the CAPTURE path did.
+    uint64_t base = 0;
+    AcqCore::newestWindow(safe, N, &base);
+    const uint64_t absA = _originA + base;
+    const uint64_t absB = _originB + base;
+
+    static uint16_t scratchA[N];
+    static uint16_t scratchB[N];
+    s_capA.read(absA, scratchA, N);
+    s_capB.read(absB, scratchB, N);
+
+    // Invert the hardware-inverted input on the copy into the frame, exactly as
+    // the triggered path does (a higher ADC count is a lower input voltage).
+    SampleBuffers& fb = _buf[_fill];
+    for (uint16_t i = 0; i < N; ++i) {
+        fb.ch[0][i] = (uint16_t)(kADCMax - scratchA[i]);
+        fb.ch[1][i] = (uint16_t)(kADCMax - scratchB[i]);
+    }
+    fb.count = N;
+
+    _freeLastSafe  = safe;
+    _lastTriggered = false;   // free-running; never trigger-aligned
+    _stats.noteConsume(micros());
+
+    const uint8_t tmp = _show;
+    _show = _fill;
+    _fill = tmp;
+    return true;
 }
 
 // Compact "[500 us/div ROLL]" tag identifying a characterization cell.  Both
