@@ -96,15 +96,51 @@ Notes:
   speed and mode rather than capture behavior.
 - Subjective per-cell steadiness notes were not recorded during this run.
 
-## After ring capture — commit f4d64fd, date <date>
+## After ring capture — commit f4d64fd, date 2026-07-25
+
+Full run, all nine cells to 150 s. Raw log: `docs/acq-phase2-001.log`.
 
 | Timebase | Triggered | Rolling | X-Y |
 |----------|-----------|---------|-----|
-| 50 µs/div  | | | |
-| 500 µs/div | | | |
-| 10 ms/div  | | | |
+| 50 µs/div  | 0 tears<br>fps 26.1, gap 71 ms, skew 2 | 0 tears<br>fps 32.6, gap 31 ms, **skew 80** | 0 tears<br>fps 33.0, gap 31 ms, **skew 80** |
+| 500 µs/div | 0 tears<br>fps 32.0, gap 31 ms, skew 1 | 0 tears<br>fps 32.0, gap 31 ms, skew 2 | 0 tears<br>fps 32.0, gap 31 ms, **skew 78** |
+| 10 ms/div  | 0 tears<br>fps 6.2, gap 159 ms, skew 1 | 0 tears<br>fps 6.2, gap 191 ms, skew 1 | 0 tears<br>fps 6.2, gap 159 ms, **skew 78** |
+
+**Criterion 1 passes everywhere: zero tears and zero overruns in all nine
+cells**, against six of nine cells tearing in the baseline. Trailing the write
+cursor removed tearing as designed.
+
+**Criterion 3 fails in four cells.** See the skew defect below; it is a bug in
+the pairing, not a property of ring capture.
 
 Notes:
+
+- **The A/B skew is cumulative and permanent, not drift.** It sat at 1-2 samples
+  for the first five cells, jumped to 80 during a fast encoder sweep back down
+  to 50 µs/div, and then stayed at 78-80 for every remaining cell regardless of
+  timebase. A read-timing artifact would scale with the sample rate and be
+  invisible at 10 ms/div; a fixed 78 at every rate means the two rings' *total*
+  sample counts have diverged and `update()` pairs them by cumulative index.
+  Suspected cause: `configureTimer()` calls `s_capA.start()` then
+  `s_capB.start()` sequentially, so channel A converts for the tens of
+  microseconds it takes to restart B. At 50 µs/div (1 µs interval) that is tens
+  of samples per timebase change, it accumulates across every change, and
+  nothing ever re-zeroes it. The old buffer-handover path was immune because it
+  paired whole buffers by completion, never by cumulative count.
+- Worth noting the verdict logic does not catch this: `PASS` on the `cell:` line
+  checks tears and overruns only, so all nine cells read PASS while four violate
+  the skew criterion. The verdict should include skew once the defect is fixed.
+- **The baseline's Rolling 50 µs/div stall is fixed**: 125 ms worst gap against a
+  31 ms frame period before, 31 ms now. It was capture-related after all, not
+  the draw path.
+- **50 µs/div Triggered got slower**: fps 29.5 → 26.1 and worst gap 51 → 71 ms.
+  Trigger misses also rose (15508 → 60058, 448/s peak) because the ring lets
+  `update()` attempt a search every CAPTURE samples rather than once per
+  completed buffer pair. Neither is an acceptance criterion, but the frame-rate
+  regression at the shortest timebase is the price paid so far for zero tears.
+- 10 ms/div Rolling worst gap rose 159 → 191 ms; every other cell held or
+  improved.
+- `pairwait` is 0 everywhere now, as expected: nothing waits on a buffer pair.
 
 ## Acceptance criteria (from the design spec)
 
