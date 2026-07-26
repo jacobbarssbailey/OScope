@@ -109,10 +109,17 @@ struct CellStats {
     // Mean frames/s over the cell, in tenths (integer math: no float printf).
     uint32_t fpsTenths() const { return secs ? (frames * 10) / secs : 0; }
 
-    // The two acceptance criteria that are machine-checkable: zero tears and
-    // zero overruns.  Trigger misses are expected at short timebases (the
-    // buffer spans less than one input period) and do not fail a cell.
-    bool pass() const { return tears == 0 && overruns == 0; }
+    // Largest A/B skew still counted as meeting the design spec's "within ~1
+    // sample": two, which is the jitter a healthy pair of independently-timed
+    // rings shows over a 150 s dwell.
+    static constexpr uint32_t kSkewLimit = 2;
+
+    // The machine-checkable acceptance criteria: zero tears, zero overruns, and
+    // A/B skew within tolerance.  Trigger misses are expected at short timebases
+    // (the buffer spans less than one input period) and do not fail a cell.
+    bool pass() const {
+        return tears == 0 && overruns == 0 && skewPeak <= kSkewLimit;
+    }
 };
 
 enum class CellReport : uint8_t { None, Progress, Done };

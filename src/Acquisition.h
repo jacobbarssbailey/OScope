@@ -104,6 +104,12 @@ private:
     // exceeds a threshold, so a single missed buffer doesn't flash unaligned.
     uint16_t _autoMissCount = 0;
 
+    // Per-channel cumulative counts at the last reconfigure.  All pairing is
+    // done relative to these, so the divergence a timer restart injects between
+    // the two channels is absorbed once instead of accumulating forever.
+    uint64_t _originA = 0;
+    uint64_t _originB = 0;
+
     // Cumulative sample count at which the next frame may be produced.  The
     // rings run continuously, so without this the display would re-read the same
     // newest window every loop; pacing at one frame per CAPTURE new samples

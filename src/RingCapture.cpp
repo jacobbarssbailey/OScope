@@ -61,11 +61,14 @@ void RingCapture::begin(ADC* adc, uint8_t adcNum, uint8_t pin,
     m->enableDMA();
 }
 
-void RingCapture::start(uint32_t freqHz) {
+void RingCapture::arm() {
     ADC_Module* m = _adc->adc[_adcNum];
     m->stopTimer();
     m->startSingleRead(_pin);
-    m->startTimer(freqHz);
+}
+
+void RingCapture::run(uint32_t freqHz) {
+    _adc->adc[_adcNum]->startTimer(freqHz);
 }
 
 void RingCapture::stop() {

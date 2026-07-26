@@ -102,10 +102,22 @@ void Acquisition::configureTimer(uint16_t timebase_us_per_div) {
     uint32_t freq = 1000000UL / interval;
     if (freq == 0) freq = 1;
 
-    // Point each ADC at its channel pin and (re)start its timer at the same
-    // rate.  Timer-triggered conversions stream continuously into each ring.
-    s_capA.start(freq);
-    s_capB.start(freq);
+    // Point each ADC at its channel pin, then start both timers back to back.
+    // The gap between the two run() calls is sample-count divergence injected
+    // between the channels, so do the slow part (arm) for both first.
+    s_capA.arm();
+    s_capB.arm();
+    s_capA.run(freq);
+    s_capB.run(freq);
+
+    // Re-zero the pairing origins.  Whatever divergence the restart above still
+    // injects — plus anything accumulated by previous restarts — is absorbed
+    // here: from now on A[originA + k] pairs with B[originB + k], and pairSkew
+    // measures only genuine drift since this reconfigure.  Without this the two
+    // rings' cumulative counts diverge a little on every timebase change and
+    // never recover, which is what Phase 2 measured as ~80 samples of skew.
+    _originA = s_capA.totalWritten();
+    _originB = s_capB.totalWritten();
 
     // The rings hold samples taken at the previous rate; produce again as soon
     // as enough new ones exist rather than mixing two timebases into a frame.
@@ -125,14 +137,18 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     _diagVerify = settings.diag;
 
     // Both rings are paced by independent timers at the same rate, so pair them
-    // by index at the lower of the two write heads.  The skew between them is
-    // the design spec's A/B criterion, so record it rather than waiting on it.
-    const uint64_t wA = s_capA.totalWritten();
-    const uint64_t wB = s_capB.totalWritten();
-    _stats.pairSkew = (uint32_t)((wA > wB) ? (wA - wB) : (wB - wA));
+    // by index at the lower of the two write heads.  Counts are taken relative
+    // to the origins captured at the last reconfigure, so restart divergence is
+    // already absorbed and what remains is genuine drift — the design spec's A/B
+    // criterion, recorded rather than waited on.
+    const uint64_t availA = s_capA.totalWritten() - _originA;
+    const uint64_t availB = s_capB.totalWritten() - _originB;
+    _stats.pairSkew = (uint32_t)((availA > availB) ? (availA - availB)
+                                                  : (availB - availA));
     _cell.noteSkew(_stats.pairSkew);
 
-    const uint64_t safe = AcqCore::safeWatermark((wA < wB) ? wA : wB, kGuard);
+    const uint64_t safe = AcqCore::safeWatermark((availA < availB) ? availA : availB,
+                                                 kGuard);
 
     // The rings never stop, so pace production: one frame per CAPTURE new
     // samples, matching the old double-buffer cadence so frame rates stay
@@ -142,12 +158,14 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     // Copy the newest CAPTURE-sample window out of the rings into linear
     // scratch, still raw (hardware-inverted).  Everything below is then plain
     // linear indexing with no wrap cases, exactly as the old buffer path was.
+    // base is origin-relative; each ring is read at its own origin plus that
+    // offset, which is what makes the two windows time-aligned.
     uint64_t base = 0;
     AcqCore::newestWindow(safe, CAPTURE, &base);
     static uint16_t scratchA[CAPTURE];
     static uint16_t scratchB[CAPTURE];
-    s_capA.read(base, scratchA, CAPTURE);
-    s_capB.read(base, scratchB, CAPTURE);
+    s_capA.read(_originA + base, scratchA, CAPTURE);
+    s_capB.read(_originB + base, scratchB, CAPTURE);
     _nextProduceAt = safe + CAPTURE;
 
     // The input hardware inverts the signal: a HIGHER ADC count is a LOWER input

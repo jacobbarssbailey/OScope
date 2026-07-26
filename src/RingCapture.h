@@ -33,7 +33,18 @@ public:
     // module numbering used elsewhere in this codebase.
     void begin(ADC* adc, uint8_t adcNum, uint8_t pin, volatile uint16_t* ring);
 
-    void start(uint32_t freqHz);   // (re)start timer-paced conversions
+    // (Re)start timer-paced conversions.  Split in two so a caller driving both
+    // channels can get the two timers running as close together as possible:
+    // whatever time separates the two run() calls is sample-count divergence
+    // injected between the channels, and at a 1 µs interval that is samples, not
+    // noise.  arm() does the slow part (stop the timer, select the pin) for both
+    // channels first, leaving only the timer start between them.
+    void arm();
+    void run(uint32_t freqHz);
+
+    // Convenience for a single channel where pairing does not apply.
+    void start(uint32_t freqHz) { arm(); run(freqHz); }
+
     void stop();
 
     // Cumulative samples the DMA has written since begin().  Monotonic in

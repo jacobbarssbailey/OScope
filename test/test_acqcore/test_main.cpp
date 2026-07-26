@@ -184,6 +184,23 @@ static void test_skew_peak_keeps_the_worst_instantaneous_skew() {
     TEST_ASSERT_EQUAL_UINT32(7, c.skewPeak);
 }
 
+static void test_excess_skew_fails_a_cell_that_is_otherwise_clean() {
+    // Phase 2 turned up cells with zero tears but ~80 samples of A/B skew, which
+    // violates the design spec's "within ~1 sample" criterion.  A clean-on-tears
+    // cell must not report PASS in that state.
+    AcqCore::CellStats c;
+    feed(c, 150, 32, 0, 0, 0, 0, 31000);
+    c.noteSkew(80);
+    TEST_ASSERT_FALSE(c.pass());
+}
+
+static void test_a_sample_or_two_of_skew_is_within_tolerance() {
+    AcqCore::CellStats c;
+    feed(c, 150, 32, 0, 0, 0, 0, 31000);
+    c.noteSkew(2);
+    TEST_ASSERT_TRUE(c.pass());
+}
+
 static void test_skew_peak_clears_on_restart() {
     AcqCore::CellStats c;
     c.noteSkew(7);
@@ -244,6 +261,8 @@ int main(int, char**) {
     RUN_TEST(test_partial_is_worth_reporting_only_when_a_real_dwell_was_cut_short);
     RUN_TEST(test_window_is_stale_when_reporting_was_interrupted);
     RUN_TEST(test_skew_peak_keeps_the_worst_instantaneous_skew);
+    RUN_TEST(test_excess_skew_fails_a_cell_that_is_otherwise_clean);
+    RUN_TEST(test_a_sample_or_two_of_skew_is_within_tolerance);
     RUN_TEST(test_skew_peak_clears_on_restart);
     RUN_TEST(test_ring_index_wraps_power_of_two);
     RUN_TEST(test_safe_watermark_trails_by_guard);
