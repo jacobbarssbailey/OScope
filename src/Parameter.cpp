@@ -198,21 +198,27 @@ bool paramAppliesInMode(EncoderParam id, Mode m) {
             // thus how completely a slow Lissajous closes).  Trigger has no
             // meaning when free-running.
             return id != EncoderParam::TriggerLevel;
+        case Mode::Spectrum:
+            // No adjustable acquisition parameters: the sample rate is fixed
+            // (kSpectrumTimebaseUs), the vertical scale is a fixed dBFS mapping,
+            // and there is no trigger.  The encoder has nothing to control here.
+            return false;
         default:
             return false;
     }
 }
 
 EncoderParam nextSelectable(const ScopeState& s) {
-    // There are exactly three parameters.  VScale always applies in every mode,
-    // so this loop is guaranteed to terminate within at most 3 iterations.
+    // There are exactly three parameters.  In the scope modes at least VScale
+    // always applies, so the loop finds one within 3 iterations; Spectrum has
+    // none, and the fallback (VScale) is returned but never adjusted because
+    // handleEvent gates encoder turns on paramAppliesInMode.
     const int kCount = 3;
     int i = ((int)s.selected + 1) % kCount;
     for (int guard = 0; guard < kCount; ++guard, i = (i + 1) % kCount) {
         if (paramAppliesInMode((EncoderParam)i, s.mode))
             return (EncoderParam)i;
     }
-    // Fallback: should never be reached (VScale is always valid).
     return EncoderParam::VScale;
 }
 

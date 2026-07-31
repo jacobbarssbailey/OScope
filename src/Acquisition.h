@@ -73,6 +73,15 @@ public:
     // new window was published.
     bool updateFreeRunning(const ScopeState& state, const Settings& settings);
 
+    // Read the newest `n` paired samples (inverted, display convention) straight
+    // from the rings into caller buffers — for consumers that need a block wider
+    // than the N-sample display frame, e.g. Spectrum's 256-point FFT.  Uses the
+    // same origin-relative pairing and guard-band safe region as update(); does
+    // NOT pace or publish.  Returns false until `n` samples exist.  Assumes the
+    // timers are already configured this frame (update()/updateFreeRunning() runs
+    // first each tick), so it takes no state.
+    bool readNewestBlock(uint16_t* dstA, uint16_t* dstB, uint16_t n);
+
     // Most recently published frame, for rendering.  count == 0 until the rings
     // hold enough samples for the first window.
     const SampleBuffers& frame() const { return _buf[_show]; }

@@ -66,4 +66,15 @@ public:
     // Modes that accumulate cross-frame history (Rolling) ingest it here so a
     // UI-triggered redraw never double-counts the same frame.  Default: no-op.
     virtual void onFrame(const SampleBuffers& /*buf*/) {}
+
+    // --- Optional mode-owned encoder parameters ---
+    // A mode with its own adjustable parameters (Spectrum) returns true here;
+    // RunScreen then routes the encoder button (cycle to next param) and the
+    // encoder rotation (adjust the selected param) to this mode instead of the
+    // shared Timebase/V-div/Trigger set, and shows formatParam() as the bottom
+    // readout.  Default: the mode has no parameters of its own.
+    virtual bool ownsEncoder() const { return false; }
+    virtual void encoderPress() {}
+    virtual void encoderTurn(int8_t /*delta*/) {}
+    virtual void formatParam(char* buf, uint8_t n) const { if (n) buf[0] = '\0'; }
 };

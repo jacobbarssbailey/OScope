@@ -40,3 +40,7 @@ void Renderer::vline(int16_t x, int16_t y, int16_t h, uint16_t c) {
 void Renderer::line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color) {
     tft.drawLine(x0, y0, x1, y1, color);
 }
+
+void Renderer::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
+    tft.fillRect(x, y, w, h, color);
+}

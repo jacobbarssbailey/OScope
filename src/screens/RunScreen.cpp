@@ -60,6 +60,7 @@ RunScreen::RunScreen() {
     _modes[static_cast<int>(Mode::Triggered)] = &_triggeredMode;
     _modes[static_cast<int>(Mode::Rolling)]   = &_rollingMode;
     _modes[static_cast<int>(Mode::XY)]        = &_xyMode;
+    _modes[static_cast<int>(Mode::Spectrum)]  = &_spectrumMode;
 }
 
 // --------------------------------------------------------------------------
@@ -67,6 +68,7 @@ RunScreen::RunScreen() {
 // --------------------------------------------------------------------------
 void RunScreen::onEnter(AppContext& /*ctx*/) {
     _acq.begin();
+    _spectrumMode.setSource(&_acq);   // Spectrum reads its FFT block from the rings
 }
 
 // --------------------------------------------------------------------------
@@ -88,11 +90,12 @@ bool RunScreen::tick(AppContext& ctx) {
 
     if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
-    // Rolling and XY are free-running: they republish the newest window each
-    // frame, so their rate is blit-bound rather than sample-bound.  Triggered
-    // still uses update()'s trigger-aligned, sweep-paced path.  Keeping the
-    // paths separate leaves the hardened triggered acquisition untouched.
-    const bool freeRunning = (s.mode == Mode::Rolling || s.mode == Mode::XY);
+    // Rolling, XY, and Spectrum are free-running: they republish the newest
+    // window each frame, so their rate is blit-bound rather than sample-bound.
+    // Triggered still uses update()'s trigger-aligned, sweep-paced path.  Keeping
+    // the paths separate leaves the hardened triggered acquisition untouched.
+    const bool freeRunning = (s.mode == Mode::Rolling || s.mode == Mode::XY ||
+                              s.mode == Mode::Spectrum);
     const bool newFrame = freeRunning
                           ? _acq.updateFreeRunning(s, ctx.settings)
                           : _acq.update(s, ctx.settings);
@@ -117,6 +120,7 @@ bool RunScreen::tick(AppContext& ctx) {
 // --------------------------------------------------------------------------
 void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
     auto& s = ctx.state;
+    ScopeMode* activeMode = _modes[static_cast<int>(s.mode)];
 
     if (e.type == EventType::ShortPress) {
         switch (e.button) {
@@ -143,10 +147,12 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 s.singleArmed = false;
                 break;
 
-            // Encoder press: advance to next selectable parameter, skipping
-            // any that do not apply in the current mode.
+            // Encoder press: cycle the active mode's own parameters if it has
+            // them (Spectrum), otherwise advance to the next shared parameter
+            // that applies in the current mode.
             case Btn::Encoder:
-                s.selected = nextSelectable(s);
+                if (activeMode && activeMode->ownsEncoder()) activeMode->encoderPress();
+                else                                         s.selected = nextSelectable(s);
                 break;
 
             default:
@@ -185,8 +191,13 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 break;
         }
     } else if (e.type == EventType::EncoderTurn) {
-        // Encoder rotation: adjust the currently selected parameter.
-        parameterFor(s.selected).adjust(s, e.delta);
+        // Encoder rotation: adjust the active mode's own selected parameter
+        // (Spectrum), otherwise the shared parameter — unless none applies.
+        if (activeMode && activeMode->ownsEncoder()) {
+            activeMode->encoderTurn(e.delta);
+        } else if (paramAppliesInMode(s.selected, s.mode)) {
+            parameterFor(s.selected).adjust(s, e.delta);
+        }
     }
 
     // Any handled event may have changed the acquisition setup; mark it for a
@@ -208,8 +219,10 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     // Acquisition runs in tick(); draw renders the last completed frame.  When
     // stopped, _acq.frame() keeps returning that frame — a frozen display.
 
-    // 2. Draw the grid underlay (shared by all modes) when enabled in settings.
-    if (ctx.settings.grid) {
+    // 2. Draw the grid underlay (shared by the scope modes) when enabled in
+    //    settings.  Spectrum draws its own grid (vertical divisions + one centre
+    //    line) inside render(), so skip the shared 8×8 grid for it.
+    if (ctx.settings.grid && s.mode != Mode::Spectrum) {
         Mapping::drawGrid(r);
     }
 
@@ -230,10 +243,15 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
         r.textCenterX(Theme::StopY, "STOP", Theme::Highlight, Arial_16);
     }
 
-    // Selected parameter readout (timebase / V/div / trigger), centered near the
-    // bottom.  No label — the units make it clear what is being adjusted.
+    // Selected parameter readout, centered near the bottom.  Modes that own
+    // their own parameters (Spectrum) format their selected one; the others show
+    // the shared timebase / V/div / trigger value.
     char val[24];
-    parameterFor(s.selected).format(s, val, sizeof val);
+    if (activeMode != nullptr && activeMode->ownsEncoder()) {
+        activeMode->formatParam(val, sizeof val);
+    } else {
+        parameterFor(s.selected).format(s, val, sizeof val);
+    }
     r.textCenterX(Theme::ParamY, val, Theme::Highlight, Arial_16);
 
     // Large mode label, centered, for a moment after a mode change.

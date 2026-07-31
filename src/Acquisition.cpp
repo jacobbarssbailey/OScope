@@ -285,6 +285,23 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     return produce;
 }
 
+bool Acquisition::readNewestBlock(uint16_t* dstA, uint16_t* dstB, uint16_t n) {
+    const uint64_t availA = s_capA.totalWritten() - _originA;
+    const uint64_t availB = s_capB.totalWritten() - _originB;
+    const uint64_t safe = AcqCore::safeWatermark((availA < availB) ? availA : availB,
+                                                 kGuard);
+    if (safe < n) return false;
+
+    const uint64_t base = safe - n;
+    s_capA.read(_originA + base, dstA, n);
+    s_capB.read(_originB + base, dstB, n);
+    for (uint16_t i = 0; i < n; ++i) {
+        dstA[i] = (uint16_t)(kADCMax - dstA[i]);
+        dstB[i] = (uint16_t)(kADCMax - dstB[i]);
+    }
+    return true;
+}
+
 bool Acquisition::updateFreeRunning(const ScopeState& state, const Settings& /*settings*/) {
     ensureConfigured(state);
 

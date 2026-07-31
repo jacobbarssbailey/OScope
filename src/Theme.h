@@ -52,4 +52,16 @@ namespace Theme {
   // Centre of the plot area in pixels (mid-rail = 0 V input).
   constexpr int16_t PlotCX        = PlotX + PlotW / 2;  // 120
   constexpr int16_t PlotCY        = PlotY + PlotH / 2;  // 120
+
+  // ---- Spectrum mode layout ----
+  // 128 FFT buckets, each SpecBucketW px wide, centred horizontally.  Channel A
+  // grows up from the centre line, channel B grows down (inverted).  At 1 px per
+  // bucket the 128 px block clears the round bezel even at full height, so no
+  // bars are clipped.
+  constexpr int16_t SpecBuckets   = 128;
+  constexpr int16_t SpecBucketW   = 1;                              // px per bucket
+  constexpr int16_t SpecBarsW     = SpecBuckets * SpecBucketW;      // 128
+  constexpr int16_t SpecLeftX     = PlotX + (PlotW - SpecBarsW) / 2; // 56
+  constexpr int16_t SpecCenterY   = PlotCY;                         // 120
+  constexpr int16_t SpecMaxPx     = 80;                             // full-scale bar height
 }

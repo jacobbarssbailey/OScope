@@ -35,6 +35,9 @@ public:
     // Draw an arbitrary line from (x0, y0) to (x1, y1).
     void line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 
+    // Fill a w×h rectangle with its top-left at (x, y).
+    void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+
     // Direct reference to the underlying driver (for advanced use by screens).
     GC9A01A_t3n& tft;
 };

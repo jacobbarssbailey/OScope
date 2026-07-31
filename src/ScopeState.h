@@ -9,7 +9,16 @@
 #include <stdint.h>
 
 // Acquisition / display mode.
-enum class Mode : uint8_t { Triggered, Rolling, XY, COUNT };
+enum class Mode : uint8_t { Triggered, Rolling, XY, Spectrum, COUNT };
+
+// Spectrum mode samples at a fixed rate rather than a user timebase: with the
+// interval = timebase * GridCols / N mapping (8/240, integer), 938 µs/div gives
+// a 31 µs interval → ~32 kHz sample rate → ~16 kHz Nyquist.  A 256-point FFT
+// then yields ~126 Hz per bin across 128 buckets, spanning ~126 Hz to ~16 kHz
+// (sub-bin content, e.g. 40 Hz, folds into the lowest bucket) — the requested
+// ~40 Hz–16 kHz audio range.  Stored in Spectrum's per-mode timebase slot and
+// never exposed to the encoder (see paramAppliesInMode).
+static constexpr uint32_t kSpectrumTimebaseUs = 938;
 
 // Which analog channel(s) are selected.
 enum class ChannelSel : uint8_t { A, B, Both };
@@ -28,7 +37,8 @@ struct ScopeState {
     // remembers its own setting and switching modes restores it.  Indexed by
     // (uint8_t)Mode; use timebase()/setTimebase() for the active mode.  uint32
     // is wide enough for 1 s/div (1,000,000 µs overflows uint16_t).
-    uint32_t timebase_us_per_div[(uint8_t)Mode::COUNT] = {500, 500, 500};
+    uint32_t timebase_us_per_div[(uint8_t)Mode::COUNT] =
+        {500, 500, 500, kSpectrumTimebaseUs};
     uint16_t vscale_mv_per_div[2]   = {3000, 3000};  // mV/div per channel (3 V/div default)
     int16_t  trigger_level_mv       = 0;           // mV
     bool     channelEnabled[2]      = {true, true};

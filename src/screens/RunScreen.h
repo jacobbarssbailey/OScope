@@ -17,6 +17,7 @@
 #include "../modes/TriggeredMode.h"
 #include "../modes/RollingMode.h"
 #include "../modes/XYMode.h"
+#include "../modes/SpectrumMode.h"
 
 class RunScreen : public Screen {
 public:
@@ -56,6 +57,7 @@ private:
     TriggeredMode _triggeredMode;
     RollingMode   _rollingMode;
     XYMode        _xyMode;
+    SpectrumMode  _spectrumMode;
 
     // Mode dispatch table: indexed by (int)Mode enum value.  All slots populated.
     ScopeMode*    _modes[static_cast<int>(Mode::COUNT)];
