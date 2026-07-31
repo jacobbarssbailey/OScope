@@ -3,19 +3,12 @@
 #include "SpectrumMode.h"
 #include "../Theme.h"
 #include "../Acquisition.h"
-#include <stdio.h>   // snprintf
 #include <math.h>
 
 // Full-scale reference note: a full-scale sinusoid (±512 counts) through a Hann
 // window into a 256-point FFT produces a bin magnitude of roughly
-// (amplitude * N/2 * coherent gain) = 512 * 128 * 0.25 ≈ 16384, which is why the
-// default _full is 16384.  All four amplitude/scale endpoints are live-tunable.
-
-static int32_t clampi32(int32_t v, int32_t lo, int32_t hi) {
-    if (v < lo) return lo;
-    if (v > hi) return hi;
-    return v;
-}
+// (amplitude * N/2 * coherent gain) = 512 * 128 * 0.25 ≈ 16384, which is why
+// kFull is 16384.
 
 SpectrumMode::SpectrumMode() {
     arm_rfft_fast_init_f32(&_fft, kFFT);
@@ -32,26 +25,25 @@ SpectrumMode::SpectrumMode() {
                         / SampleBuffers::N;
     if (interval < 1) interval = 1;
     const float fs = 1000000.0f / (float)interval;
-    _binHz     = fs / (float)kFFT;
-    _nyquistHz = (int32_t)(fs / 2.0f);   // upper clamp for the Fmax parameter
+    _binHz = fs / (float)kFFT;
 }
 
 int SpectrumMode::ampToPx(float mag) const {
     // Linear fraction across [zero, full].
-    float span = _full - _zero;
+    float span = kFull - kZero;
     if (span < 1.0f) span = 1.0f;
-    const float lin = (mag - _zero) / span;
+    const float lin = (mag - kZero) / span;
 
     // Log fraction across the same endpoints (needs positive references).
     float frac;
-    if (_scalePct == 0) {
+    if (kScalePct == 0) {
         frac = lin;
     } else {
-        const float zc = _zero < 1.0f ? 1.0f : _zero;
-        const float denom = log10f(_full / zc);
+        const float zc = kZero < 1.0f ? 1.0f : kZero;
+        const float denom = log10f(kFull / zc);
         const float lg = (mag <= zc || denom <= 0.0f)
                          ? 0.0f : (log10f(mag / zc) / denom);
-        const float s = (float)_scalePct / 100.0f;
+        const float s = (float)kScalePct / 100.0f;
         frac = (1.0f - s) * lin + s * lg;
     }
 
@@ -88,8 +80,8 @@ void SpectrumMode::mapBars(const float* mag, uint8_t* bars) const {
     // frequency picks the nearest FFT bin.  When the window is narrower than the
     // full spectrum this zooms in (several buckets share a bin); wider slices
     // skip bins.
-    const float lo = (float)_minHz;
-    const float width = (float)(_maxHz - _minHz);
+    const float lo = (float)kMinHz;
+    const float width = (float)(kMaxHz - kMinHz);
     for (uint16_t i = 0; i < kBins; ++i) {
         const float freq = lo + (i + 0.5f) * width / (float)kBins;
         int bin = (int)(freq / _binHz + 0.5f);   // bin number 1..kNBin
@@ -106,44 +98,6 @@ void SpectrumMode::onFrame(const SampleBuffers& /*buf*/) {
     computeMag(_rawB, _magB);
     mapBars(_magA, _barsA);
     mapBars(_magB, _barsB);
-}
-
-void SpectrumMode::encoderPress() {
-    _sel = (uint8_t)((_sel + 1) % PCount);
-}
-
-void SpectrumMode::encoderTurn(int8_t delta) {
-    switch (_sel) {
-        case PMinFreq:
-            _minHz = clampi32(_minHz + delta * kFreqStep, 0, _maxHz - kFreqStep);
-            break;
-        case PMaxFreq:
-            _maxHz = clampi32(_maxHz + delta * kFreqStep, _minHz + kFreqStep, _nyquistHz);
-            break;
-        case PScale:
-            _scalePct = (uint8_t)clampi32(_scalePct + delta * kScaleStep, 0, 100);
-            break;
-        case PZero:
-            _zero = (float)clampi32((int32_t)_zero + delta * kZeroStep,
-                                    0, (int32_t)_full - kZeroStep);
-            break;
-        case PFull:
-            _full = (float)clampi32((int32_t)_full + delta * kFullStep,
-                                    (int32_t)_zero + kFullStep, kFullMax);
-            break;
-        default: break;
-    }
-}
-
-void SpectrumMode::formatParam(char* buf, uint8_t n) const {
-    switch (_sel) {
-        case PMinFreq: snprintf(buf, n, "Fmin %ld Hz", (long)_minHz); break;
-        case PMaxFreq: snprintf(buf, n, "Fmax %ld Hz", (long)_maxHz); break;
-        case PScale:   snprintf(buf, n, "Scale %u%%", _scalePct);     break;  // 0=lin 100=log
-        case PZero:    snprintf(buf, n, "Zero %ld",   (long)_zero);   break;
-        case PFull:    snprintf(buf, n, "Full %ld",   (long)_full);   break;
-        default:       if (n) buf[0] = '\0';                          break;
-    }
 }
 
 void SpectrumMode::drawGrid(Renderer& r) const {

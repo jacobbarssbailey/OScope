@@ -243,16 +243,22 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
         r.textCenterX(Theme::StopY, "STOP", Theme::Highlight, Arial_16);
     }
 
-    // Selected parameter readout, centered near the bottom.  Modes that own
-    // their own parameters (Spectrum) format their selected one; the others show
-    // the shared timebase / V/div / trigger value.
+    // Selected parameter readout, centered near the bottom.  Modes that own the
+    // encoder (Tuner) format their own readout; modes with shared parameters show
+    // the selected timebase / V/div / trigger value; modes with neither
+    // (Spectrum) show nothing.
     char val[24];
+    bool showParam = true;
     if (activeMode != nullptr && activeMode->ownsEncoder()) {
         activeMode->formatParam(val, sizeof val);
-    } else {
+    } else if (paramAppliesInMode(s.selected, s.mode)) {
         parameterFor(s.selected).format(s, val, sizeof val);
+    } else {
+        showParam = false;
     }
-    r.textCenterX(Theme::ParamY, val, Theme::Highlight, Arial_16);
+    if (showParam) {
+        r.textCenterX(Theme::ParamY, val, Theme::Highlight, Arial_16);
+    }
 
     // Large mode label, centered, for a moment after a mode change.
     if (_modeFlash) {
