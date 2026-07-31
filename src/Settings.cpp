@@ -9,6 +9,7 @@ void Settings::defaults() {
     trigEdge   = TrigEdge::Rising;
     trigMode   = TrigMode::Auto;
     grid       = true;
+    a4_hz      = 440;
 }
 
 // ---- Persistence ----------------------------------------------------------
@@ -18,7 +19,7 @@ void Settings::defaults() {
 
 static constexpr int      kEEAddr  = 0;
 static constexpr uint16_t kMagic   = 0x05C0;   // "OScope settings"
-static constexpr uint8_t  kVersion = 3;
+static constexpr uint8_t  kVersion = 4;        // bumped: a4_hz
 
 struct StoredSettings {
     uint16_t   magic;
@@ -27,6 +28,7 @@ struct StoredSettings {
     TrigEdge   trigEdge;
     TrigMode   trigMode;
     bool       grid;
+    uint16_t   a4_hz;
 };
 
 void Settings::load() {
@@ -37,6 +39,7 @@ void Settings::load() {
         trigEdge   = s.trigEdge;
         trigMode   = s.trigMode;
         grid       = s.grid;
+        a4_hz      = s.a4_hz;
     } else {
         defaults();
         save();   // initialise EEPROM so subsequent boots read a valid record
@@ -44,7 +47,7 @@ void Settings::load() {
 }
 
 void Settings::save() const {
-    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid};
+    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid, a4_hz};
     EEPROM.put(kEEAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
@@ -79,6 +82,17 @@ static void fmtGrid(const Settings& s, char* b, uint8_t n) {
     snprintf(b, n, "%s", s.grid ? "On" : "Off");
 }
 
+// A4 tuner reference: ±1 Hz per detent over the usual instrument range.
+static void adjA4(Settings& s, int8_t d) {
+    int v = (int)s.a4_hz + d;
+    if (v < 400) v = 400;
+    if (v > 480) v = 480;
+    s.a4_hz = (uint16_t)v;
+}
+static void fmtA4(const Settings& s, char* b, uint8_t n) {
+    snprintf(b, n, "%u Hz", s.a4_hz);
+}
+
 
 // ---- Descriptor table -----------------------------------------------------
 static const SettingItem kItems[] = {
@@ -86,6 +100,7 @@ static const SettingItem kItems[] = {
     { "Trig Edge", adjEdge,   fmtEdge   },
     { "Trig Mode", adjMode,   fmtMode   },
     { "Grid",      adjGrid,   fmtGrid   },
+    { "A4 Tune",   adjA4,     fmtA4     },
 };
 
 const SettingItem* settingItems() { return kItems; }

@@ -21,6 +21,7 @@ struct Settings {
     TrigEdge   trigEdge   = TrigEdge::Rising;
     TrigMode   trigMode   = TrigMode::Auto;
     bool       grid       = true;
+    uint16_t   a4_hz      = 440;   // Tuner reference: frequency of note A4
 
     // Restore all fields to the compile-time defaults above.
     void defaults();

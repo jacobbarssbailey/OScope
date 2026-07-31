@@ -203,6 +203,10 @@ bool paramAppliesInMode(EncoderParam id, Mode m) {
             // (kSpectrumTimebaseUs), the vertical scale is a fixed dBFS mapping,
             // and there is no trigger.  The encoder has nothing to control here.
             return false;
+        case Mode::Tuner:
+            // Tuner owns the encoder itself (toggles Hz/Note), so none of the
+            // shared acquisition parameters apply.
+            return false;
         default:
             return false;
     }

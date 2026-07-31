@@ -61,14 +61,17 @@ RunScreen::RunScreen() {
     _modes[static_cast<int>(Mode::Rolling)]   = &_rollingMode;
     _modes[static_cast<int>(Mode::XY)]        = &_xyMode;
     _modes[static_cast<int>(Mode::Spectrum)]  = &_spectrumMode;
+    _modes[static_cast<int>(Mode::Tuner)]     = &_tunerMode;
 }
 
 // --------------------------------------------------------------------------
 // onEnter: initialise ADC resolution once (called from ScreenStack::reset)
 // --------------------------------------------------------------------------
-void RunScreen::onEnter(AppContext& /*ctx*/) {
+void RunScreen::onEnter(AppContext& ctx) {
     _acq.begin();
     _spectrumMode.setSource(&_acq);   // Spectrum reads its FFT block from the rings
+    _tunerMode.setSource(&_acq);      // Tuner reads its YIN block from the rings
+    _tunerMode.setSettings(&ctx.settings);   // for the A4 note reference
 }
 
 // --------------------------------------------------------------------------
@@ -90,12 +93,13 @@ bool RunScreen::tick(AppContext& ctx) {
 
     if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
-    // Rolling, XY, and Spectrum are free-running: they republish the newest
-    // window each frame, so their rate is blit-bound rather than sample-bound.
-    // Triggered still uses update()'s trigger-aligned, sweep-paced path.  Keeping
-    // the paths separate leaves the hardened triggered acquisition untouched.
+    // Rolling, XY, Spectrum, and Tuner are free-running: they republish/read the
+    // newest window each frame, so their rate is blit-bound rather than
+    // sample-bound.  Triggered still uses update()'s trigger-aligned, sweep-paced
+    // path.  Keeping the paths separate leaves the hardened triggered
+    // acquisition untouched.
     const bool freeRunning = (s.mode == Mode::Rolling || s.mode == Mode::XY ||
-                              s.mode == Mode::Spectrum);
+                              s.mode == Mode::Spectrum || s.mode == Mode::Tuner);
     const bool newFrame = freeRunning
                           ? _acq.updateFreeRunning(s, ctx.settings)
                           : _acq.update(s, ctx.settings);
@@ -220,9 +224,9 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     // stopped, _acq.frame() keeps returning that frame — a frozen display.
 
     // 2. Draw the grid underlay (shared by the scope modes) when enabled in
-    //    settings.  Spectrum draws its own grid (vertical divisions + one centre
-    //    line) inside render(), so skip the shared 8×8 grid for it.
-    if (ctx.settings.grid && s.mode != Mode::Spectrum) {
+    //    settings.  Spectrum and Tuner draw their own layout (division lines /
+    //    centre divider) inside render(), so skip the shared 8×8 grid for them.
+    if (ctx.settings.grid && s.mode != Mode::Spectrum && s.mode != Mode::Tuner) {
         Mapping::drawGrid(r);
     }
 

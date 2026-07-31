@@ -8,7 +8,7 @@
 // uninitialised EEPROM or a stale layout (bump kStateVersion on field changes).
 static constexpr int      kEEStateAddr = 32;
 static constexpr uint16_t kStateMagic   = 0x05C1;
-static constexpr uint8_t  kStateVersion = 4;   // bumped: Spectrum mode (4 timebase slots)
+static constexpr uint8_t  kStateVersion = 5;   // bumped: Tuner mode (5 timebase slots)
 
 // Only the acquisition setup is persisted — not running / singleArmed.
 struct StoredState {
@@ -33,6 +33,7 @@ void ScopeState::resetToDefaults() {
     for (uint8_t m = 0; m < (uint8_t)Mode::COUNT; ++m)
         timebase_us_per_div[m] = 500;
     timebase_us_per_div[(uint8_t)Mode::Spectrum] = kSpectrumTimebaseUs;
+    timebase_us_per_div[(uint8_t)Mode::Tuner]    = kTunerTimebaseUs;
     vscale_mv_per_div[0]  = 3000;
     vscale_mv_per_div[1]  = 3000;
     trigger_level_mv      = 0;
@@ -59,11 +60,12 @@ void ScopeState::load() {
         resetToDefaults();
         save();   // initialise EEPROM so subsequent boots read a valid record
     }
-    // The Spectrum sample rate is fixed by firmware (kSpectrumTimebaseUs), not a
-    // user setting, so it is never taken from EEPROM — always force it here so a
-    // firmware change to the rate takes effect without a version bump or a stale
+    // The Spectrum and Tuner sample rates are fixed by firmware, not user
+    // settings, so they are never taken from EEPROM — always force them here so a
+    // firmware change to a rate takes effect without a version bump or a stale
     // stored value winning.
     timebase_us_per_div[(uint8_t)Mode::Spectrum] = kSpectrumTimebaseUs;
+    timebase_us_per_div[(uint8_t)Mode::Tuner]    = kTunerTimebaseUs;
 
     // Transient fields always boot to a sane state, regardless of what was saved.
     running     = true;
@@ -73,10 +75,11 @@ void ScopeState::load() {
 void ScopeState::save() const {
     StoredState s{kStateMagic, kStateVersion, mode, channel, selected,
                   {timebase_us_per_div[0], timebase_us_per_div[1],
-                   timebase_us_per_div[2], timebase_us_per_div[3]},
+                   timebase_us_per_div[2], timebase_us_per_div[3],
+                   timebase_us_per_div[4]},
                   {vscale_mv_per_div[0], vscale_mv_per_div[1]},
                   trigger_level_mv, {channelEnabled[0], channelEnabled[1]}};
-    static_assert((uint8_t)Mode::COUNT == 4, "StoredState timebase initializer lists 4 modes");
+    static_assert((uint8_t)Mode::COUNT == 5, "StoredState timebase initializer lists 5 modes");
     EEPROM.put(kEEStateAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
@@ -86,6 +89,7 @@ const char* modeName(Mode m) {
         case Mode::Rolling:   return "ROLL";
         case Mode::XY:        return "X-Y";
         case Mode::Spectrum:  return "SPEC";
+        case Mode::Tuner:     return "TUNE";
         default:              return "?";
     }
 }

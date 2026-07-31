@@ -54,6 +54,63 @@ inline bool newestWindow(uint64_t safe, uint32_t len, uint64_t* base) {
     return true;
 }
 
+// ---- Pitch detection (YIN) ------------------------------------------------
+// YIN fundamental-period estimator (de Cheveigné & Kawahara 2002).  Pure float
+// math, no Arduino/CMSIS dependency, so it is unit-testable off-target.
+//
+//   x      : input samples x[0..n).  A DC offset is harmless — the difference
+//            function cancels it — so callers need not remove the mean.
+//   n      : window length (even).
+//   diff   : caller scratch of length n/2 + 1 (reused for the difference
+//            function and its cumulative-mean normalization).
+//   thr    : absolute threshold on the normalized difference (0.10–0.15 typical;
+//            lower = stricter/more confident).
+//
+// Returns the fundamental period in samples, parabolically interpolated for
+// sub-sample precision, or -1 if no periodicity clears the threshold (silence or
+// aperiodic input).  Convert to frequency as sampleRate / period.
+inline float yinPeriod(const float* x, int n, float* diff, float thr) {
+    const int tauMax = n / 2;
+
+    // Step 1: squared-difference function d(tau).
+    diff[0] = 1.0f;
+    for (int tau = 1; tau <= tauMax; ++tau) {
+        float sum = 0.0f;
+        for (int j = 0; j < tauMax; ++j) {
+            const float d = x[j] - x[j + tau];
+            sum += d * d;
+        }
+        diff[tau] = sum;
+    }
+
+    // Step 2: cumulative mean normalized difference d'(tau).
+    float running = 0.0f;
+    for (int tau = 1; tau <= tauMax; ++tau) {
+        running += diff[tau];
+        diff[tau] = (running > 0.0f) ? diff[tau] * (float)tau / running : 1.0f;
+    }
+
+    // Step 3: first tau below the absolute threshold, advanced to its local min.
+    int tauEst = -1;
+    for (int tau = 2; tau <= tauMax; ++tau) {
+        if (diff[tau] < thr) {
+            while (tau + 1 <= tauMax && diff[tau + 1] < diff[tau]) ++tau;
+            tauEst = tau;
+            break;
+        }
+    }
+    if (tauEst < 0) return -1.0f;
+
+    // Step 4: parabolic interpolation of the minimum for sub-sample precision.
+    float period = (float)tauEst;
+    if (tauEst > 1 && tauEst < tauMax) {
+        const float s0 = diff[tauEst - 1], s1 = diff[tauEst], s2 = diff[tauEst + 1];
+        const float denom = s0 - 2.0f * s1 + s2;
+        if (denom != 0.0f) period = (float)tauEst + 0.5f * (s0 - s2) / denom;
+    }
+    return period;
+}
+
 // ---- Characterization cells ----------------------------------------------
 
 // One characterization cell: a (timebase, mode) pair held steady for the

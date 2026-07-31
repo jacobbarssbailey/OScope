@@ -1,6 +1,7 @@
 // Host-side unit tests for lib/AcqCore (pure acquisition logic).
 #include <unity.h>
 #include <AcqCore.h>
+#include <cmath>
 
 void setUp() {}
 void tearDown() {}
@@ -236,6 +237,41 @@ static void test_newest_window_insufficient_data() {
     TEST_ASSERT_FALSE(AcqCore::newestWindow(479, 480, &base));
 }
 
+// ---- YIN pitch detection --------------------------------------------------
+
+static void test_yin_detects_sine_period() {
+    // A 64-sample-period sine over a 1024-sample window; YIN should recover the
+    // period to well under a sample.
+    const int n = 1024;
+    static float x[1024];
+    static float diff[513];
+    const float period = 64.0f;
+    for (int i = 0; i < n; ++i)
+        x[i] = 100.0f * sinf(2.0f * (float)M_PI * i / period);
+    const float est = AcqCore::yinPeriod(x, n, diff, 0.15f);
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, period, est);
+}
+
+static void test_yin_ignores_dc_offset() {
+    // The same sine on a large DC pedestal — the difference function cancels DC,
+    // so the estimate must be unchanged.
+    const int n = 1024;
+    static float x[1024];
+    static float diff[513];
+    const float period = 100.0f;
+    for (int i = 0; i < n; ++i)
+        x[i] = 500.0f + 80.0f * sinf(2.0f * (float)M_PI * i / period);
+    const float est = AcqCore::yinPeriod(x, n, diff, 0.15f);
+    TEST_ASSERT_FLOAT_WITHIN(1.0f, period, est);
+}
+
+static void test_yin_returns_negative_on_silence() {
+    const int n = 1024;
+    static float x[1024] = {0};
+    static float diff[513];
+    TEST_ASSERT_TRUE(AcqCore::yinPeriod(x, n, diff, 0.15f) < 0.0f);
+}
+
 int main(int, char**) {
     UNITY_BEGIN();
     RUN_TEST(test_rising_edge_found);
@@ -269,5 +305,8 @@ int main(int, char**) {
     RUN_TEST(test_safe_watermark_clamps_to_zero);
     RUN_TEST(test_newest_window_when_enough_data);
     RUN_TEST(test_newest_window_insufficient_data);
+    RUN_TEST(test_yin_detects_sine_period);
+    RUN_TEST(test_yin_ignores_dc_offset);
+    RUN_TEST(test_yin_returns_negative_on_silence);
     return UNITY_END();
 }
