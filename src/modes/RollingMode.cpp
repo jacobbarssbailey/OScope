@@ -26,7 +26,7 @@ void RollingMode::drawChannel(Renderer& r, const SampleBuffers& buf, uint8_t ch,
 
 void RollingMode::render(Renderer& r, const ScopeState& state,
                          const SampleBuffers& buf) {
-    // Grid is drawn by RunScreen (gated on settings.grid) before this call.
+    // Grid is drawn by RunScreen before this call.
     if (buf.count < 2) return;
 
     // Draw B first so A lands on top (matches Triggered mode's Z-order).

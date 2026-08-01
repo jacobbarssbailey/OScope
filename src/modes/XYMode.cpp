@@ -16,7 +16,7 @@
 
 void XYMode::render(Renderer& r, const ScopeState& state,
                     const SampleBuffers& buf) {
-    // Grid is drawn by RunScreen (gated on settings.grid) before this call.
+    // Grid is drawn by RunScreen before this call.
     const uint16_t n = buf.count;
     if (n < 2) return;  // need at least two points to draw a segment
 

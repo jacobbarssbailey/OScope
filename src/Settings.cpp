@@ -8,7 +8,6 @@ void Settings::defaults() {
     trigSource = TrigSource::A;
     trigEdge   = TrigEdge::Rising;
     trigMode   = TrigMode::Auto;
-    grid       = true;
     a4_hz      = 440;
     persist    = 0;
 }
@@ -20,7 +19,7 @@ void Settings::defaults() {
 
 static constexpr int      kEEAddr  = 0;
 static constexpr uint16_t kMagic   = 0x05C0;   // "OScope settings"
-static constexpr uint8_t  kVersion = 5;   // bumped: a4_hz + persist
+static constexpr uint8_t  kVersion = 6;   // bumped: removed grid
 
 struct StoredSettings {
     uint16_t   magic;
@@ -28,7 +27,6 @@ struct StoredSettings {
     TrigSource trigSource;
     TrigEdge   trigEdge;
     TrigMode   trigMode;
-    bool       grid;
     uint16_t   a4_hz;
     uint8_t    persist;
 };
@@ -40,7 +38,6 @@ void Settings::load() {
         trigSource = s.trigSource;
         trigEdge   = s.trigEdge;
         trigMode   = s.trigMode;
-        grid       = s.grid;
         a4_hz      = s.a4_hz;
         persist    = s.persist;
     } else {
@@ -51,7 +48,7 @@ void Settings::load() {
 
 void Settings::save() const {
     StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode,
-                     grid, a4_hz, persist};
+                     a4_hz, persist};
     EEPROM.put(kEEAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
@@ -77,13 +74,6 @@ static void adjMode(Settings& s, int8_t d) {
 }
 static void fmtMode(const Settings& s, char* b, uint8_t n) {
     snprintf(b, n, "%s", s.trigMode == TrigMode::Auto ? "Auto" : "Normal");
-}
-
-static void adjGrid(Settings& s, int8_t d) {
-    if (d) s.grid = !s.grid;
-}
-static void fmtGrid(const Settings& s, char* b, uint8_t n) {
-    snprintf(b, n, "%s", s.grid ? "On" : "Off");
 }
 
 // A4 tuner reference: ±1 Hz per detent over the usual instrument range.
@@ -115,7 +105,6 @@ static const SettingItem kItems[] = {
     { "Trig Src",  adjSource,  fmtSource  },
     { "Trig Edge", adjEdge,    fmtEdge    },
     { "Trig Mode", adjMode,    fmtMode    },
-    { "Grid",      adjGrid,    fmtGrid    },
     { "A4 Tune",   adjA4,      fmtA4      },
     { "Persist",   adjPersist, fmtPersist },
 };

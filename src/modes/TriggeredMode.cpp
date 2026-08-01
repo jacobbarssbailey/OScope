@@ -18,7 +18,7 @@
 // --------------------------------------------------------------------------
 void TriggeredMode::render(Renderer& r, const ScopeState& state,
                            const SampleBuffers& buf) {
-    // Grid is drawn by RunScreen (gated on settings.grid) before this call.
+    // Grid is drawn by RunScreen before this call.
     // Plot each enabled channel as a connected polyline.
     // We draw channel B first so A (the trigger source) is on top.
     const uint16_t nSamples = buf.count;

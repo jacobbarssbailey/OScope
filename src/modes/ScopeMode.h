@@ -54,7 +54,7 @@ public:
     virtual const char* name() const = 0;
 
     // Render the traces into the framebuffer via r.  The grid is drawn by
-    // RunScreen beforehand (gated on settings.grid); render draws traces only.
+    // RunScreen beforehand; render draws traces only.
     // Called before RunScreen draws the HUD, which lands on top.
     // May be called more than once per acquired frame (e.g. on a UI redraw),
     // so it must be a pure function of (state, buf) — no accumulation here.

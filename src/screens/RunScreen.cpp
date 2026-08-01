@@ -16,7 +16,7 @@
 //
 // Draw Z-order (bottom → top):
 //   1. Background clear (r.clear())
-//   2. Grid underlay (drawn here when settings.grid, shared by all modes)
+//   2. Grid underlay (drawn here, shared by the scope modes)
 //   3. Waveform traces (activeMode->render())
 //   4. HUD text overlay (drawn here, after render())
 //
@@ -235,10 +235,10 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     // Acquisition runs in tick(); draw renders the last completed frame.  When
     // stopped, _acq.frame() keeps returning that frame — a frozen display.
 
-    // 2. Draw the grid underlay (shared by the scope modes) when enabled in
-    //    settings.  Spectrum and Tuner draw their own layout (division lines /
-    //    centre divider) inside render(), so skip the shared 8×8 grid for them.
-    if (ctx.settings.grid && s.mode != Mode::Spectrum && s.mode != Mode::Tuner) {
+    // 2. Draw the grid underlay, shared by the scope modes.  Spectrum and Tuner
+    //    draw their own layout (division lines / centre divider) inside render(),
+    //    so skip the shared 8×8 grid for them.
+    if (s.mode != Mode::Spectrum && s.mode != Mode::Tuner) {
         Mapping::drawGrid(r);
     }
 
