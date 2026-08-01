@@ -217,8 +217,20 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
 void RunScreen::draw(Renderer& r, AppContext& ctx) {
     auto& s = ctx.state;
 
-    // 1. Clear background.
-    r.clear();
+    // 1. Clear background — or, in a persistence-capable scope mode with
+    //    persistence enabled, fade the previous frame instead so the trace
+    //    leaves a phosphor-like trail.  Only Triggered and X-Y qualify: each
+    //    draws a fresh snapshot per frame, so accumulation reveals jitter and
+    //    modulation.  Rolling already encodes time in its scroll, and the
+    //    non-scope modes (Spectrum) manage their own display.
+    const bool persistMode = (s.mode == Mode::Triggered || s.mode == Mode::XY);
+    if (ctx.settings.persist != 0 && persistMode) {
+        // keep/256 per channel per frame, indexed by the persist level.
+        static const uint16_t kKeep[4] = {256, 150, 200, 232};
+        r.fadeFrame(kKeep[ctx.settings.persist <= 3 ? ctx.settings.persist : 0]);
+    } else {
+        r.clear();
+    }
 
     // Acquisition runs in tick(); draw renders the last completed frame.  When
     // stopped, _acq.frame() keeps returning that frame — a frozen display.

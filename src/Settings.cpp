@@ -10,6 +10,7 @@ void Settings::defaults() {
     trigMode   = TrigMode::Auto;
     grid       = true;
     a4_hz      = 440;
+    persist    = 0;
 }
 
 // ---- Persistence ----------------------------------------------------------
@@ -19,7 +20,7 @@ void Settings::defaults() {
 
 static constexpr int      kEEAddr  = 0;
 static constexpr uint16_t kMagic   = 0x05C0;   // "OScope settings"
-static constexpr uint8_t  kVersion = 4;        // bumped: a4_hz
+static constexpr uint8_t  kVersion = 5;   // bumped: a4_hz + persist
 
 struct StoredSettings {
     uint16_t   magic;
@@ -29,6 +30,7 @@ struct StoredSettings {
     TrigMode   trigMode;
     bool       grid;
     uint16_t   a4_hz;
+    uint8_t    persist;
 };
 
 void Settings::load() {
@@ -40,6 +42,7 @@ void Settings::load() {
         trigMode   = s.trigMode;
         grid       = s.grid;
         a4_hz      = s.a4_hz;
+        persist    = s.persist;
     } else {
         defaults();
         save();   // initialise EEPROM so subsequent boots read a valid record
@@ -47,7 +50,8 @@ void Settings::load() {
 }
 
 void Settings::save() const {
-    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid, a4_hz};
+    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode,
+                     grid, a4_hz, persist};
     EEPROM.put(kEEAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
@@ -93,14 +97,27 @@ static void fmtA4(const Settings& s, char* b, uint8_t n) {
     snprintf(b, n, "%u Hz", s.a4_hz);
 }
 
+// Trace persistence: four levels, stepped (not wrapped) by the encoder.
+static void adjPersist(Settings& s, int8_t d) {
+    int v = (int)s.persist + d;
+    if (v < 0) v = 0;
+    if (v > 3) v = 3;
+    s.persist = (uint8_t)v;
+}
+static void fmtPersist(const Settings& s, char* b, uint8_t n) {
+    static const char* kNames[4] = {"Off", "Short", "Med", "Long"};
+    snprintf(b, n, "%s", kNames[s.persist <= 3 ? s.persist : 0]);
+}
+
 
 // ---- Descriptor table -----------------------------------------------------
 static const SettingItem kItems[] = {
-    { "Trig Src",  adjSource, fmtSource },
-    { "Trig Edge", adjEdge,   fmtEdge   },
-    { "Trig Mode", adjMode,   fmtMode   },
-    { "Grid",      adjGrid,   fmtGrid   },
-    { "A4 Tune",   adjA4,     fmtA4     },
+    { "Trig Src",  adjSource,  fmtSource  },
+    { "Trig Edge", adjEdge,    fmtEdge    },
+    { "Trig Mode", adjMode,    fmtMode    },
+    { "Grid",      adjGrid,    fmtGrid    },
+    { "A4 Tune",   adjA4,      fmtA4      },
+    { "Persist",   adjPersist, fmtPersist },
 };
 
 const SettingItem* settingItems() { return kItems; }

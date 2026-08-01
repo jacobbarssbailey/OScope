@@ -22,6 +22,7 @@ struct Settings {
     TrigMode   trigMode   = TrigMode::Auto;
     bool       grid       = true;
     uint16_t   a4_hz      = 440;   // Tuner reference: frequency of note A4
+    uint8_t    persist    = 0;     // trace persistence: 0=Off,1=Short,2=Med,3=Long
 
     // Restore all fields to the compile-time defaults above.
     void defaults();
