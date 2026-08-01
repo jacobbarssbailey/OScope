@@ -9,6 +9,7 @@ void Settings::defaults() {
     trigEdge   = TrigEdge::Rising;
     trigMode   = TrigMode::Auto;
     grid       = true;
+    persist    = 0;
 }
 
 // ---- Persistence ----------------------------------------------------------
@@ -18,7 +19,7 @@ void Settings::defaults() {
 
 static constexpr int      kEEAddr  = 0;
 static constexpr uint16_t kMagic   = 0x05C0;   // "OScope settings"
-static constexpr uint8_t  kVersion = 3;
+static constexpr uint8_t  kVersion = 4;   // bumped: persist
 
 struct StoredSettings {
     uint16_t   magic;
@@ -27,6 +28,7 @@ struct StoredSettings {
     TrigEdge   trigEdge;
     TrigMode   trigMode;
     bool       grid;
+    uint8_t    persist;
 };
 
 void Settings::load() {
@@ -37,6 +39,7 @@ void Settings::load() {
         trigEdge   = s.trigEdge;
         trigMode   = s.trigMode;
         grid       = s.grid;
+        persist    = s.persist;
     } else {
         defaults();
         save();   // initialise EEPROM so subsequent boots read a valid record
@@ -44,7 +47,7 @@ void Settings::load() {
 }
 
 void Settings::save() const {
-    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid};
+    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode, grid, persist};
     EEPROM.put(kEEAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
@@ -79,13 +82,26 @@ static void fmtGrid(const Settings& s, char* b, uint8_t n) {
     snprintf(b, n, "%s", s.grid ? "On" : "Off");
 }
 
+// Trace persistence: four levels, stepped (not wrapped) by the encoder.
+static void adjPersist(Settings& s, int8_t d) {
+    int v = (int)s.persist + d;
+    if (v < 0) v = 0;
+    if (v > 3) v = 3;
+    s.persist = (uint8_t)v;
+}
+static void fmtPersist(const Settings& s, char* b, uint8_t n) {
+    static const char* kNames[4] = {"Off", "Short", "Med", "Long"};
+    snprintf(b, n, "%s", kNames[s.persist <= 3 ? s.persist : 0]);
+}
+
 
 // ---- Descriptor table -----------------------------------------------------
 static const SettingItem kItems[] = {
-    { "Trig Src",  adjSource, fmtSource },
-    { "Trig Edge", adjEdge,   fmtEdge   },
-    { "Trig Mode", adjMode,   fmtMode   },
-    { "Grid",      adjGrid,   fmtGrid   },
+    { "Trig Src",  adjSource,  fmtSource  },
+    { "Trig Edge", adjEdge,    fmtEdge    },
+    { "Trig Mode", adjMode,    fmtMode    },
+    { "Grid",      adjGrid,    fmtGrid    },
+    { "Persist",   adjPersist, fmtPersist },
 };
 
 const SettingItem* settingItems() { return kItems; }

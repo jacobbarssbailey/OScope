@@ -18,6 +18,13 @@ public:
     // Fill the framebuffer with the background color.
     void clear();
 
+    // Fade the whole framebuffer toward the (black) background by keep/256 per
+    // RGB565 channel — used instead of clear() for persistence/phosphor display.
+    // keep == 256 leaves the frame unchanged; smaller values decay faster.
+    // Anything redrawn afterward (grid, trace, HUD) returns to full brightness;
+    // pixels not redrawn dim a little each frame, leaving a fading trail.
+    void fadeFrame(uint16_t keep);
+
     // Draw a string with its top-left at (x, y) in the given t3 font.
     void text(int16_t x, int16_t y, const char* s, uint16_t color,
               const ILI9341_t3_font_t& font);

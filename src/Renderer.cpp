@@ -12,6 +12,23 @@ void Renderer::clear() {
     tft.fillScreen(Theme::Background);
 }
 
+void Renderer::fadeFrame(uint16_t keep) {
+    uint16_t* fb = tft.getFrameBuffer();
+    if (fb == nullptr) return;   // no framebuffer: nothing to fade
+    const int n = Theme::W * Theme::H;
+    for (int i = 0; i < n; ++i) {
+        const uint16_t px = fb[i];
+        if (px == 0) continue;   // already background — skip the common case
+        uint16_t r = (px >> 11) & 0x1F;
+        uint16_t g = (px >> 5) & 0x3F;
+        uint16_t b = px & 0x1F;
+        r = (uint16_t)((r * keep) >> 8);
+        g = (uint16_t)((g * keep) >> 8);
+        b = (uint16_t)((b * keep) >> 8);
+        fb[i] = (uint16_t)((r << 11) | (g << 5) | b);
+    }
+}
+
 void Renderer::text(int16_t x, int16_t y, const char* s, uint16_t color,
                     const ILI9341_t3_font_t& font) {
     tft.setFont(font);
