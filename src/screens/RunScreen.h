@@ -19,6 +19,7 @@
 #include "../modes/XYMode.h"
 #include "../modes/SpectrumMode.h"
 #include "../modes/TunerMode.h"
+#include "../modes/WaterfallMode.h"
 
 class RunScreen : public Screen {
 public:
@@ -60,6 +61,7 @@ private:
     XYMode        _xyMode;
     SpectrumMode  _spectrumMode;
     TunerMode     _tunerMode;
+    WaterfallMode _waterfallMode;
 
     // Mode dispatch table: indexed by (int)Mode enum value.  All slots populated.
     ScopeMode*    _modes[static_cast<int>(Mode::COUNT)];

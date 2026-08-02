@@ -8,7 +8,7 @@
 // uninitialised EEPROM or a stale layout (bump kStateVersion on field changes).
 static constexpr int      kEEStateAddr = 32;
 static constexpr uint16_t kStateMagic   = 0x05C1;
-static constexpr uint8_t  kStateVersion = 5;   // bumped: Tuner mode (5 timebase slots)
+static constexpr uint8_t  kStateVersion = 6;   // bumped: Waterfall mode (6 timebase slots)
 
 // Only the acquisition setup is persisted — not running / singleArmed.
 struct StoredState {
@@ -32,8 +32,9 @@ void ScopeState::resetToDefaults() {
     // ranges — except Spectrum, whose rate is fixed (see kSpectrumTimebaseUs).
     for (uint8_t m = 0; m < (uint8_t)Mode::COUNT; ++m)
         timebase_us_per_div[m] = 500;
-    timebase_us_per_div[(uint8_t)Mode::Spectrum] = kSpectrumTimebaseUs;
-    timebase_us_per_div[(uint8_t)Mode::Tuner]    = kTunerTimebaseUs;
+    timebase_us_per_div[(uint8_t)Mode::Spectrum]  = kSpectrumTimebaseUs;
+    timebase_us_per_div[(uint8_t)Mode::Tuner]     = kTunerTimebaseUs;
+    timebase_us_per_div[(uint8_t)Mode::Waterfall] = kWaterfallTimebaseUs;
     vscale_mv_per_div[0]  = 3000;
     vscale_mv_per_div[1]  = 3000;
     trigger_level_mv      = 0;
@@ -64,8 +65,9 @@ void ScopeState::load() {
     // settings, so they are never taken from EEPROM — always force them here so a
     // firmware change to a rate takes effect without a version bump or a stale
     // stored value winning.
-    timebase_us_per_div[(uint8_t)Mode::Spectrum] = kSpectrumTimebaseUs;
-    timebase_us_per_div[(uint8_t)Mode::Tuner]    = kTunerTimebaseUs;
+    timebase_us_per_div[(uint8_t)Mode::Spectrum]  = kSpectrumTimebaseUs;
+    timebase_us_per_div[(uint8_t)Mode::Tuner]     = kTunerTimebaseUs;
+    timebase_us_per_div[(uint8_t)Mode::Waterfall] = kWaterfallTimebaseUs;
 
     // Transient fields always boot to a sane state, regardless of what was saved.
     running     = true;
@@ -76,10 +78,10 @@ void ScopeState::save() const {
     StoredState s{kStateMagic, kStateVersion, mode, channel, selected,
                   {timebase_us_per_div[0], timebase_us_per_div[1],
                    timebase_us_per_div[2], timebase_us_per_div[3],
-                   timebase_us_per_div[4]},
+                   timebase_us_per_div[4], timebase_us_per_div[5]},
                   {vscale_mv_per_div[0], vscale_mv_per_div[1]},
                   trigger_level_mv, {channelEnabled[0], channelEnabled[1]}};
-    static_assert((uint8_t)Mode::COUNT == 5, "StoredState timebase initializer lists 5 modes");
+    static_assert((uint8_t)Mode::COUNT == 6, "StoredState timebase initializer lists 6 modes");
     EEPROM.put(kEEStateAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
@@ -90,6 +92,7 @@ const char* modeName(Mode m) {
         case Mode::XY:        return "X-Y";
         case Mode::Spectrum:  return "SPEC";
         case Mode::Tuner:     return "TUNE";
+        case Mode::Waterfall: return "WFAL";
         default:              return "?";
     }
 }

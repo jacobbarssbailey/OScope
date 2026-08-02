@@ -207,6 +207,9 @@ bool paramAppliesInMode(EncoderParam id, Mode m) {
             // Tuner owns the encoder itself (toggles Hz/Note), so none of the
             // shared acquisition parameters apply.
             return false;
+        case Mode::Waterfall:
+            // Fixed sample rate and colormap, no trigger — nothing to adjust.
+            return false;
         default:
             return false;
     }
