@@ -258,9 +258,9 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     // Top indicator: "ARM" while a single-shot is pending, "STOP" when frozen.
     // Nothing is shown while running normally.
     if (s.singleArmed) {
-        r.textCenterX(Theme::StopY, "ARM", Theme::Highlight, Arial_16);
+        r.textCenterX(Theme::StopY, "ARM", Theme::Highlight, FONT_BODY);
     } else if (!s.running) {
-        r.textCenterX(Theme::StopY, "STOP", Theme::Highlight, Arial_16);
+        r.textCenterX(Theme::StopY, "STOP", Theme::Highlight, FONT_BODY);
     }
 
     // Selected parameter readout, centered near the bottom.  Modes that own the
@@ -277,13 +277,13 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
         showParam = false;
     }
     if (showParam) {
-        r.textCenterX(Theme::ParamY, val, Theme::Highlight, Arial_16);
+        r.textCenterX(Theme::ParamY, val, Theme::Highlight, FONT_BODY);
     }
 
     // Large mode label, centered, for a moment after a mode change.
     if (_modeFlash) {
         if (millis() - _modeFlashMs < kModeFlashMs) {
-            r.textCenterX(Theme::ModeY, modeName(s.mode), Theme::Text, Arial_24);
+            r.textCenterX(Theme::ModeY, modeName(s.mode), Theme::Text, FONT_LARGE);
         } else {
             _modeFlash = false;
         }

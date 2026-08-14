@@ -36,13 +36,13 @@ void EditValueScreen::draw(Renderer& r, AppContext& ctx) {
     if (!_item) return;
 
     // Setting name near the top, centered.
-    r.textCenterX(48, _item->name, Theme::Text, Arial_16);
+    r.textCenterX(48, _item->name, Theme::Text, FONT_BODY);
 
     // Current value, large and highlighted, centered in the middle band.
     char val[16];
     _item->format(ctx.settings, val, sizeof val);
-    r.textCenterX(104, val, Theme::Highlight, Arial_24);
+    r.textCenterX(104, val, Theme::Highlight, FONT_LARGE);
 
     // Control hint.
-    r.textCenterX(180, "ENC ok   B1 cancel", Theme::Dim, Arial_13);
+    r.textCenterX(180, "ENC ok   B1 cancel", Theme::Dim, FONT_SMALL);
 }

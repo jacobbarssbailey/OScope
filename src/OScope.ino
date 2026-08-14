@@ -126,7 +126,7 @@ void loop() {
         if (screens.top() == &runScreen) {
             char fbuf[12];
             snprintf(fbuf, sizeof fbuf, "%d", (int)(fps + 0.5f));
-            renderer.text(Theme::FpsX, Theme::FpsY, fbuf, Theme::Dim, Arial_13);
+            renderer.text(Theme::FpsX, Theme::FpsY, fbuf, Theme::Dim, FONT_SMALL);
         }
 
         tft.updateScreen();

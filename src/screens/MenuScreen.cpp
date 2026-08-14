@@ -6,7 +6,7 @@
 #include "../Theme.h"
 #include "../Fonts.h"
 
-// Layout constants for the list (Arial 16 rows, tuned for the round face).
+// Layout constants for the list (20 px rows, tuned for the round face).
 static constexpr int16_t kTitleY = 22;
 static constexpr int16_t kRow0Y  = 58;
 static constexpr int16_t kRowDy  = 34;
@@ -45,7 +45,7 @@ void MenuScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
 
 void MenuScreen::draw(Renderer& r, AppContext& ctx) {
     r.clear();
-    r.textCenterX(kTitleY, "SETTINGS", Theme::Text, Arial_16);
+    r.textCenterX(kTitleY, "SETTINGS", Theme::Text, FONT_BODY);
 
     const SettingItem* items = settingItems();
     const uint8_t count = settingCount();
@@ -55,11 +55,11 @@ void MenuScreen::draw(Renderer& r, AppContext& ctx) {
         const bool sel = (i == _sel);
         const uint16_t nameColor = sel ? Theme::Highlight : Theme::Text;
         const uint16_t valColor  = sel ? Theme::Highlight : Theme::Dim;
-        r.text(kNameX, y, items[i].name, nameColor, Arial_16);
+        r.text(kNameX, y, items[i].name, nameColor, FONT_BODY);
         items[i].format(ctx.settings, val, sizeof val);
-        r.text(kValueX, y, val, valColor, Arial_16);
+        r.text(kValueX, y, val, valColor, FONT_BODY);
         y += kRowDy;
     }
 
-    r.textCenterX(200, "ENC edit   B1 back", Theme::Dim, Arial_13);
+    r.textCenterX(200, "ENC edit   B1 back", Theme::Dim, FONT_SMALL);
 }

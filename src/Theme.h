@@ -12,8 +12,8 @@ namespace Theme {
   constexpr uint16_t Background = 0x0000;  // Black
   constexpr uint16_t Grid       = 0x18E3;  // Dark grey-green
   constexpr uint16_t Frame      = 0xFFFF;  // White
-  constexpr uint16_t TraceA     = 0x07E0;  // Green (channel A)
-  constexpr uint16_t TraceB     = 0x07FF;  // Cyan  (channel B)
+  constexpr uint16_t TraceA     = 0xF81D;  // #FF03EA magenta (channel A)
+  constexpr uint16_t TraceB     = 0x5B7D;  // #5B6CED periwinkle (channel B)
   constexpr uint16_t Text       = 0xFFFF;  // White
   constexpr uint16_t Dim        = 0xC618;  // Light grey (secondary labels)
   constexpr uint16_t Highlight  = 0xFFE0;  // Yellow (selected item)
@@ -25,15 +25,15 @@ namespace Theme {
   constexpr int16_t CY        = 120;  // Centre Y
   constexpr int16_t SafeInset = 30;   // Min margin from edge for readable content
 
-  // ---- RunScreen HUD positions (v2, anti-aliased Arial fonts) ----
+  // ---- RunScreen HUD positions (v2, Inter Bold Italic) ----
   // The waveform fills the whole canvas; the HUD is minimal and mostly hidden.
   // All these readouts are horizontally centered (textCenterX); the Y here is the
   // top of the text.  Tuned for the round face — kept clear of the edges.
-  constexpr int16_t StopY   = 20;   // "STOP"/"ARM" top indicator (Arial 16)
-  constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (Arial 24)
-  constexpr int16_t ParamY  = 196;  // selected-param readout, near bottom (Arial 16)
+  constexpr int16_t StopY   = 20;   // "STOP"/"ARM" top indicator (20 px)
+  constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (36 px)
+  constexpr int16_t ParamY  = 196;  // selected-param readout, near bottom (20 px)
 
-  // FPS readout (Arial 13), top-left of the safe band — clear of the centered HUD.
+  // FPS readout (14 px), top-left of the safe band — clear of the centered HUD.
   constexpr int16_t FpsX    = 105;
   constexpr int16_t FpsY    = 170;
 

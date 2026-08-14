@@ -5,7 +5,7 @@
 // screens have finished drawing.  Screens draw exclusively through Renderer.
 //
 // Text is rendered with anti-aliased t3 fonts (see Fonts.h) — callers pass the
-// font (e.g. Arial_16) rather than a size multiplier.
+// font (e.g. FONT_BODY) rather than a size multiplier.
 #pragma once
 
 #include <GC9A01A_t3n.h>   // defines GC9A01A_t3n and ILI9341_t3_font_t

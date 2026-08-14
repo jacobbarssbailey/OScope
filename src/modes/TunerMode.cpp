@@ -68,13 +68,13 @@ void TunerMode::drawChannel(Renderer& r, float freq, uint16_t color,
     char buf[16];
 
     if (freq <= 0.0f) {
-        r.textCenterX(bigY, "--", Theme::Dim, Arial_24);
+        r.textCenterX(bigY, "--", Theme::Dim, FONT_HUGE);
         return;
     }
 
     if (!_showNote) {
         snprintf(buf, sizeof buf, "%.1f Hz", (double)freq);
-        r.textCenterX(bigY, buf, color, Arial_24);
+        r.textCenterX(bigY, buf, color, FONT_HUGE);
         return;
     }
 
@@ -87,7 +87,7 @@ void TunerMode::drawChannel(Renderer& r, float freq, uint16_t color,
     const int   oct  = nn / 12 - 1;
 
     snprintf(buf, sizeof buf, "%s%d", kNoteNames[idx], oct);
-    r.textCenterX(bigY, buf, color, Arial_24);
+    r.textCenterX(bigY, buf, color, FONT_HUGE);
 
     // Cents bar: baseline with a centre (in-tune) tick and a marker whose
     // offset shows the deviation; green when in tune, yellow otherwise.
