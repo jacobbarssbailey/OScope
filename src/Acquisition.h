@@ -26,11 +26,10 @@
 // window.  That window holds CAPTURE = 2*N samples per channel — two screen
 // widths — so a full N-sample display window can always be extracted starting
 // at a found trigger:
-//   Triggered — scan the trigger-source channel (settings.trigSource) in the
-//     first N samples for a settings.trigEdge crossing of trigger_level_mv.
-//     On a hit, both channels' [t, t+N) window is published (trigger at the left
-//     edge).  If none is found: Auto publishes the first N samples (free-run);
-//     Normal holds the last frame (no publish) and waits.
+//   Triggered — scan channel A in the first N samples for a settings.trigEdge
+//     crossing of trigger_level_mv.  On a hit, both channels' [t, t+N) window is
+//     published (trigger at the left edge).  If none is found, it holds the last
+//     frame through a few misses, then free-runs (auto behaviour).
 //   Rolling / XY — no trigger; the first N samples are published.
 // Pre-trigger (showing samples before the edge) is a trivial future tweak: shift
 // the window start to t - pretrigger.

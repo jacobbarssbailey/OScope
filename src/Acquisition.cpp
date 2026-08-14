@@ -220,13 +220,12 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
     bool     produce   = true;
 
     if (state.mode == Mode::Triggered) {
-        // Search the trigger-source channel over the first N samples, which
-        // leaves a full N-sample window after any crossing.  The scratch is
-        // still raw (inverted), so a rising input edge is a FALLING raw edge
-        // through the inverted threshold (kADCMax − thr).
+        // Search channel A over the first N samples, which leaves a full
+        // N-sample window after any crossing.  The scratch is still raw
+        // (inverted), so a rising input edge is a FALLING raw edge through the
+        // inverted threshold (kADCMax − thr).
         const uint16_t searchLen = N;
-        const uint16_t* trigSrc  = (settings.trigSource == TrigSource::B)
-                                   ? scratchB : scratchA;
+        const uint16_t* trigSrc  = scratchA;
         const uint16_t rawThr    = (uint16_t)(kADCMax - triggerADC(state.trigger_level_mv));
         const bool     rawRising = (settings.trigEdge != TrigEdge::Rising);
 
@@ -236,10 +235,11 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
             start     = (uint16_t)t;     // trigger at the left edge
             triggered = true;
             _autoMissCount = 0;
-        } else if (settings.trigMode == TrigMode::Auto) {
-            // Hold the last triggered frame through brief misses; only free-run
-            // once the trigger has been absent for kAutoFreerunMisses frames, so
-            // a single missed buffer doesn't flash an unaligned frame.
+        } else {
+            // Auto behaviour: hold the last triggered frame through brief misses;
+            // only free-run once the trigger has been absent for
+            // kAutoFreerunMisses frames, so a single missed buffer doesn't flash
+            // an unaligned frame.
             if (_autoMissCount < kAutoFreerunMisses) {
                 ++_autoMissCount;
                 produce = false;         // hold last frame
@@ -247,8 +247,6 @@ bool Acquisition::update(const ScopeState& state, const Settings& settings) {
                 start     = 0;           // sustained no-trigger: free-run
                 triggered = false;
             }
-        } else {
-            produce   = false;           // Normal: hold last frame, wait
         }
     }
 

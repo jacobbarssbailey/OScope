@@ -12,14 +12,12 @@
 
 #include <stdint.h>
 
-enum class TrigSource : uint8_t { A, B };
-enum class TrigEdge   : uint8_t { Rising, Falling };
-enum class TrigMode   : uint8_t { Auto, Normal };
+enum class TrigEdge : uint8_t { Rising, Falling };
 
 struct Settings {
-    TrigSource trigSource = TrigSource::A;
+    // Trigger source is always channel A and the mode is always auto; only the
+    // edge is user-selectable.
     TrigEdge   trigEdge   = TrigEdge::Rising;
-    TrigMode   trigMode   = TrigMode::Auto;
     uint16_t   a4_hz      = 440;   // Tuner reference: frequency of note A4
     uint8_t    persist    = 0;     // trace persistence: 0=Off,1=Short,2=Med,3=Long
 

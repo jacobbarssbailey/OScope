@@ -121,14 +121,6 @@ void loop() {
 #endif
         screens.draw(renderer, ctx);
 
-        // FPS overlay (debug) — only over the run screen, so it doesn't collide
-        // with the menu/edit bottom hints.  Reflects the redraw rate.
-        if (screens.top() == &runScreen) {
-            char fbuf[12];
-            snprintf(fbuf, sizeof fbuf, "%d", (int)(fps + 0.5f));
-            renderer.text(Theme::FpsX, Theme::FpsY, fbuf, Theme::Dim, FONT_SMALL);
-        }
-
         tft.updateScreen();
 
 #if ACQ_DIAG
