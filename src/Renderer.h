@@ -33,6 +33,9 @@ public:
     void textCenterX(int16_t y, const char* s, uint16_t color,
                      const ILI9341_t3_font_t& font);
 
+    // Pixel width of a string in the given font (for manual layout).
+    int16_t textWidth(const char* s, const ILI9341_t3_font_t& font);
+
     // Draw a horizontal line of width w starting at (x, y).
     void hline(int16_t x, int16_t y, int16_t w, uint16_t c);
 

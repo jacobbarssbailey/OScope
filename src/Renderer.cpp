@@ -46,6 +46,11 @@ void Renderer::textCenterX(int16_t y, const char* s, uint16_t color,
     tft.print(s);
 }
 
+int16_t Renderer::textWidth(const char* s, const ILI9341_t3_font_t& font) {
+    tft.setFont(font);
+    return tft.strPixelLen(s);
+}
+
 void Renderer::hline(int16_t x, int16_t y, int16_t w, uint16_t c) {
     tft.drawFastHLine(x, y, w, c);
 }
