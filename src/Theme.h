@@ -32,7 +32,6 @@ namespace Theme {
   // top of the text.  Tuned for the round face — kept clear of the edges.
   constexpr int16_t StopY   = 20;   // "STOP"/"ARM" top indicator (20 px)
   constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (36 px)
-  constexpr int16_t ParamY  = 196;  // selected-param readout, near bottom (20 px)
 
   // ---- Transient parameter band ----
   // Acquisition settings are not on screen permanently: changing one raises a

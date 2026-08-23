@@ -361,9 +361,9 @@ bool Acquisition::updateFreeRunning(const ScopeState& state, const Settings& /*s
 // Compact "[500 us/div ROLL]" tag identifying a characterization cell.  Both
 // halves are reused from existing formatters so the log and the display agree.
 static void cellTag(const ScopeState& state, char* b, uint8_t n) {
-    char tb[16];
-    parameterFor(EncoderParam::Timebase).format(state, tb, sizeof tb);
-    snprintf(b, n, "[%s %s]", tb, modeName(state.mode));
+    char tb[16], unit[10];
+    parameterFor(EncoderParam::Timebase).format(state, tb, sizeof tb, unit, sizeof unit);
+    snprintf(b, n, "[%s %s %s]", tb, unit, modeName(state.mode));
 }
 
 void Acquisition::rebaseDiagWindow(uint32_t now) {

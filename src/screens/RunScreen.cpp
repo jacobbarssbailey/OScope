@@ -35,6 +35,7 @@
 #include "../Fonts.h"
 
 #include <Arduino.h>   // snprintf on Teensy
+#include <string.h>    // strncpy
 
 // How long the large mode label stays up after a mode change.
 static constexpr uint32_t kModeFlashMs = 1500;
@@ -77,6 +78,37 @@ void RunScreen::onEnter(AppContext& ctx) {
 }
 
 // --------------------------------------------------------------------------
+// Transient parameter band
+// --------------------------------------------------------------------------
+bool RunScreen::bandActive() const {
+    return _band && (millis() - _bandMs) < Theme::BandHoldMs;
+}
+
+void RunScreen::showBand(const char* label, const char* value, const char* unit) {
+    if (label == nullptr || label[0] == '\0' || value == nullptr || value[0] == '\0') {
+        _band = false;
+        return;
+    }
+    strncpy(_bandLabel, label, sizeof _bandLabel - 1);
+    strncpy(_bandValue, value, sizeof _bandValue - 1);
+    strncpy(_bandUnit, unit ? unit : "", sizeof _bandUnit - 1);
+    _bandLabel[sizeof _bandLabel - 1] = '\0';
+    _bandValue[sizeof _bandValue - 1] = '\0';
+    _bandUnit[sizeof _bandUnit - 1]   = '\0';
+    _band      = true;
+    _bandMs    = millis();
+    _modeFlash = false;   // the band occupies the same space as the mode label
+}
+
+void RunScreen::showSelectedParam(const ScopeState& s) {
+    if (!paramAppliesInMode(s.selected, s.mode)) { _band = false; return; }
+    const Parameter& p = parameterFor(s.selected);
+    char val[12], unit[10];
+    p.format(s, val, sizeof val, unit, sizeof unit);
+    showBand(p.name, val, unit);
+}
+
+// --------------------------------------------------------------------------
 // tick — advance non-blocking acquisition (called every loop iteration)
 // --------------------------------------------------------------------------
 bool RunScreen::tick(AppContext& ctx) {
@@ -89,9 +121,11 @@ bool RunScreen::tick(AppContext& ctx) {
         _stateDirty = false;
     }
 
-    // Keep requesting redraws while the mode flash is up so it can time out on
-    // its own even when stopped/idle (draw() clears _modeFlash when it expires).
-    const bool flashActive = _modeFlash && (millis() - _modeFlashMs) < kModeFlashMs;
+    // Keep requesting redraws while the mode flash or the parameter band is up
+    // so each can time out on its own even when stopped/idle (draw() clears them
+    // when they expire).
+    const bool flashActive = (_modeFlash && (millis() - _modeFlashMs) < kModeFlashMs)
+                             || _band;
 
     if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
@@ -142,9 +176,16 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
 
             // B2: channel selection is fixed to A+B in the v2 UI, so short-press
             // channel cycling is disabled (the ChannelSel logic is kept for a
-            // possible future per-channel view).  B2 long-press (enable toggle)
-            // still works.
+            // possible future per-channel view).  Modes that repurpose the
+            // button (Waterfall's flow direction) take it instead, and flash
+            // whatever readout they return.  B2 long-press (enable toggle)
+            // still works either way.
             case Btn::Channel:
+                if (activeMode && activeMode->ownsChannelButton()) {
+                    char label[12] = {0}, value[12] = {0};
+                    activeMode->channelPress(label, sizeof label, value, sizeof value);
+                    showBand(label, value, "");
+                }
                 break;
 
             // B3: toggle run/stop.  A manual run/stop overrides any pending
@@ -155,11 +196,15 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 break;
 
             // Encoder press: cycle the active mode's own parameters if it has
-            // them (Spectrum), otherwise advance to the next shared parameter
-            // that applies in the current mode.
+            // them (Tuner), otherwise advance to the next shared parameter that
+            // applies in the current mode and flash it in the band.
             case Btn::Encoder:
-                if (activeMode && activeMode->ownsEncoder()) activeMode->encoderPress();
-                else                                         s.selected = nextSelectable(s);
+                if (activeMode && activeMode->ownsEncoder()) {
+                    activeMode->encoderPress();
+                } else {
+                    s.selected = nextSelectable(s);
+                    showSelectedParam(s);
+                }
                 break;
 
             default:
@@ -199,11 +244,13 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
         }
     } else if (e.type == EventType::EncoderTurn) {
         // Encoder rotation: adjust the active mode's own selected parameter
-        // (Spectrum), otherwise the shared parameter — unless none applies.
+        // (Tuner), otherwise the shared parameter — unless none applies.  The
+        // new value goes up in the band, which re-times itself on every detent.
         if (activeMode && activeMode->ownsEncoder()) {
             activeMode->encoderTurn(e.delta);
         } else if (paramAppliesInMode(s.selected, s.mode)) {
             parameterFor(s.selected).adjust(s, e.delta);
+            showSelectedParam(s);
         }
     }
 
@@ -263,29 +310,29 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
         r.textCenterX(Theme::StopY, "STOP", Theme::Highlight, FONT_BODY);
     }
 
-    // Selected parameter readout, centered near the bottom.  Modes that own the
-    // encoder (Tuner) format their own readout; modes with shared parameters show
-    // the selected timebase / V/div / trigger value; modes with neither
-    // (Spectrum) show nothing.
-    char val[24];
-    bool showParam = true;
-    if (activeMode != nullptr && activeMode->ownsEncoder()) {
-        activeMode->formatParam(val, sizeof val);
-    } else if (paramAppliesInMode(s.selected, s.mode)) {
-        parameterFor(s.selected).format(s, val, sizeof val);
-    } else {
-        showParam = false;
-    }
-    if (showParam) {
-        r.textCenterX(Theme::ParamY, val, Theme::Highlight, FONT_BODY);
-    }
-
     // Large mode label, centered, for a moment after a mode change.
     if (_modeFlash) {
         if (millis() - _modeFlashMs < kModeFlashMs) {
             r.textCenterX(Theme::ModeY, modeName(s.mode), Theme::Text, FONT_LARGE);
         } else {
             _modeFlash = false;
+        }
+    }
+
+    // Parameter band, last of all: it masks the waveform behind it, so nothing
+    // else may draw over it.  It clears itself once the hold time expires.
+    if (_band) {
+        if (bandActive()) {
+            r.fillRect(Theme::PlotX, (int16_t)(Theme::BandTopY + 1), Theme::PlotW,
+                       (int16_t)(Theme::BandBotY - Theme::BandTopY - 1),
+                       Theme::Background);
+            r.hline(Theme::PlotX, Theme::BandTopY, Theme::PlotW, Theme::Dim);
+            r.hline(Theme::PlotX, Theme::BandBotY, Theme::PlotW, Theme::Dim);
+            r.textCenterX(Theme::BandLabelY, _bandLabel, Theme::Text, FONT_SMALL);
+            r.textUnitCenterX(Theme::BandValueY, _bandValue, _bandUnit, Theme::Text,
+                              FONT_LARGE, FONT_BODY);
+        } else {
+            _band = false;
         }
     }
 }

@@ -54,6 +54,22 @@ private:
     bool     _modeFlash   = false;
     uint32_t _modeFlashMs = 0;
 
+    // Transient parameter band: acquisition settings are off screen until one is
+    // selected or changed, then the band holds "<label> / <value><unit>" across
+    // the middle of the face for Theme::BandHoldMs after the last input.
+    char     _bandLabel[12] = {0};
+    char     _bandValue[12] = {0};
+    char     _bandUnit[10]  = {0};
+    bool     _band          = false;
+    uint32_t _bandMs        = 0;
+
+    // Raise the band with the given readout (empty label/value = no band).
+    void showBand(const char* label, const char* value, const char* unit);
+    // Raise the band for the currently selected shared parameter, if one applies.
+    void showSelectedParam(const ScopeState& s);
+    // True while the band is still within its hold time.
+    bool bandActive() const;
+
     Screen*       _menu = nullptr;
     Acquisition   _acq;
     TriggeredMode _triggeredMode;

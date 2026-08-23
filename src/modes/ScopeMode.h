@@ -68,13 +68,23 @@ public:
     virtual void onFrame(const SampleBuffers& /*buf*/) {}
 
     // --- Optional mode-owned encoder parameters ---
-    // A mode with its own adjustable parameters (Spectrum) returns true here;
+    // A mode with its own adjustable parameter (Tuner) returns true here;
     // RunScreen then routes the encoder button (cycle to next param) and the
     // encoder rotation (adjust the selected param) to this mode instead of the
-    // shared Timebase/V-div/Trigger set, and shows formatParam() as the bottom
-    // readout.  Default: the mode has no parameters of its own.
+    // shared Timebase/V-div/Trigger set.  Default: the mode has no parameters
+    // of its own.
     virtual bool ownsEncoder() const { return false; }
     virtual void encoderPress() {}
     virtual void encoderTurn(int8_t /*delta*/) {}
-    virtual void formatParam(char* buf, uint8_t n) const { if (n) buf[0] = '\0'; }
+
+    // --- Optional mode-owned B2 (Channel) button ---
+    // A mode that repurposes the otherwise-unused B2 short press (Waterfall's
+    // flow direction) returns true here and handles it in channelPress(), which
+    // fills label/value with a readout for RunScreen's parameter band — leave
+    // them empty to raise no band.  Default: B2 does nothing.
+    virtual bool ownsChannelButton() const { return false; }
+    virtual void channelPress(char* label, uint8_t nl, char* value, uint8_t nv) {
+        if (nl) label[0] = '\0';
+        if (nv) value[0] = '\0';
+    }
 };
