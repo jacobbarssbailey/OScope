@@ -211,7 +211,50 @@ def settings(sel=2):
     return c
 
 
+# ------------------------------------------------------ AA investigation ---
+# Renders the same content aliased and antialiased, zoomed, so the payoff can
+# be judged before committing to it in firmware.
+AA_CROPS = {
+    "ring":  (150, 8, 90, 78),     # where the ring turns hardest
+    "trace": (18, 10, 90, 78),   # a sine peak, where the slope is shallow
+}
+
+
+def _aa_subject(aa, subpixel=False):
+    """`subpixel` keeps the trace's fractional y instead of rounding it to a
+    pixel the way Mapping::sampleToY does today — the thing that decides
+    whether antialiasing the polyline is worth anything."""
+    c = Canvas()
+    line = c.line_aa if aa else c.line
+    prev = None
+    for x in range(W):
+        y = CY - 92 * math.sin(2 * math.pi * 0.9 * x / W + 0.3)
+        if not subpixel:
+            y = int(y)
+        if prev:
+            line(prev[0], prev[1], x, y, TRACE_A)
+        prev = (x, y)
+    (c.ring if aa else c.ring_hard)(T["RunRingR"], T["RunRingW"], STOPPED)
+    return c
+
+
+def aa_off():
+    return _aa_subject(False)
+
+
+def aa_on():
+    return _aa_subject(True)
+
+
+def aa_sub():
+    """Antialiased *and* sub-pixel — what it would take to actually pay off."""
+    return _aa_subject(True, subpixel=True)
+
+
 SCREENS = {
+    "aa_off": aa_off,
+    "aa_sub": aa_sub,
+    "aa_on": aa_on,
     "tuner": tuner,
     "scope_band": scope,
     "scope_stopped": scope_stopped,
@@ -227,6 +270,13 @@ def main(argv):
     for name in wanted:
         if name not in SCREENS:
             sys.exit("unknown screen %r (have: %s)" % (name, ", ".join(sorted(SCREENS))))
+        if name.startswith("aa_"):     # zoomed crops, for judging edge quality
+            canvas = SCREENS[name]()
+            for label, crop in AA_CROPS.items():
+                path = os.path.join(OUT, "%s_%s.png" % (name, label))
+                canvas.save(path, scale=6, crop=crop)
+                print(path)
+            continue
         path = os.path.join(OUT, name + ".png")
         SCREENS[name]().save(path)
         print(path)

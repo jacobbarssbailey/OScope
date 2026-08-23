@@ -174,7 +174,8 @@ class Canvas:
     # Fraction of each dash slot that is inked, as a percentage (Renderer.cpp).
     DASH_DUTY = 55
 
-    def ring(self, r, thickness, c, dashes=0):
+    def ring_hard(self, r, thickness, c, dashes=0):
+        """The pre-antialiasing nearest-pixel walk, kept for the AA comparison."""
         cx, cy = (W - 1) * 0.5, (H - 1) * 0.5
         steps = int(4.0 * math.pi * r)
         for i in range(steps):
@@ -186,6 +187,57 @@ class Canvas:
                 rr = r - k
                 self.set(int(round(cx + rr * ct)), int(round(cy + rr * st)), c)
 
+    # ---- antialiased variants (coverage-blended against what is there) ----
+    def blend(self, x, y, c, cov):
+        """Blend `c` over the pixel at (x, y) with coverage 0..1."""
+        if cov <= 0.0 or not (0 <= x < W and 0 <= y < H):
+            return
+        if cov >= 1.0:
+            self.px[y][x] = c
+            return
+        d = self.px[y][x]
+        self.px[y][x] = tuple(int(d[k] + (c[k] - d[k]) * cov + 0.5) for k in range(3))
+
+    def ring(self, r, thickness, c, dashes=0):
+        """Ring by exact coverage: distance to the annulus, clamped to a pixel."""
+        cx, cy = (W - 1) * 0.5, (H - 1) * 0.5
+        r_in = r - thickness
+        lo, hi = int(cy - r - 2), int(cy + r + 3)
+        for y in range(max(0, lo), min(H, hi)):
+            dy = y - cy
+            for x in range(max(0, lo), min(W, hi)):
+                dx = x - cx
+                d = math.hypot(dx, dy)
+                if d > r + 1 or d < r_in - 1:
+                    continue
+                cov = max(0.0, min(1.0, min(r - d, d - r_in) + 0.5))
+                if dashes:
+                    a = (math.atan2(dy, dx) / (2 * math.pi)) % 1.0
+                    if (a * dashes) % 1.0 >= self.DASH_DUTY / 100.0:
+                        continue
+                self.blend(x, y, c, cov)
+
+    def line_aa(self, x0, y0, x1, y1, c):
+        """Xiaolin Wu line: two coverage-blended pixels per step."""
+        steep = abs(y1 - y0) > abs(x1 - x0)
+        if steep:
+            x0, y0, x1, y1 = y0, x0, y1, x1
+        if x0 > x1:
+            x0, x1, y0, y1 = x1, x0, y1, y0
+        dx, dy = x1 - x0, y1 - y0
+        grad = 1.0 if dx == 0 else dy / dx
+        yy = y0
+        for x in range(int(x0), int(x1) + 1):
+            f = yy - math.floor(yy)
+            a, b = int(math.floor(yy)), int(math.floor(yy)) + 1
+            if steep:
+                self.blend(a, x, c, 1 - f)
+                self.blend(b, x, c, f)
+            else:
+                self.blend(x, a, c, 1 - f)
+                self.blend(x, b, c, f)
+            yy += grad
+
     def icon(self, x, y, ic, tint):
         w, h, gray = ic
         for j in range(h):
@@ -195,8 +247,12 @@ class Canvas:
                     self.set(x + i, y + j, tuple(k * v // 255 for k in tint))
 
     # ---- output ----
-    def save(self, path, scale=2, bezel=(18, 18, 20)):
-        """Write a PNG, masking outside the round bezel so the crop is honest."""
+    def save(self, path, scale=2, bezel=(18, 18, 20), crop=None):
+        """Write a PNG, masking outside the round bezel so the crop is honest.
+
+        `crop` is an (x, y, w, h) window in display pixels — useful at a high
+        `scale` for looking at edge quality up close.
+        """
         rows = []
         for y in range(H):
             row = []
@@ -206,10 +262,11 @@ class Canvas:
                 row.append(self.px[y][x] if inside else bezel)
             rows.append(row)
 
+        cx, cy, cw, ch = crop if crop else (0, 0, W, H)
         raw = b""
-        for y in range(H):
+        for y in range(cy, cy + ch):
             line = b"\x00"
-            for x in range(W):
+            for x in range(cx, cx + cw):
                 line += bytes(rows[y][x]) * scale
             raw += line * scale
 
@@ -218,7 +275,7 @@ class Canvas:
                     + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF))
 
         png = (b"\x89PNG\r\n\x1a\n"
-               + chunk(b"IHDR", struct.pack(">IIBBBBB", W * scale, H * scale,
+               + chunk(b"IHDR", struct.pack(">IIBBBBB", cw * scale, ch * scale,
                                             8, 2, 0, 0, 0))
                + chunk(b"IDAT", zlib.compress(raw, 9))
                + chunk(b"IEND", b""))

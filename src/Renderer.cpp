@@ -119,27 +119,91 @@ void Renderer::drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h,
     tft.drawRoundRect(x, y, w, h, r, color);
 }
 
+// Blend `src` over `dst` at coverage 0..31.  Both RGB565 colours are spread
+// into one 32-bit word so a single multiply interpolates all three channels at
+// once — the whole blend is nine instructions on the M7.
+static inline uint16_t blend565(uint16_t dst, uint16_t src, uint8_t cov) {
+    const uint32_t bg = (uint32_t)(dst | (dst << 16)) & 0x07E0F81FU;
+    const uint32_t fg = (uint32_t)(src | (src << 16)) & 0x07E0F81FU;
+    const uint32_t o  = ((((fg - bg) * cov) >> 5) + bg) & 0x07E0F81FU;
+    return (uint16_t)((o >> 16) | o);
+}
+
 void Renderer::ring(int16_t r, int16_t thickness, uint16_t color, uint8_t dashes) {
     if (r <= 0 || thickness <= 0) return;
 
-    // The true centre of a 240 px face falls between pixels, so the ring is
-    // walked from the half-pixel centre — otherwise it sits a pixel off to one
-    // side and the asymmetry is visible against the bezel.
-    const float cx = (Theme::W - 1) * 0.5f;
-    const float cy = (Theme::H - 1) * 0.5f;
+    uint16_t* fb = tft.getFrameBuffer();
+    if (fb == nullptr) return;   // antialiasing needs to read back what is there
 
-    // Two steps per pixel of circumference: enough that consecutive samples
-    // overlap and the ring comes out continuous at any thickness.
-    const int steps = (int)(4.0f * (float)M_PI * (float)r);
-    for (int i = 0; i < steps; ++i) {
-        // Dash pattern: each dash occupies the first kDashDuty% of its slot.
-        if (dashes && ((i * (int)dashes * 100 / steps) % 100) >= kDashDuty) continue;
-        const float t = (2.0f * (float)M_PI * (float)i) / (float)steps;
-        const float c = cosf(t), s = sinf(t);
-        for (int16_t k = 0; k < thickness; ++k) {
-            const float rr = (float)(r - k);
-            tft.drawPixel((int16_t)lroundf(cx + rr * c),
-                          (int16_t)lroundf(cy + rr * s), color);
+    // The true centre of a 240 px face falls between pixels, so the ring is
+    // measured from the half-pixel centre — otherwise it sits a pixel off to
+    // one side and the asymmetry is visible against the bezel.
+    const float cx   = (Theme::W - 1) * 0.5f;
+    const float cy   = (Theme::H - 1) * 0.5f;
+    const float rOut = (float)r;
+    const float rIn  = (float)(r - thickness);
+
+    // Coverage per pixel: the signed distance into the annulus, taken across
+    // one pixel.  A circle drawn by nearest-pixel stepping stair-steps badly at
+    // this radius; blending the fringe costs a handful of extra instructions on
+    // roughly the ring's perimeter and removes it entirely.
+    const float outFringe = rOut + 1.0f;
+    const float inFringe  = (rIn > 1.0f) ? rIn - 1.0f : 0.0f;
+
+    int16_t yLo = (int16_t)(cy - outFringe), yHi = (int16_t)(cy + outFringe + 1.0f);
+    if (yLo < 0) yLo = 0;
+    if (yHi > Theme::H - 1) yHi = Theme::H - 1;
+
+    for (int16_t y = yLo; y <= yHi; ++y) {
+        const float dy  = (float)y - cy;
+        const float dy2 = dy * dy;
+        const float outSpan2 = outFringe * outFringe - dy2;
+        if (outSpan2 <= 0.0f) continue;
+        const float xOut = sqrtf(outSpan2);
+
+        // Rows that clear the hole in the middle are one span; rows that cross
+        // it are two, and skipping the middle is what keeps this O(perimeter).
+        const float inSpan2 = inFringe * inFringe - dy2;
+        const float xIn = (inSpan2 > 0.0f) ? sqrtf(inSpan2) : -1.0f;
+
+        for (int pass = 0; pass < 2; ++pass) {
+            int16_t xa, xb;
+            if (xIn < 0.0f) {
+                if (pass) break;                       // single span
+                xa = (int16_t)(cx - xOut);
+                xb = (int16_t)(cx + xOut + 1.0f);
+            } else if (pass == 0) {
+                xa = (int16_t)(cx - xOut);
+                xb = (int16_t)(cx - xIn + 1.0f);
+            } else {
+                xa = (int16_t)(cx + xIn);
+                xb = (int16_t)(cx + xOut + 1.0f);
+            }
+            if (xa < 0) xa = 0;
+            if (xb > Theme::W - 1) xb = Theme::W - 1;
+
+            for (int16_t x = xa; x <= xb; ++x) {
+                const float dx = (float)x - cx;
+                const float d  = sqrtf(dx * dx + dy2);
+                float cov = (rOut - d < d - rIn) ? (rOut - d) : (d - rIn);
+                cov += 0.5f;                            // pixel centre to edge
+                if (cov <= 0.0f) continue;
+                if (cov > 1.0f) cov = 1.0f;
+                if (dashes) {
+                    // Each dash occupies the first kDashDuty% of its slot.
+                    float a = atan2f(dy, dx) * (float)(0.5 / M_PI);
+                    a -= floorf(a);
+                    const float slot = a * (float)dashes;
+                    if ((slot - floorf(slot)) * 100.0f >= (float)kDashDuty) continue;
+                }
+                uint16_t* p = &fb[(int)y * Theme::W + x];
+                // Full coverage is stored outright: the blend interpolates in
+                // 32nds, so blending at "31" would leave every solid pixel one
+                // LSB short of the colour asked for.  It is also the cheaper
+                // path, and most of a 2 px ring is fully covered.
+                if (cov >= 1.0f) *p = color;
+                else             *p = blend565(*p, color, (uint8_t)(cov * 31.0f));
+            }
         }
     }
 }
