@@ -9,6 +9,7 @@ Only text and simple shapes are modelled — enough to check layout. Nothing her
 talks to hardware; it exists so UI positions can be checked against design
 mockups without a flash cycle.
 """
+import math
 import os
 import re
 import struct
@@ -169,6 +170,21 @@ class Canvas:
     def text_unit_center(self, y, main, unit, c, size, usize):
         w = self.text_unit_width(main, unit, size, usize)
         self.text_unit(CX - w // 2, y, main, unit, c, size, usize)
+
+    # Fraction of each dash slot that is inked, as a percentage (Renderer.cpp).
+    DASH_DUTY = 55
+
+    def ring(self, r, thickness, c, dashes=0):
+        cx, cy = (W - 1) * 0.5, (H - 1) * 0.5
+        steps = int(4.0 * math.pi * r)
+        for i in range(steps):
+            if dashes and (i * dashes * 100 // steps) % 100 >= self.DASH_DUTY:
+                continue
+            t = 2.0 * math.pi * i / steps
+            ct, st = math.cos(t), math.sin(t)
+            for k in range(thickness):
+                rr = r - k
+                self.set(int(round(cx + rr * ct)), int(round(cy + rr * st)), c)
 
     def icon(self, x, y, ic, tint):
         w, h, gray = ic

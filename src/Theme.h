@@ -18,6 +18,10 @@ namespace Theme {
   constexpr uint16_t Dim        = 0x8C71;  // #8E8E8E light grey (secondary labels)
   constexpr uint16_t DimDark    = 0x4208;  // #404040 dark grey (inactive / behind traces)
   constexpr uint16_t Highlight  = 0xF81D;  // Primary pink (= TraceA), selected value
+  // #FF6900 orange — the run-state ring.  Warm enough to read as "halted" while
+  // sitting ~80 deg of hue away from the pink trace; a true red would be only
+  // ~55 deg off and vibrate against it.  Quantises to RGB565 exactly.
+  constexpr uint16_t Stopped    = 0xFB40;
 
   // ---- Layout ----
   constexpr int16_t W         = 240;  // Display width  in pixels
@@ -30,8 +34,15 @@ namespace Theme {
   // The waveform fills the whole canvas; the HUD is minimal and mostly hidden.
   // All these readouts are horizontally centered (textCenterX); the Y here is the
   // top of the text.  Tuned for the round face — kept clear of the edges.
-  constexpr int16_t StopY   = 20;   // "STOP"/"ARM" top indicator (20 px)
   constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (36 px)
+
+  // ---- Run-state ring ----
+  // Halted state is shown as a border around the bezel rather than a word in
+  // the middle of the trace: solid when frozen, dashed while a single-shot is
+  // armed.  Inset one pixel so a hair of physical bezel cannot swallow it.
+  constexpr int16_t RunRingR     = 119;  // outer radius
+  constexpr int16_t RunRingW     = 2;    // thickness
+  constexpr uint8_t RunRingDashes = 12;  // dashes around the ring when armed
 
   // ---- Transient parameter band ----
   // Acquisition settings are not on screen permanently: changing one raises a

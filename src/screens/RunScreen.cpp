@@ -302,14 +302,6 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
 
     // 4. Minimal HUD, drawn last (on top of the waveform).
 
-    // Top indicator: "ARM" while a single-shot is pending, "STOP" when frozen.
-    // Nothing is shown while running normally.
-    if (s.singleArmed) {
-        r.textCenterX(Theme::StopY, "ARM", Theme::Highlight, FONT_BODY);
-    } else if (!s.running) {
-        r.textCenterX(Theme::StopY, "STOP", Theme::Highlight, FONT_BODY);
-    }
-
     // Large mode label, centered, for a moment after a mode change.
     if (_modeFlash) {
         if (millis() - _modeFlashMs < kModeFlashMs) {
@@ -334,5 +326,15 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
         } else {
             _band = false;
         }
+    }
+
+    // Run state, outermost of all so nothing (not even the band) masks it: a
+    // ring around the bezel, solid when frozen and dashed while a single-shot
+    // is armed.  Nothing is drawn while running normally.
+    if (s.singleArmed) {
+        r.ring(Theme::RunRingR, Theme::RunRingW, Theme::Stopped,
+               Theme::RunRingDashes);
+    } else if (!s.running) {
+        r.ring(Theme::RunRingR, Theme::RunRingW, Theme::Stopped);
     }
 }

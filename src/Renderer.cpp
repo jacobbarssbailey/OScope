@@ -6,6 +6,10 @@
 #include "Renderer.h"
 #include "Theme.h"
 #include "Icons.h"
+#include <math.h>
+
+// Fraction of each dash slot that is inked, as a percentage.
+static constexpr int kDashDuty = 55;
 
 Renderer::Renderer(GC9A01A_t3n& t) : tft(t) {}
 
@@ -113,6 +117,31 @@ void Renderer::fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h,
 void Renderer::drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h,
                              int16_t r, uint16_t color) {
     tft.drawRoundRect(x, y, w, h, r, color);
+}
+
+void Renderer::ring(int16_t r, int16_t thickness, uint16_t color, uint8_t dashes) {
+    if (r <= 0 || thickness <= 0) return;
+
+    // The true centre of a 240 px face falls between pixels, so the ring is
+    // walked from the half-pixel centre — otherwise it sits a pixel off to one
+    // side and the asymmetry is visible against the bezel.
+    const float cx = (Theme::W - 1) * 0.5f;
+    const float cy = (Theme::H - 1) * 0.5f;
+
+    // Two steps per pixel of circumference: enough that consecutive samples
+    // overlap and the ring comes out continuous at any thickness.
+    const int steps = (int)(4.0f * (float)M_PI * (float)r);
+    for (int i = 0; i < steps; ++i) {
+        // Dash pattern: each dash occupies the first kDashDuty% of its slot.
+        if (dashes && ((i * (int)dashes * 100 / steps) % 100) >= kDashDuty) continue;
+        const float t = (2.0f * (float)M_PI * (float)i) / (float)steps;
+        const float c = cosf(t), s = sinf(t);
+        for (int16_t k = 0; k < thickness; ++k) {
+            const float rr = (float)(r - k);
+            tft.drawPixel((int16_t)lroundf(cx + rr * c),
+                          (int16_t)lroundf(cy + rr * s), color);
+        }
+    }
 }
 
 void Renderer::icon(int16_t x, int16_t y, const Icon& ic, uint16_t tint) {

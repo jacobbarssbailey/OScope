@@ -80,6 +80,10 @@ public:
     void drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
                        uint16_t color);
 
+    // Draw a `thickness`-px ring of outer radius r, concentric with the round
+    // face.  `dashes` breaks it into that many evenly spaced dashes (0 = solid).
+    void ring(int16_t r, int16_t thickness, uint16_t color, uint8_t dashes = 0);
+
     // Blit an icon with its top-left at (x, y), tinted: each coverage byte
     // scales `tint`, so white reproduces the source art and any other colour
     // recolours it.  Fully transparent pixels are skipped.

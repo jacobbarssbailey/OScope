@@ -100,7 +100,16 @@ def band(c, label, value, unit):
     c.text_unit_center(T["BandValueY"], value, unit, TEXT, 36, 20)
 
 
-def scope():
+STOPPED = (0xFF, 0x69, 0x00)
+
+
+def run_ring(c, armed=False):
+    """RunScreen's run-state ring: solid when frozen, dashed while armed."""
+    c.ring(T["RunRingR"], T["RunRingW"], STOPPED,
+           T["RunRingDashes"] if armed else 0)
+
+
+def scope(stopped=False, armed=False):
     """Triggered mode with the trigger level being changed."""
     c = Canvas()
     draw_grid(c)
@@ -113,7 +122,17 @@ def scope():
                 c.line(prev[0], prev[1], x, y, color)
             prev = (x, y)
     band(c, "trigger", "1000", "mv")
+    if stopped or armed:
+        run_ring(c, armed)
     return c
+
+
+def scope_stopped():
+    return scope(stopped=True)
+
+
+def scope_armed():
+    return scope(armed=True)
 
 
 # ------------------------------------------------------------ Waterfall ----
@@ -195,6 +214,8 @@ def settings(sel=2):
 SCREENS = {
     "tuner": tuner,
     "scope_band": scope,
+    "scope_stopped": scope_stopped,
+    "scope_armed": scope_armed,
     "waterfall_up": waterfall_up,
     "waterfall_out": waterfall_out,
     "settings": settings,
