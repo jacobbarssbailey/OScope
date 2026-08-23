@@ -49,6 +49,12 @@ private:
     bool     _stateDirty  = false;
     uint32_t _lastChangeMs = 0;
 
+    // A sweep has been published since the last render.  The active mode folds
+    // it in at draw time rather than when it is acquired, so the per-frame
+    // analysis runs once per displayed frame instead of once per capture — see
+    // the note in tick().
+    bool     _framePending = false;
+
     // Mode-change flash: the large mode label is shown centered for a short time
     // after a mode change, then hidden so it doesn't obscure the waveform.
     bool     _modeFlash   = false;

@@ -62,9 +62,15 @@ public:
     virtual void render(Renderer& r, const ScopeState& state,
                         const SampleBuffers& buf) = 0;
 
-    // Called exactly once each time a new sweep completes, before render.
-    // Modes that accumulate cross-frame history (Rolling) ingest it here so a
-    // UI-triggered redraw never double-counts the same frame.  Default: no-op.
+    // Called at most once per rendered frame, immediately before render(), and
+    // only when a new sweep has been published since the last one — so a
+    // UI-triggered redraw never double-counts a frame, and sweeps acquired
+    // faster than the display can show them collapse into the freshest.
+    //
+    // This is where per-frame analysis belongs (Tuner's YIN, Spectrum's and
+    // Waterfall's FFT).  It is deliberately tied to the *display* rate, not the
+    // acquisition rate: YIN costs 8 ms, and running it per published sweep put
+    // the CPU at 99% once the display transfer stopped throttling the loop.
     virtual void onFrame(const SampleBuffers& /*buf*/) {}
 
     // --- Optional mode-owned encoder parameters ---

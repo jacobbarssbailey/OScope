@@ -36,6 +36,40 @@ That is a good trade: the 20 ms → 1 ms service gap is the real result. At
 latency improves for the same reason: buttons are polled tens of thousands of
 times a second instead of fifty.
 
+## What the blocking blit was secretly throttling
+
+Going asynchronous broke the tuner, and the reason is worth keeping: the blit
+had been acting as the rate limiter for per-frame *analysis*, not just for
+drawing.
+
+`RunScreen::tick()` called `ScopeMode::onFrame()` once per published acquisition
+frame, and `onFrame()` is where Tuner runs YIN and Spectrum/Waterfall run their
+FFT. That was only ever safe because the loop blocked on the transfer, so it
+published at roughly the display rate. Remove the block and the publish rate
+rises — measured in Tuner mode, 37/s to 124/s. YIN costs **8 ms**:
+
+|                   | blocking | async (broken) | async + fix |
+| ----------------- | -------- | -------------- | ----------- |
+| `onFrame` calls/s | 37       | 124            | 35          |
+| CPU in YIN        | 29%      | **99%**        | 28%         |
+| display fps       | 36       | 41             | 35          |
+
+At 99% there was nothing left for anything else, which is what "the tuner is
+completely broken" looked like from outside.
+
+The fix is to fold at most one sweep per *rendered* frame: `tick()` just records
+that a frame is pending and `draw()` calls `onFrame()` on the freshest published
+frame immediately before `render()`. That restores the old cadence explicitly
+instead of relying on the blit to impose it, and it is now the documented
+contract on `ScopeMode::onFrame()`.
+
+Note this puts the analysis inside the draw, so it no longer overlaps the
+transfer — Tuner sits at 35 fps against 36 blocking. If that ever matters, the
+alternative is to fold in `tick()` but gate it on a "already folded one for the
+next draw" flag, which overlaps the blit at the cost of showing data one frame
+older. Measured after the fix: Triggered 48 fps, Waterfall 47 fps, Tuner 35 fps,
+`tears=0` and `over=0` in all three.
+
 ## Why not double buffering
 
 Double buffering would let the draw overlap the transfer, making a frame cost

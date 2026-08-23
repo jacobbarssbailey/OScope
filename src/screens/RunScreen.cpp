@@ -130,10 +130,9 @@ bool RunScreen::tick(AppContext& ctx) {
     if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
     // Rolling, XY, Spectrum, Tuner, and Waterfall are free-running: they
-    // republish/read the newest window each frame, so their rate is blit-bound
-    // rather than sample-bound.  Triggered still uses update()'s trigger-aligned,
-    // sweep-paced path.  Keeping the paths separate leaves the hardened triggered
-    // acquisition untouched.
+    // republish/read the newest window whenever samples arrive.  Triggered still
+    // uses update()'s trigger-aligned, sweep-paced path.  Keeping the paths
+    // separate leaves the hardened triggered acquisition untouched.
     const bool freeRunning = (s.mode == Mode::Rolling || s.mode == Mode::XY ||
                               s.mode == Mode::Spectrum || s.mode == Mode::Tuner ||
                               s.mode == Mode::Waterfall);
@@ -142,18 +141,23 @@ bool RunScreen::tick(AppContext& ctx) {
                           : _acq.update(s, ctx.settings);
     _acq.reportDiag(s);
     if (newFrame) {
-        // Let the active mode fold the completed sweep into any history it keeps
-        // (Rolling); others no-op.  Done here (once per frame), not in draw().
-        ScopeMode* activeMode = _modes[static_cast<int>(s.mode)];
-        if (activeMode) activeMode->onFrame(_acq.frame());
+        // Note the frame; the mode folds it in draw() rather than here.  The
+        // per-frame analysis (Tuner's YIN, Spectrum's and Waterfall's FFT) is
+        // only ever consumed by the next render, and it is not cheap — YIN is
+        // 8 ms.  Doing it per published frame used to be safe only because the
+        // loop blocked on the blit and so published at the display rate; once
+        // the transfer went asynchronous the publish rate rose 3.4x and YIN
+        // alone took 99% of the CPU.  Fold per rendered frame instead.
+        _framePending = true;
 
-        // Single-shot: freeze on the first successful triggered capture.
+        // Single-shot: freeze on the first successful triggered capture.  Stays
+        // here — it is about the capture happening, not about drawing it.
         if (s.singleArmed && _acq.lastTriggered()) {
             s.running = false;
             s.singleArmed = false;
         }
     }
-    return newFrame || flashActive;
+    return _framePending || flashActive;
 }
 
 // --------------------------------------------------------------------------
@@ -293,9 +297,15 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
         Mapping::drawGrid(r);
     }
 
-    // 3. Delegate waveform rendering to the active mode strategy.
+    // 3. Delegate waveform rendering to the active mode strategy.  Any sweep
+    //    acquired since the last render is folded in first, once, on the
+    //    freshest published frame — see tick().
     ScopeMode* activeMode = _modes[static_cast<int>(s.mode)];
     if (activeMode != nullptr) {
+        if (_framePending) {
+            activeMode->onFrame(_acq.frame());
+            _framePending = false;
+        }
         activeMode->render(r, s, _acq.frame());
     }
     // activeMode is never null (all modes registered); the guard is defensive.
