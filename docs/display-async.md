@@ -1,23 +1,20 @@
-# Display transfer: why the blit is asynchronous but not double buffered
+# Do not blit the display with DMA
 
 Measured on hardware, 2026-08-23, Teensy 4.0 + GC9A01A at 48 MHz SPI.
 
-## The transfer is the frame budget
+**Conclusion: the display transfer stays synchronous. `updateScreenAsync()`
+corrupts the ADC capture stream.** Two attempts at making it asynchronous are
+recorded here so the next person does not spend the day rediscovering why.
 
-A full frame is 240 × 240 × 16 bits = 921,600 bits. At 48 MHz that is **19.2 ms**,
+## Why it looks tempting
+
+A full frame is 240 × 240 × 16 bits = 921,600 bits; at 48 MHz that is **19.2 ms**,
 and `ACQ_DIAG` measures 19,596 µs for draw + blit against 490 µs for the draw
-alone — so the transfer is ~97% of a frame and drawing is noise beside it. (The
-same arithmetic reproduces the "~30 ms at 30 MHz" figure recorded in
-`OScope.ino`, which is where the 48 MHz clock came from.)
+alone. The transfer is ~97% of a frame, and `updateScreen()` spends all of it
+in a CPU loop — no input polling, no acquisition servicing. Handing it to DMA
+appears to be free real estate.
 
-With the original blocking `updateScreen()` the CPU sat inside that 19.2 ms
-doing nothing: no input polling, no acquisition servicing.
-
-## What asynchronous buys
-
-`DISPLAY_ASYNC_BLIT` hands the frame to DMA and lets the loop carry on. The next
-draw is gated on `asyncUpdateActive()`, because there is one framebuffer and
-drawing into it mid-transfer would tear.
+It measures beautifully, too:
 
 |                          | blocking | async  |
 | ------------------------ | -------- | ------ |
@@ -28,60 +25,13 @@ drawing into it mid-transfer would tear.
 
 \* includes the blit, since the loop is stalled inside it.
 
-Display frame rate goes *down* slightly — the loop now checks whether the panel
-is free only once per iteration, and an iteration does a full acquisition tick.
-That is a good trade: the 20 ms → 1 ms service gap is the real result. At
-70 µs/div the sample interval is ~2.3 µs, so a 4096-sample ring fills in ~9.5 ms
-— a 20 ms gap meant the writer lapped the reader twice between reads. Input
-latency improves for the same reason: buttons are polled tens of thousands of
-times a second instead of fifty.
+## Attempt 1: double buffering — leaks a DMA channel per frame
 
-## What the blocking blit was secretly throttling
-
-Going asynchronous broke the tuner, and the reason is worth keeping: the blit
-had been acting as the rate limiter for per-frame *analysis*, not just for
-drawing.
-
-`RunScreen::tick()` called `ScopeMode::onFrame()` once per published acquisition
-frame, and `onFrame()` is where Tuner runs YIN and Spectrum/Waterfall run their
-FFT. That was only ever safe because the loop blocked on the transfer, so it
-published at roughly the display rate. Remove the block and the publish rate
-rises — measured in Tuner mode, 37/s to 124/s. YIN costs **8 ms**:
-
-|                   | blocking | async (broken) | async + fix |
-| ----------------- | -------- | -------------- | ----------- |
-| `onFrame` calls/s | 37       | 124            | 35          |
-| CPU in YIN        | 29%      | **99%**        | 28%         |
-| display fps       | 36       | 41             | 35          |
-
-At 99% there was nothing left for anything else, which is what "the tuner is
-completely broken" looked like from outside.
-
-The fix is to fold at most one sweep per *rendered* frame: `tick()` just records
-that a frame is pending and `draw()` calls `onFrame()` on the freshest published
-frame immediately before `render()`. That restores the old cadence explicitly
-instead of relying on the blit to impose it, and it is now the documented
-contract on `ScopeMode::onFrame()`.
-
-Note this puts the analysis inside the draw, so it no longer overlaps the
-transfer — Tuner sits at 35 fps against 36 blocking. If that ever matters, the
-alternative is to fold in `tick()` but gate it on a "already folded one for the
-next draw" flag, which overlaps the blit at the cost of showing data one frame
-older. Measured after the fix: Triggered 48 fps, Waterfall 47 fps, Tuner 35 fps,
-`tears=0` and `over=0` in all three.
-
-## Why not double buffering
-
-Double buffering would let the draw overlap the transfer, making a frame cost
-`max(draw, blit)` rather than `draw + blit`. Given draw = 490 µs against a
-19.2 ms blit, that is worth about 4%.
-
-It was tried (commit reverted in this branch) and it hardfaults, for a reason
-worth writing down: swapping buffers means calling `setFrameBuffer()` every
-frame. That clears the driver's `GC9A01A_DMA_INIT` flag, so the next
-`updateScreenAsync()` re-runs `initDMASettings()`, which calls
-`DMAChannel::begin(true)`. On Teensy 4 that path skips the "already allocated"
-early return and **allocates a new channel without releasing the old one**:
+Swapping buffers means calling `setFrameBuffer()` every frame. That clears the
+driver's `GC9A01A_DMA_INIT` flag, so the next `updateScreenAsync()` re-runs
+`initDMASettings()`, which calls `DMAChannel::begin(true)`. On Teensy 4 that
+path skips the "already allocated" early return and **allocates a new channel
+without releasing the old one**:
 
 ```c
 // cores/teensy4/DMAChannel.cpp
@@ -91,8 +41,8 @@ void DMAChannel::begin(bool force_initialization) {
         if (!(dma_channel_allocated_mask & (1 << ch))) {   // the old bit stays set
 ```
 
-`dma_channel_allocated_mask` is a `uint16_t`, so the pool is 16 channels and
-acquisition already holds five. Instrumenting the loop showed it exactly:
+`dma_channel_allocated_mask` is a `uint16_t`, so the pool is sixteen channels and
+acquisition already holds five:
 
 ```
 t=2598  loops=1       blits=0  dmaMask=001F     5 channels
@@ -101,16 +51,57 @@ t=2798  loops=119509  blits=5  dmaMask=7FFF    +5 leaked
 --- USB device dropped ---                      pool empty -> null TCD -> hardfault
 ```
 
-Eleven frames — about 0.2 s — then `begin()` returns `TCD = 0` and the next use
-faults. The board resets, draws another eleven frames, faults again: from the
-outside it looks like the display updating every few seconds and the controls
-being dead.
+Eleven frames — about 0.2 s — then the board resets and does it again. From
+outside: the display updating every few seconds with the controls dead.
 
-The asynchronous machinery itself is fine — `blits=5` per 100 ms is 50 fps, and
-`busy=109039` shows the loop spinning happily through the transfer. Only the
-per-frame `setFrameBuffer()` is fatal.
+## Attempt 2: single buffer, async transfer — corrupts the ADC stream
 
-Reviving double buffering therefore needs the leak fixed, which means patching
-the library or the core rather than anything in this project. For 4%, it is not
-worth carrying a fork. A 75-second soak of the single-buffer async path holds
-48 fps with no resets, `tears=0` and `over=0`.
+No `setFrameBuffer()` per frame, so no leak. Stable: a 75-second soak held
+48 fps with no resets. But the tuner read 41 Hz on a signal it read as 230 Hz
+with the blocking blit.
+
+Dumping the exact block the pitch detector analyses shows why. Blocking, a clean
+ramp:
+
+```
+ 90:  359  387  411  438  464  490  520  545  570  596
+100:  624  648  676  699  729  753  780  805  830  857
+```
+
+Asynchronous, the same signal — five samples of ~25 counts each, then a jump of
+~80 (three samples' worth missing), repeating:
+
+```
+100:  644  609  588  565  538  515  433  412  387  362
+110:  336  259  235  212  184  160   82   76  103  125
+```
+
+About 30% of samples are gone, ~50 gaps per 512-sample block against **zero**
+with the blocking blit. YIN cannot find the real period in that and locks onto
+the artefact.
+
+The cause is contention. `updateScreen()` is a **CPU loop** pushing pixels
+through the SPI FIFO — it uses no DMA at all, so the two ADC capture channels
+have the eDMA engine to themselves. `updateScreenAsync()` adds a third channel
+transferring continuously for 19 of every 21 ms. Worse, `DMAChannel::begin()`
+sets `DMA_DCHPRI_ECP | DMA_DCHPRI_DPA` on *every* channel it allocates — `DPA`
+is "disable preempt ability", so no channel can preempt any other, and the ADC
+channels cannot cut in front of the display.
+
+The acquisition subsystem reports it in its own diagnostics: `pairSkew` is
+documented as 0-1 samples in practice and measures 0-1 with the blocking blit;
+asynchronously it climbs to 20-48.
+
+## If someone wants to try again
+
+The instrument's job is to measure correctly, so nothing here is worth a risk to
+sample integrity — a 2 fps gain against silently wrong readings is a bad trade,
+and the failure is quiet enough that it took a raw sample dump to see.
+
+The avenue that is left is eDMA arbitration: give the two ADC channels a higher
+`DMA_DCHPRI` than the display channel, clear their `DPA` so they *can* preempt,
+and set `ECP` on the display channel so it can be preempted. Priorities within a
+group must stay unique. Anyone doing this must prove it with the raw-sample test
+above — jump count zero over a long soak, `pairSkew` back to 0-1 — and not with
+frame-rate numbers, which looked excellent the entire time the samples were being
+dropped.
