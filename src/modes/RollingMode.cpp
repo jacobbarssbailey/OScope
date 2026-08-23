@@ -14,12 +14,14 @@
 
 void RollingMode::drawChannel(Renderer& r, const SampleBuffers& buf, uint8_t ch,
                               uint16_t vscale, uint16_t color) const {
-    int16_t y0 = Mapping::sampleToY(buf.ch[ch][0], vscale);
+    // Vertices are Q8: one sample per column, so X is whole and only Y carries
+    // a fraction — which is precisely what lineAA blends with.
+    int32_t y0 = Mapping::sampleToYQ8(buf.ch[ch][0], vscale);
     for (uint16_t i = 1; i < buf.count; ++i) {
-        const int16_t x0 = (int16_t)(Theme::PlotX + i - 1);
-        const int16_t x1 = (int16_t)(Theme::PlotX + i);
-        const int16_t y1 = Mapping::sampleToY(buf.ch[ch][i], vscale);
-        r.line(x0, y0, x1, y1, color);
+        const int32_t x0 = (int32_t)(Theme::PlotX + i - 1) << Mapping::FRAC;
+        const int32_t x1 = (int32_t)(Theme::PlotX + i) << Mapping::FRAC;
+        const int32_t y1 = Mapping::sampleToYQ8(buf.ch[ch][i], vscale);
+        r.lineAA(x0, y0, x1, y1, color);
         y0 = y1;
     }
 }

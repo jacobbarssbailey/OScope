@@ -23,12 +23,14 @@ void XYMode::render(Renderer& r, const ScopeState& state,
     const uint16_t vsx = state.vscale_mv_per_div[0];  // A → X
     const uint16_t vsy = state.vscale_mv_per_div[1];  // B → Y
 
-    int16_t x0 = Mapping::sampleToX(buf.ch[0][0], vsx);
-    int16_t y0 = Mapping::sampleToY(buf.ch[1][0], vsy);
+    // Both axes are sub-pixel here (Q8), so the figure's diagonals and curves
+    // get the full benefit of the blend rather than only its interiors.
+    int32_t x0 = Mapping::sampleToXQ8(buf.ch[0][0], vsx);
+    int32_t y0 = Mapping::sampleToYQ8(buf.ch[1][0], vsy);
     for (uint16_t i = 1; i < n; ++i) {
-        const int16_t x1 = Mapping::sampleToX(buf.ch[0][i], vsx);
-        const int16_t y1 = Mapping::sampleToY(buf.ch[1][i], vsy);
-        r.line(x0, y0, x1, y1, Theme::TraceA);
+        const int32_t x1 = Mapping::sampleToXQ8(buf.ch[0][i], vsx);
+        const int32_t y1 = Mapping::sampleToYQ8(buf.ch[1][i], vsy);
+        r.lineAA(x0, y0, x1, y1, Theme::TraceA);
         x0 = x1;
         y0 = y1;
     }

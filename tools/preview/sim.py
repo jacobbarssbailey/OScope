@@ -114,22 +114,33 @@ class Canvas:
         cy = (y + r + dy) if dy < 0 else (y + h - 1 - r + dy)
         return cx, cy
 
+    # Rounded rects are shaded from a signed distance field, matching
+    # Renderer::roundRectShaded — negative inside, positive outside.
+    @staticmethod
+    def _round_rect_sdf(px, py, hx, hy, r):
+        qx, qy = abs(px) - (hx - r), abs(py) - (hy - r)
+        outside = math.hypot(max(qx, 0.0), max(qy, 0.0))
+        inside = max(qx, qy)
+        return (outside if inside > 0.0 else inside) - r
+
+    def round_rect_shaded(self, x, y, w, h, r, c, outline=0.0):
+        cx, cy = x + w * 0.5 - 0.5, y + h * 0.5 - 0.5
+        hx, hy = w * 0.5, h * 0.5
+        # One pixel beyond the rect, so the fringe straddling the edge is not
+        # clipped (matches Renderer::roundRectShaded).
+        for py in range(max(0, y - 1), min(H, y + h + 1)):
+            for px in range(max(0, x - 1), min(W, x + w + 1)):
+                d = self._round_rect_sdf(px - cx, py - cy, hx, hy, r)
+                cov = (outline * 0.5 - abs(d)) if outline > 0.0 else -d
+                cov += 0.5
+                if cov > 0.0:
+                    self.blend(px, py, c, min(cov, 1.0))
+
     def fill_round_rect(self, x, y, w, h, r, c):
-        self.fill_rect(x + r, y, w - 2 * r, h, c)
-        self.fill_rect(x, y + r, w, h - 2 * r, c)
-        for dx, dy in self._circle_octants(r):
-            _, cy = self._corner(x, y, w, h, r, dx, dy)
-            lx = x + r if dx >= 0 else x + r + dx
-            rx = x + w - 1 - r + dx if dx >= 0 else x + r
-            self.hline(min(lx, rx), cy, abs(rx - lx) + 1, c)
+        self.round_rect_shaded(x, y, w, h, r, c, 0.0)
 
     def draw_round_rect(self, x, y, w, h, r, c):
-        self.hline(x + r, y, w - 2 * r, c)
-        self.hline(x + r, y + h - 1, w - 2 * r, c)
-        self.vline(x, y + r, h - 2 * r, c)
-        self.vline(x + w - 1, y + r, h - 2 * r, c)
-        for dx, dy in self._circle_octants(r):
-            self.set(*self._corner(x, y, w, h, r, dx, dy), c)
+        self.round_rect_shaded(x, y, w, h, r, c, 1.0)
 
     # ---- text (y is the top of the cap height, as on the device) ----
     def text(self, x, y, s, c, size):

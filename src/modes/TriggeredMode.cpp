@@ -27,12 +27,12 @@ void TriggeredMode::render(Renderer& r, const ScopeState& state,
     // Channel B (index 1) — drawn first (below A).
     if (state.channelEnabled[1]) {
         const uint16_t vscale = state.vscale_mv_per_div[1];
-        int16_t y0 = Mapping::sampleToY(buf.ch[1][0], vscale);
+        int32_t y0 = Mapping::sampleToYQ8(buf.ch[1][0], vscale);
         for (uint16_t i = 1; i < nSamples; ++i) {
-            const int16_t x0 = (int16_t)(Theme::PlotX + i - 1);
-            const int16_t x1 = (int16_t)(Theme::PlotX + i);
-            const int16_t y1 = Mapping::sampleToY(buf.ch[1][i], vscale);
-            r.line(x0, y0, x1, y1, Theme::TraceB);
+            const int32_t x0 = (int32_t)(Theme::PlotX + i - 1) << Mapping::FRAC;
+            const int32_t x1 = (int32_t)(Theme::PlotX + i) << Mapping::FRAC;
+            const int32_t y1 = Mapping::sampleToYQ8(buf.ch[1][i], vscale);
+            r.lineAA(x0, y0, x1, y1, Theme::TraceB);
             y0 = y1;
         }
     }
@@ -40,12 +40,12 @@ void TriggeredMode::render(Renderer& r, const ScopeState& state,
     // Channel A (index 0) — drawn second (on top of B).
     if (state.channelEnabled[0]) {
         const uint16_t vscale = state.vscale_mv_per_div[0];
-        int16_t y0 = Mapping::sampleToY(buf.ch[0][0], vscale);
+        int32_t y0 = Mapping::sampleToYQ8(buf.ch[0][0], vscale);
         for (uint16_t i = 1; i < nSamples; ++i) {
-            const int16_t x0 = (int16_t)(Theme::PlotX + i - 1);
-            const int16_t x1 = (int16_t)(Theme::PlotX + i);
-            const int16_t y1 = Mapping::sampleToY(buf.ch[0][i], vscale);
-            r.line(x0, y0, x1, y1, Theme::TraceA);
+            const int32_t x0 = (int32_t)(Theme::PlotX + i - 1) << Mapping::FRAC;
+            const int32_t x1 = (int32_t)(Theme::PlotX + i) << Mapping::FRAC;
+            const int32_t y1 = Mapping::sampleToYQ8(buf.ch[0][i], vscale);
+            r.lineAA(x0, y0, x1, y1, Theme::TraceA);
             y0 = y1;
         }
     }

@@ -113,13 +113,14 @@ def scope(stopped=False, armed=False):
     """Triggered mode with the trigger level being changed."""
     c = Canvas()
     draw_grid(c)
+    # Sub-pixel y + antialiased lines, matching the scope modes.
     for color, amp, freq, phase in ((TRACE_B, 55, 2.0, 0.6),
                                     (TRACE_A, 78, 1.0, 0.0)):
         prev = None
         for x in range(W):
-            y = int(CY - amp * math.sin(2 * math.pi * freq * x / W + phase))
+            y = CY - amp * math.sin(2 * math.pi * freq * x / W + phase)
             if prev:
-                c.line(prev[0], prev[1], x, y, color)
+                c.line_aa(prev[0], prev[1], x, y, color)
             prev = (x, y)
     band(c, "trigger", "1000", "mv")
     if stopped or armed:

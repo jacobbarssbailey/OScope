@@ -71,14 +71,24 @@ public:
     // Draw an arbitrary line from (x0, y0) to (x1, y1).
     void line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 
+    // Antialiased line between two Q8 fixed-point endpoints (see Mapping::FRAC).
+    // Sub-pixel endpoints are the point: fed whole-pixel coordinates it has
+    // nothing to blend and degenerates to a plain line with soft interiors.
+    void lineAA(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t color);
+
     // Fill a w×h rectangle with its top-left at (x, y).
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 
-    // Fill / outline a w×h rectangle with corner radius r.
+    // Fill / outline a w×h rectangle with corner radius r.  Both are shaded
+    // from the same distance field, so the corners come out antialiased.
     void fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
                        uint16_t color);
     void drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
                        uint16_t color);
+    // Shared implementation: `outline` <= 0 fills, otherwise it inks a band
+    // that many pixels wide just inside the edge.
+    void roundRectShaded(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
+                         uint16_t color, float outline);
 
     // Draw a `thickness`-px ring of outer radius r, concentric with the round
     // face.  `dashes` breaks it into that many evenly spaced dashes (0 = solid).
