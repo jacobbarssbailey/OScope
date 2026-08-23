@@ -127,10 +127,17 @@ void loop() {
     // 2. Advance the top screen's time-based work (non-blocking acquisition).
     const bool newFrame = screens.tick(ctx);
 
-    // 3. Redraw + blit only when there is something new to show.  The full-frame
-    //    blit (~10-15 ms) is the loop's one expensive step; gating it here is
-    //    what keeps the UI responsive at long timebases.
+    // 3. Redraw + hand over only when there is something new to show, and only
+    //    while the panel is idle.  With DISPLAY_ASYNC_BLIT the transfer runs in
+    //    the background: the loop falls through here until it drains, and
+    //    spends that time draining input and nudging acquisition rather than
+    //    blocking.  There is one framebuffer, so drawing into it mid-transfer
+    //    would tear — hence the asyncUpdateActive() gate rather than a swap.
+#if DISPLAY_ASYNC_BLIT
+    if ((uiDirty || newFrame) && !tft.asyncUpdateActive()) {
+#else
     if (uiDirty || newFrame) {
+#endif
 #if ACQ_DIAG
         const uint32_t drawStart = micros();
 #endif
@@ -140,16 +147,25 @@ void loop() {
         drawDebugGrid(renderer);
 #endif
 
+#if DISPLAY_ASYNC_BLIT
+        // Returns as soon as the DMA is running; the loop carries on and the
+        // gate above holds the next draw off until it finishes.
+        tft.updateScreenAsync();
+#else
         tft.updateScreen();
+#endif
 
 #if ACQ_DIAG
-        // Track the slowest draw+blit each second — this is the time the loop
-        // spends not reading the capture rings, and it is what caps fps.
+        // Slowest draw each second, in µs.  With the asynchronous transfer this
+        // no longer includes the blit — the loop is not stalled by it — so it
+        // measures drawing alone and shows how much of the frame is actually
+        // ours to spend.
         static uint32_t drawMaxUs = 0, drawRepMs = 0;
         const uint32_t drawUs = micros() - drawStart;
         if (drawUs > drawMaxUs) drawMaxUs = drawUs;
         if (millis() - drawRepMs >= 1000) {
-            Serial.printf("draw: max=%lums\n", (unsigned long)(drawMaxUs / 1000));
+            Serial.printf("draw: max=%luus fps=%d\n", (unsigned long)drawMaxUs,
+                          (int)fps);
             drawMaxUs = 0;
             drawRepMs = millis();
         }

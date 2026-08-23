@@ -25,11 +25,17 @@ batching.
 
 ## Architecture
 
-**Main loop** (`src/OScope.ino`) owns the framebuffer and is the only caller of
-`tft.updateScreen()`. Each iteration it drains input events, calls `screens.tick()`, and
+**Main loop** (`src/OScope.ino`) owns the framebuffer and is the only code that hands a
+frame to the panel. Each iteration it drains input events, calls `screens.tick()`, and
 redraws *only* when a handled event or a completed acquisition frame says something changed.
-The full-frame blit is the loop's one expensive step; gating it is what keeps the UI
-responsive at long timebases.
+
+The transfer is ~19 ms (240·240·16 bits at 48 MHz) against ~0.5 ms of drawing, so it *is*
+the frame budget. `DISPLAY_ASYNC_BLIT` hands it to DMA and lets the loop keep polling input
+and servicing acquisition instead of blocking — worth 20 ms → 1 ms on the acquisition
+service gap. There is one framebuffer, so the next draw is gated on `asyncUpdateActive()`;
+drawing during a transfer would tear. **Do not add double buffering without reading
+`docs/display-async.md` first** — calling `setFrameBuffer()` per frame leaks a DMA channel
+per frame via `DMAChannel::begin(true)` and hardfaults the board in about eleven frames.
 
 **Layered structure**, each layer knowing only the one below:
 

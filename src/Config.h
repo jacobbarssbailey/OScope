@@ -41,6 +41,27 @@
 // by accident, and the reporting code drops out entirely).
 #define ACQ_DIAG 0
 
+// ---- Display transfer ----
+// 1 = hand each frame to the panel asynchronously and let the main loop carry
+// on: the ~19 ms DMA transfer no longer blocks, so input and acquisition keep
+// being serviced through it instead of stalling.  The next frame is still drawn
+// only once the transfer has drained — there is one framebuffer, so drawing
+// during it would tear.
+//
+// NOT double buffering, deliberately.  Swapping buffers means calling
+// setFrameBuffer() per frame, which clears the driver's DMA-init flag and makes
+// it re-run initDMASettings() -> DMAChannel::begin(true).  On Teensy 4 that call
+// allocates a new DMA channel WITHOUT releasing the old one, so it leaks one
+// channel per frame; the 16-channel pool empties in about eleven frames and the
+// next begin() returns a null TCD and hardfaults.  Measured on hardware:
+// dma_channel_allocated_mask climbing 001F -> 03FF -> 7FFF over 300 ms, then a
+// reset.  Overlapping draw with the transfer was worth ~4% here anyway (the
+// draw is far shorter than the blit), so this keeps the whole win and none of
+// the bug.  See docs/display-async.md.
+//
+// 0 = the original blocking updateScreen().
+#define DISPLAY_ASYNC_BLIT 1
+
 // ---- UI layout debugging ----
 // Set to 1 to overlay a 16 px ruler grid (anchored on the display centre, with
 // the centre axes picked out brighter) on top of every screen.  It is the
