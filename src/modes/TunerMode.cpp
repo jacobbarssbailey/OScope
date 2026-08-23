@@ -14,31 +14,37 @@
 // two meters sit just above/below centre (no divider line — the meters read as
 // the split).  Readout = a large glyph (note or frequency) with a small
 // subscript (octave or "Hz").
-static constexpr int16_t kBigYA   = 34;   // ch A readout, top of text
 static constexpr int16_t kMeterYA = 96;   // ch A cents meter (above centre)
 static constexpr int16_t kMeterYB = 144;  // ch B cents meter (below centre)
-static constexpr int16_t kBigYB   = 164;  // ch B readout, top of text
 
 static constexpr int16_t kMeterHalf   = 90;  // meter half-width (px) = ±50 cents
-static constexpr int16_t kSubDrop     = 15;  // subscript baseline drop below the glyph
-static constexpr int16_t kSubGap      = 2;   // gap between glyph and subscript
 static constexpr int16_t kInTuneCents = 5;   // |cents| within this reads as in tune
 static constexpr int     kMeterTicks  = 17;  // ruler ticks; centre + steps of 12.5%
 
-// Near-white ruler ticks (everything but the pure-white centre major tick).
-static constexpr uint16_t kTickColor = 0xDEFB;   // ~#DBDBDB
+// Deviation marker: a 3 × 30 px rounded bar.  When the reading is in tune it
+// gains an outline offset kMarkOutset px around it (the marker used to simply
+// brighten, which was lost against the ruler).
+static constexpr int16_t kMarkW      = 3;
+static constexpr int16_t kMarkH      = 30;
+static constexpr int16_t kMarkR      = 1;   // bar corner radius
+static constexpr int16_t kMarkOutset = 3;   // gap between bar and in-tune outline
+static constexpr int16_t kMarkOutR   = 4;   // outline corner radius
+
+// The readouts sit in the gap between the screen edge and their channel's
+// meter, with equal margin above and below: for A that gap is 0 → marker top,
+// for B it is marker bottom → 240.  Both readouts are one FONT_LARGE cap tall.
+static constexpr int16_t kBigCapH  = 37;                    // FONT_LARGE cap height
+static constexpr int16_t kMarkTopA = kMeterYA - kMarkH / 2; // 81
+static constexpr int16_t kMarkBotB = kMeterYB + kMarkH / 2; // 159
+static constexpr int16_t kBigYA    = (kMarkTopA - kBigCapH) / 2;                  // 22
+static constexpr int16_t kBigYB    = kMarkBotB + (Theme::H - kMarkBotB - kBigCapH) / 2;  // 181
+
+// Ruler ticks are a dark grey so the coloured marker stays legible in front of
+// them (they used to be near-white and swamped it).
+static constexpr uint16_t kTickColor = Theme::DimDark;   // #404040
 
 static const char* kNoteNames[12] =
     {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-
-// Blend an RGB565 colour halfway to white — used to make the in-tune marker glow.
-static uint16_t brighten(uint16_t c) {
-    uint16_t r = (c >> 11) & 0x1F, g = (c >> 5) & 0x3F, b = c & 0x1F;
-    r = (uint16_t)(r + (31 - r) / 2);
-    g = (uint16_t)(g + (63 - g) / 2);
-    b = (uint16_t)(b + (31 - b) / 2);
-    return (uint16_t)((r << 11) | (g << 5) | b);
-}
 
 TunerMode::TunerMode() {
     // Fixed sample rate, derived like Acquisition: interval = timebase*GridCols/N
@@ -81,20 +87,9 @@ void TunerMode::encoderTurn(int8_t delta) {
     if (delta) _showNote = !_showNote;
 }
 
-// Draw "<main><sub>" centred as a unit: a large glyph with a small subscript
-// dropped toward the baseline (e.g. note + octave, or frequency + "Hz").
-static void drawReadout(Renderer& r, const char* main, const char* sub,
-                        uint16_t color, int16_t topY) {
-    const int16_t mw = r.textWidth(main, FONT_LARGE);
-    const int16_t sw = r.textWidth(sub, FONT_BODY);
-    const int16_t x  = (int16_t)(Theme::CX - (mw + kSubGap + sw) / 2);
-    r.text(x, topY, main, color, FONT_LARGE);
-    r.text((int16_t)(x + mw + kSubGap), (int16_t)(topY + kSubDrop), sub, color, FONT_BODY);
-}
-
-// Draw the cents meter: a tick ruler centred at cy (taller, brighter centre
-// tick), with a marker at the deviation when `haveMarker`; the marker brightens
-// when the reading is within tolerance.
+// Draw the cents meter: a tick ruler centred at cy (a taller centre tick), with
+// a marker at the deviation when `haveMarker`; the marker gains an offset
+// outline when the reading is within tolerance.
 static void drawMeter(Renderer& r, int16_t cy, int cents, bool haveMarker,
                       uint16_t color) {
     const int16_t left   = Theme::CX - kMeterHalf;
@@ -102,20 +97,25 @@ static void drawMeter(Renderer& r, int16_t cy, int cents, bool haveMarker,
     for (int i = 0; i < kMeterTicks; ++i) {
         const int16_t x = (int16_t)(left + (2 * kMeterHalf * i) / (kMeterTicks - 1));
         const int     d = abs(i - centre);    // steps of 12.5% from centre
-        int16_t  h;
-        uint16_t col;
-        if (d == 0)                 { h = 15; col = Theme::Text; }  // major (centre)
-        else if (d == 2 || d == 4)  { h = 11; col = kTickColor; }   // medium (±25%, ±50%)
-        else                        { h = 7;  col = kTickColor; }   // minor
-        r.vline(x, (int16_t)(cy - h / 2), h, col);
+        int16_t h;
+        if (d == 0)                 h = 15;   // major (centre)
+        else if (d == 2 || d == 4)  h = 11;   // medium (±25%, ±50%)
+        else                        h = 7;    // minor
+        r.vline(x, (int16_t)(cy - h / 2), h, kTickColor);
     }
     if (haveMarker) {
         int c = cents;
         if (c < -50) c = -50;
         if (c >  50) c =  50;
-        const int16_t  mx  = (int16_t)(Theme::CX + (c * kMeterHalf) / 50);
-        const uint16_t col = (abs(cents) <= kInTuneCents) ? brighten(color) : color;
-        r.fillRect((int16_t)(mx - 1), (int16_t)(cy - 11), 3, 23, col);
+        const int16_t mx = (int16_t)(Theme::CX + (c * kMeterHalf) / 50);
+        const int16_t x  = (int16_t)(mx - kMarkW / 2);
+        const int16_t y  = (int16_t)(cy - kMarkH / 2);
+        r.fillRoundRect(x, y, kMarkW, kMarkH, kMarkR, color);
+        if (abs(cents) <= kInTuneCents) {
+            r.drawRoundRect((int16_t)(x - kMarkOutset), (int16_t)(y - kMarkOutset),
+                            (int16_t)(kMarkW + 2 * kMarkOutset),
+                            (int16_t)(kMarkH + 2 * kMarkOutset), kMarkOutR, color);
+        }
     }
 }
 
@@ -136,14 +136,16 @@ void TunerMode::drawChannel(Renderer& r, float freq, uint16_t color,
     const int   idx   = ((nn % 12) + 12) % 12;
     const int   oct   = nn / 12 - 1;
 
-    char sub[8];
+    // The readout is white; the channel colour lives in the meter marker.
     if (_showNote) {
-        snprintf(sub, sizeof sub, "%d", oct);
-        drawReadout(r, kNoteNames[idx], sub, color, bigY);
+        char oc[8];
+        snprintf(oc, sizeof oc, "%d", oct);
+        r.textUnitCenterX(bigY, kNoteNames[idx], oc, Theme::Text,
+                          FONT_LARGE, FONT_BODY);
     } else {
         char hz[8];
         snprintf(hz, sizeof hz, "%.0f", (double)freq);
-        drawReadout(r, hz, "Hz", color, bigY);
+        r.textUnitCenterX(bigY, hz, "Hz", Theme::Text, FONT_LARGE, FONT_BODY);
     }
 
     drawMeter(r, meterY, cents, true, color);
