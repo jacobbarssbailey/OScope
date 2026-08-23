@@ -15,8 +15,9 @@ namespace Theme {
   constexpr uint16_t TraceA     = 0xF81D;  // #FF03EA magenta (channel A)
   constexpr uint16_t TraceB     = 0x5B7D;  // #5B6CED periwinkle (channel B)
   constexpr uint16_t Text       = 0xFFFF;  // White
-  constexpr uint16_t Dim        = 0xC618;  // Light grey (secondary labels)
-  constexpr uint16_t Highlight  = 0xFFE0;  // Yellow (selected item)
+  constexpr uint16_t Dim        = 0x8C71;  // #8E8E8E light grey (secondary labels)
+  constexpr uint16_t DimDark    = 0x4208;  // #404040 dark grey (inactive / behind traces)
+  constexpr uint16_t Highlight  = 0xF81D;  // Primary pink (= TraceA), selected value
 
   // ---- Layout ----
   constexpr int16_t W         = 240;  // Display width  in pixels
@@ -33,9 +34,16 @@ namespace Theme {
   constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (36 px)
   constexpr int16_t ParamY  = 196;  // selected-param readout, near bottom (20 px)
 
-  // FPS readout (14 px), top-left of the safe band — clear of the centered HUD.
-  constexpr int16_t FpsX    = 105;
-  constexpr int16_t FpsY    = 170;
+  // ---- Transient parameter band ----
+  // Acquisition settings are not on screen permanently: changing one raises a
+  // band across the middle of the face — blank (waveform masked out) between a
+  // grey rule top and bottom — holding the label over the value for BandHoldMs
+  // after the last input, then vanishing.
+  constexpr int16_t  BandTopY   = 94;    // upper rule
+  constexpr int16_t  BandBotY   = 166;   // lower rule
+  constexpr int16_t  BandLabelY = 100;   // label, top of text (14 px)
+  constexpr int16_t  BandValueY = 121;   // value, top of text (36 px + 20 px unit)
+  constexpr uint32_t BandHoldMs = 2000;  // time on screen after the last input
 
   // ---- Oscilloscope plot area ----
   // The round display is 240×240.  The waveform occupies the full 240×240 canvas;

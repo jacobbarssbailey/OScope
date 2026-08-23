@@ -5,6 +5,7 @@
 
 #include "Renderer.h"
 #include "Theme.h"
+#include "Icons.h"
 
 Renderer::Renderer(GC9A01A_t3n& t) : tft(t) {}
 
@@ -51,6 +52,43 @@ int16_t Renderer::textWidth(const char* s, const ILI9341_t3_font_t& font) {
     return tft.strPixelLen(s);
 }
 
+// The t3 font renderer treats the cursor Y as the top of the cap height, so
+// dropping the smaller font by the cap-height difference lands both strings on
+// the same baseline.
+static int16_t unitDrop(const ILI9341_t3_font_t& font,
+                        const ILI9341_t3_font_t& unitFont) {
+    return (int16_t)(font.cap_height - unitFont.cap_height);
+}
+
+int16_t Renderer::textUnitWidth(const char* main, const char* unit,
+                                const ILI9341_t3_font_t& font,
+                                const ILI9341_t3_font_t& unitFont,
+                                int16_t unitGap) {
+    int16_t w = textWidth(main, font);
+    if (unit && unit[0]) w = (int16_t)(w + unitGap + textWidth(unit, unitFont));
+    return w;
+}
+
+void Renderer::textUnit(int16_t x, int16_t y, const char* main,
+                        const char* unit, uint16_t color,
+                        const ILI9341_t3_font_t& font,
+                        const ILI9341_t3_font_t& unitFont, int16_t unitGap) {
+    const int16_t mw = textWidth(main, font);
+    text(x, y, main, color, font);
+    if (unit && unit[0])
+        text((int16_t)(x + mw + unitGap), (int16_t)(y + unitDrop(font, unitFont)),
+             unit, color, unitFont);
+}
+
+void Renderer::textUnitCenterX(int16_t y, const char* main, const char* unit,
+                               uint16_t color, const ILI9341_t3_font_t& font,
+                               const ILI9341_t3_font_t& unitFont,
+                               int16_t unitGap) {
+    const int16_t w = textUnitWidth(main, unit, font, unitFont, unitGap);
+    textUnit((int16_t)(Theme::CX - w / 2), y, main, unit, color, font, unitFont,
+             unitGap);
+}
+
 void Renderer::hline(int16_t x, int16_t y, int16_t w, uint16_t c) {
     tft.drawFastHLine(x, y, w, c);
 }
@@ -65,4 +103,32 @@ void Renderer::line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t col
 
 void Renderer::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
     tft.fillRect(x, y, w, h, color);
+}
+
+void Renderer::fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                             int16_t r, uint16_t color) {
+    tft.fillRoundRect(x, y, w, h, r, color);
+}
+
+void Renderer::drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h,
+                             int16_t r, uint16_t color) {
+    tft.drawRoundRect(x, y, w, h, r, color);
+}
+
+void Renderer::icon(int16_t x, int16_t y, const Icon& ic, uint16_t tint) {
+    const uint16_t tr = (tint >> 11) & 0x1F;
+    const uint16_t tg = (tint >> 5) & 0x3F;
+    const uint16_t tb = tint & 0x1F;
+    const uint8_t* p = ic.gray;
+    for (uint8_t row = 0; row < ic.h; ++row) {
+        for (uint8_t col = 0; col < ic.w; ++col) {
+            const uint8_t v = *p++;
+            if (v == 0) continue;                  // transparent
+            const uint16_t r = (uint16_t)(tr * v / 255);
+            const uint16_t g = (uint16_t)(tg * v / 255);
+            const uint16_t b = (uint16_t)(tb * v / 255);
+            tft.drawPixel((int16_t)(x + col), (int16_t)(y + row),
+                          (uint16_t)((r << 11) | (g << 5) | b));
+        }
+    }
 }

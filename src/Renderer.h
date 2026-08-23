@@ -11,6 +11,8 @@
 #include <GC9A01A_t3n.h>   // defines GC9A01A_t3n and ILI9341_t3_font_t
 #include <stdint.h>
 
+struct Icon;
+
 class Renderer {
 public:
     explicit Renderer(GC9A01A_t3n& t);
@@ -36,6 +38,30 @@ public:
     // Pixel width of a string in the given font (for manual layout).
     int16_t textWidth(const char* s, const ILI9341_t3_font_t& font);
 
+    // ---- Value + unit ("1000mv", "A4", "440Hz") ----
+    // A large main string with a smaller trailing unit, the two sharing a
+    // baseline: the unit is dropped by the difference in cap heights.  Used for
+    // every numeric readout in the UI, so they all set the same way.
+    // `unitGap` is the horizontal gap between main and unit.
+    static constexpr int16_t kUnitGap = 2;
+
+    // Combined width of "<main><unit>" as drawn by textUnit().
+    int16_t textUnitWidth(const char* main, const char* unit,
+                          const ILI9341_t3_font_t& font,
+                          const ILI9341_t3_font_t& unitFont,
+                          int16_t unitGap = kUnitGap);
+
+    // Draw "<main><unit>" with the main string's top-left at (x, y).
+    void textUnit(int16_t x, int16_t y, const char* main, const char* unit,
+                  uint16_t color, const ILI9341_t3_font_t& font,
+                  const ILI9341_t3_font_t& unitFont, int16_t unitGap = kUnitGap);
+
+    // Draw "<main><unit>" centered on the display, main's top at y.
+    void textUnitCenterX(int16_t y, const char* main, const char* unit,
+                         uint16_t color, const ILI9341_t3_font_t& font,
+                         const ILI9341_t3_font_t& unitFont,
+                         int16_t unitGap = kUnitGap);
+
     // Draw a horizontal line of width w starting at (x, y).
     void hline(int16_t x, int16_t y, int16_t w, uint16_t c);
 
@@ -47,6 +73,17 @@ public:
 
     // Fill a w×h rectangle with its top-left at (x, y).
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+
+    // Fill / outline a w×h rectangle with corner radius r.
+    void fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
+                       uint16_t color);
+    void drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
+                       uint16_t color);
+
+    // Blit an icon with its top-left at (x, y), tinted: each coverage byte
+    // scales `tint`, so white reproduces the source art and any other colour
+    // recolours it.  Fully transparent pixels are skipped.
+    void icon(int16_t x, int16_t y, const Icon& ic, uint16_t tint);
 
     // Direct reference to the underlying driver (for advanced use by screens).
     GC9A01A_t3n& tft;
