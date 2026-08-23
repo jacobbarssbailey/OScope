@@ -37,11 +37,14 @@ struct Settings {
 
 // ---- Editable setting descriptors (used by MenuScreen / EditValueScreen) ----
 // Every setting is a small discrete set, so adjust() cycles/toggles the value
-// and format() writes its current label.  Same shape as Parameter.
+// and format() writes its current label.  Same shape as Parameter: the value
+// and its unit are separate strings because they are set at different sizes on
+// a shared baseline ("440" + "Hz").  A setting with no unit leaves it empty.
 struct SettingItem {
     const char* name;
     void (*adjust)(Settings&, int8_t delta);
-    void (*format)(const Settings&, char* buf, uint8_t n);
+    void (*format)(const Settings&, char* val, uint8_t nv,
+                   char* unit, uint8_t nu);
 };
 
 // Access to the static descriptor table.
