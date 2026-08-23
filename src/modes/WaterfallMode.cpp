@@ -3,7 +3,8 @@
 #include "WaterfallMode.h"
 #include "../Theme.h"
 #include "../Acquisition.h"
-#include <string.h>   // memmove
+#include <string.h>   // memset
+#include <stdio.h>    // snprintf
 #include <math.h>
 
 // Linear ramp from the (black) background up to `color`, scaled by v/255 per
@@ -22,9 +23,17 @@ WaterfallMode::WaterfallMode() {
         _win[i] = 0.5f - 0.5f * cosf(2.0f * (float)M_PI * i / (kFFT - 1));
 
     for (int v = 0; v < 256; ++v) {
-        _lutA[v] = rampColor(Theme::TraceA, v);   // channel A: background -> green
-        _lutB[v] = rampColor(Theme::TraceB, v);   // channel B: background -> cyan
+        _lutA[v] = rampColor(Theme::TraceA, v);   // channel A: background -> pink
+        _lutB[v] = rampColor(Theme::TraceB, v);   // channel B: background -> periwinkle
     }
+
+    reshape();
+}
+
+void WaterfallMode::reshape() {
+    _cells = (_flow == Flow::Up) ? kCellsUp : kCellsOut;
+    _lines = (_flow == Flow::Up) ? kLinesUp : kLinesOut;
+    _head  = 0;
 
     // Fixed sample rate (shared with Spectrum): interval = timebase*GridCols/N
     // (integer µs), Fs = 1e6/interval.
@@ -34,17 +43,23 @@ WaterfallMode::WaterfallMode() {
     const float fs    = 1000000.0f / (float)interval;
     const float binHz = fs / (float)kFFT;
 
-    // Map each screen column to the nearest FFT bin across [kFminHz, kFmaxHz].
-    for (uint16_t x = 0; x < kW; ++x) {
-        const float freq = kFminHz + (x + 0.5f) * (kFmaxHz - kFminHz) / (float)kW;
+    // Map each frequency cell to the nearest FFT bin across [kFminHz, kFmaxHz].
+    for (uint16_t c = 0; c < _cells; ++c) {
+        const float freq = kFminHz + (c + 0.5f) * (kFmaxHz - kFminHz) / (float)_cells;
         int bin = (int)(freq / binHz + 0.5f);
         if (bin < 1) bin = 1;
         if (bin > kNBin) bin = kNBin;
-        _col2bin[x] = (uint8_t)(bin - 1);
+        _cell2bin[c] = (uint8_t)(bin - 1);
     }
 
-    memset(_histA, 0, sizeof _histA);
-    memset(_histB, 0, sizeof _histB);
+    memset(_hist, 0, sizeof _hist);
+}
+
+void WaterfallMode::channelPress(char* label, uint8_t nl, char* value, uint8_t nv) {
+    _flow = (_flow == Flow::Up) ? Flow::Out : Flow::Up;
+    reshape();
+    snprintf(label, nl, "flow");
+    snprintf(value, nv, _flow == Flow::Up ? "up" : "out");
 }
 
 void WaterfallMode::computeMag(const uint16_t* src, float* mag) {
@@ -71,30 +86,64 @@ uint8_t WaterfallMode::magToIntensity(float mag) const {
     return (uint8_t)(frac * 255.0f);
 }
 
-void WaterfallMode::pushRow(const float* mag, uint8_t (*hist)[kW], bool towardTop) {
-    // Precompute the intensity of each bin once, then fan out to the columns.
+void WaterfallMode::pushLine(const float* mag, uint8_t* hist) {
+    // Precompute the intensity of each bin once, then fan out to the cells.
     uint8_t intBin[kNBin];
     for (uint16_t k = 0; k < kNBin; ++k) intBin[k] = magToIntensity(mag[k]);
 
-    if (towardTop) {
-        // Channel A: shift rows toward row 0 (the top edge); newest at kRows-1.
-        memmove(&hist[0][0], &hist[1][0], (size_t)(kRows - 1) * kW);
-        uint8_t* row = hist[kRows - 1];
-        for (uint16_t x = 0; x < kW; ++x) row[x] = intBin[_col2bin[x]];
-    } else {
-        // Channel B: shift rows toward the bottom edge; newest at row 0.
-        memmove(&hist[1][0], &hist[0][0], (size_t)(kRows - 1) * kW);
-        uint8_t* row = hist[0];
-        for (uint16_t x = 0; x < kW; ++x) row[x] = intBin[_col2bin[x]];
-    }
+    uint8_t* line = hist + (size_t)_head * _cells;
+    for (uint16_t c = 0; c < _cells; ++c) line[c] = intBin[_cell2bin[c]];
 }
 
 void WaterfallMode::onFrame(const SampleBuffers& /*buf*/) {
     if (!_src || !_src->readNewestBlock(_rawA, _rawB, kFFT)) return;  // hold last
+
+    // Advance the ring once per frame; both channels share the time axis, so
+    // they write the same slot.
+    _head = (uint16_t)((_head + 1) % _lines);
     computeMag(_rawA, _mag);
-    pushRow(_mag, _histA, true);    // A grows toward the top
+    pushLine(_mag, _hist[0]);
     computeMag(_rawB, _mag);
-    pushRow(_mag, _histB, false);   // B grows toward the bottom
+    pushLine(_mag, _hist[1]);
+}
+
+// Flow::Up — frequency across X (rising toward each half's outer edge), time
+// down Y with the newest line at the bottom.
+void WaterfallMode::renderUp(uint16_t* fb) const {
+    for (uint16_t y = 0; y < kH; ++y) {
+        // Row 239 is the newest line; each row above it is one frame older.
+        const uint16_t age  = (uint16_t)(kH - 1 - y);
+        const uint16_t line = (uint16_t)((_head + _lines - age % _lines) % _lines);
+        const uint8_t* srcA = _hist[0] + (size_t)line * _cells;
+        const uint8_t* srcB = _hist[1] + (size_t)line * _cells;
+        uint16_t* dst = fb + (size_t)y * kW;
+        for (uint16_t c = 0; c < kHalf; ++c) {
+            dst[kHalf - 1 - c] = _lutA[srcA[c]];   // A: rises leftward
+            dst[kHalf + c]     = _lutB[srcB[c]];   // B: rises rightward
+        }
+    }
+}
+
+// Flow::Out — frequency up Y (lowest at the bottom), time across X with the
+// newest line at the centre and older lines toward both edges.
+void WaterfallMode::renderOut(uint16_t* fb) const {
+    // One line index per screen column: column 119/120 is the newest, and the
+    // age grows outward from there.  Hoisted out of the row loop.
+    uint16_t lineFor[kW];
+    for (uint16_t x = 0; x < kHalf; ++x) {
+        const uint16_t age = (uint16_t)(kHalf - 1 - x);
+        const uint16_t ln  = (uint16_t)((_head + _lines - age % _lines) % _lines);
+        lineFor[x]             = ln;   // left half (A), newest at the centre
+        lineFor[kW - 1 - x]    = ln;   // right half (B), mirrored
+    }
+    for (uint16_t y = 0; y < kH; ++y) {
+        const uint16_t cell = (uint16_t)(kH - 1 - y);   // row 239 = lowest frequency
+        uint16_t* dst = fb + (size_t)y * kW;
+        for (uint16_t x = 0; x < kHalf; ++x)
+            dst[x] = _lutA[_hist[0][(size_t)lineFor[x] * _cells + cell]];
+        for (uint16_t x = kHalf; x < kW; ++x)
+            dst[x] = _lutB[_hist[1][(size_t)lineFor[x] * _cells + cell]];
+    }
 }
 
 void WaterfallMode::render(Renderer& r, const ScopeState& /*state*/,
@@ -102,20 +151,11 @@ void WaterfallMode::render(Renderer& r, const ScopeState& /*state*/,
     uint16_t* fb = r.tft.getFrameBuffer();
     if (fb == nullptr) return;
 
-    // Channel A: history rows map straight to screen rows 0..kRows-1.
-    for (uint16_t i = 0; i < kRows; ++i) {
-        uint16_t* dst = fb + (int)i * kW;
-        const uint8_t* src = _histA[i];
-        for (uint16_t x = 0; x < kW; ++x) dst[x] = _lutA[src[x]];
-    }
-    // Channel B: rows map to screen rows kRows+2 .. (below the 2px centre band).
-    const uint16_t bTop = kRows + 2;   // 121
-    for (uint16_t i = 0; i < kRows; ++i) {
-        uint16_t* dst = fb + (int)(bTop + i) * kW;
-        const uint8_t* src = _histB[i];
-        for (uint16_t x = 0; x < kW; ++x) dst[x] = _lutB[src[x]];
-    }
-    // Centre divider (the 2px band between the two channels).
-    r.hline(Theme::PlotX, kRows, Theme::PlotW, Theme::Grid);
+    if (_flow == Flow::Up) renderUp(fb);
+    else                   renderOut(fb);
+
+    // Centre divider between the two channels.
+    r.vline(Theme::CX - 1, Theme::PlotY, Theme::PlotH, Theme::Grid);
+    r.vline(Theme::CX,     Theme::PlotY, Theme::PlotH, Theme::Grid);
     // HUD drawn by RunScreen on top afterward.
 }
