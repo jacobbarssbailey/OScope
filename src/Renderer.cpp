@@ -36,22 +36,19 @@ void Renderer::clear() {
 }
 
 void Renderer::fadeFrame(uint16_t keep) {
-    uint16_t* dst = tft.getFrameBuffer();
-    if (dst == nullptr) return;   // no framebuffer: nothing to fade
-    // Fade forward from the last displayed frame when one is set (double
-    // buffering), otherwise in place.
-    const uint16_t* src = _prev ? _prev : dst;
+    uint16_t* fb = tft.getFrameBuffer();
+    if (fb == nullptr) return;   // no framebuffer: nothing to fade
     const int n = Theme::W * Theme::H;
     for (int i = 0; i < n; ++i) {
-        const uint16_t px = src[i];
-        if (px == 0) { dst[i] = 0; continue; }   // background — the common case
+        const uint16_t px = fb[i];
+        if (px == 0) continue;   // already background — skip the common case
         uint16_t r = (px >> 11) & 0x1F;
         uint16_t g = (px >> 5) & 0x3F;
         uint16_t b = px & 0x1F;
         r = (uint16_t)((r * keep) >> 8);
         g = (uint16_t)((g * keep) >> 8);
         b = (uint16_t)((b * keep) >> 8);
-        dst[i] = (uint16_t)((r << 11) | (g << 5) | b);
+        fb[i] = (uint16_t)((r << 11) | (g << 5) | b);
     }
 }
 

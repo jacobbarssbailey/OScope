@@ -41,15 +41,6 @@
 // by accident, and the reporting code drops out entirely).
 #define ACQ_DIAG 0
 
-// ---- Display buffering ----
-// 1 = two framebuffers, blitted asynchronously: the next frame is drawn into
-// the back buffer while the previous one is still being DMA'd out of the front,
-// and the main loop keeps polling input and nudging acquisition instead of
-// blocking through the ~19 ms transfer.  Costs a second 115 KB buffer in
-// DMAMEM.  Set to 0 for one buffer and a blocking updateScreen() — the escape
-// hatch if the asynchronous path ever misbehaves on real hardware.
-#define DISPLAY_DOUBLE_BUFFER 1
-
 // ---- UI layout debugging ----
 // Set to 1 to overlay a 16 px ruler grid (anchored on the display centre, with
 // the centre axes picked out brighter) on top of every screen.  It is the

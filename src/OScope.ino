@@ -37,23 +37,9 @@
 #define GC9A01A_SPICLOCK       48000000
 #define GC9A01A_SPICLOCK_READ  2000000
 
-// Framebuffers: all drawing targets RAM, never the panel directly.
-//
-// With DISPLAY_DOUBLE_BUFFER the two are used front/back: the panel is fed from
-// the front buffer by DMA while the next frame is drawn into the back one, then
-// they swap.  The transfer is ~19 ms at 48 MHz (240*240*16 bits) and used to be
-// dead time — the CPU blocked in updateScreen() for it.  Now the frame costs
-// max(draw, blit) instead of draw + blit, and input and acquisition keep being
-// serviced throughout.
-// 32-byte aligned because updateScreenAsync() flushes the dcache over the whole
-// buffer before handing it to DMA, and cache maintenance works in lines.
-DMAMEM __attribute__((aligned(32))) uint16_t fb1[240 * 240];
-#if DISPLAY_DOUBLE_BUFFER
-DMAMEM __attribute__((aligned(32))) uint16_t fb2[240 * 240];
-uint16_t* frontBuffer = fb1;   // being displayed / blitted
-uint16_t* backBuffer  = fb2;   // being drawn into
-bool      framePending = false;  // back buffer holds a frame not yet handed over
-#endif
+// Framebuffer: all drawing targets this RAM buffer; tft.updateScreen() blits
+// it to the panel in one SPI burst.  Never draw directly to the panel.
+DMAMEM uint16_t fb1[240 * 240];
 
 GC9A01A_t3n tft(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK);
 
@@ -91,12 +77,6 @@ void setup() {
 
     tft.begin(GC9A01A_SPICLOCK, GC9A01A_SPICLOCK_READ);
     tft.setRotation(2);
-    // DMAMEM is not zero-initialised, and persistence reads the previous frame
-    // back, so start both buffers black rather than from whatever was in OCRAM.
-    memset(fb1, 0, sizeof fb1);
-#if DISPLAY_DOUBLE_BUFFER
-    memset(fb2, 0, sizeof fb2);
-#endif
     tft.setFrameBuffer(fb1);
     tft.useFrameBuffer(true);
 
@@ -114,20 +94,6 @@ void setup() {
 
     lastFpsTime = millis();
 }
-
-#if ACQ_DIAG
-// Slowest draw each second.  With double buffering this is draw time only —
-// the transfer overlaps the next frame's work, so it no longer caps fps.
-static void reportDrawTime(uint32_t drawUs) {
-    static uint32_t drawMaxUs = 0, drawRepMs = 0;
-    if (drawUs > drawMaxUs) drawMaxUs = drawUs;
-    if (millis() - drawRepMs >= 1000) {
-        Serial.printf("draw: max=%luus\n", (unsigned long)drawMaxUs);
-        drawMaxUs = 0;
-        drawRepMs = millis();
-    }
-}
-#endif
 
 #if UI_DEBUG_GRID
 // Layout ruler: 16 px lines anchored on the display centre (so the centre axes
@@ -161,45 +127,9 @@ void loop() {
     // 2. Advance the top screen's time-based work (non-blocking acquisition).
     const bool newFrame = screens.tick(ctx);
 
-    // 3. Redraw only when there is something new to show — gating this is what
-    //    keeps the UI responsive at long timebases.
-#if DISPLAY_DOUBLE_BUFFER
-    if (!framePending && (uiDirty || newFrame)) {
-#if ACQ_DIAG
-        const uint32_t drawStart = micros();
-#endif
-        // Draw into the back buffer.  The front one may still be mid-transfer;
-        // it is a different block of memory and the running DMA reads its own
-        // descriptors, so retargeting the driver here is safe.
-        tft.setFrameBuffer(backBuffer);
-        renderer.setPreviousFrame(frontBuffer);
-        screens.draw(renderer, ctx);
-
-#if UI_DEBUG_GRID
-        drawDebugGrid(renderer);
-#endif
-#if ACQ_DIAG
-        reportDrawTime(micros() - drawStart);
-#endif
-        framePending = true;
-        uiDirty      = false;
-    }
-
-    // 4. Hand the finished frame over once the previous transfer has drained.
-    //    Deliberately a poll rather than waitUpdateAsyncComplete(): until the
-    //    panel is ready the loop falls through and keeps draining input and
-    //    nudging acquisition instead of spinning.
-    //    Only swap once the transfer has actually been accepted; if it were
-    //    refused the frame would otherwise be dropped and the buffers rotated
-    //    out from under it.
-    if (framePending && !tft.asyncUpdateActive() && tft.updateScreenAsync()) {
-        uint16_t* done = frontBuffer;
-        frontBuffer = backBuffer;   // now on its way to the panel
-        backBuffer  = done;         // free to draw into next time round
-        framePending = false;
-        countFrame();
-    }
-#else
+    // 3. Redraw + blit only when there is something new to show.  The full-frame
+    //    blit (~10-15 ms) is the loop's one expensive step; gating it here is
+    //    what keeps the UI responsive at long timebases.
     if (uiDirty || newFrame) {
 #if ACQ_DIAG
         const uint32_t drawStart = micros();
@@ -213,10 +143,19 @@ void loop() {
         tft.updateScreen();
 
 #if ACQ_DIAG
-        reportDrawTime(micros() - drawStart);
+        // Track the slowest draw+blit each second — this is the time the loop
+        // spends not reading the capture rings, and it is what caps fps.
+        static uint32_t drawMaxUs = 0, drawRepMs = 0;
+        const uint32_t drawUs = micros() - drawStart;
+        if (drawUs > drawMaxUs) drawMaxUs = drawUs;
+        if (millis() - drawRepMs >= 1000) {
+            Serial.printf("draw: max=%lums\n", (unsigned long)(drawMaxUs / 1000));
+            drawMaxUs = 0;
+            drawRepMs = millis();
+        }
 #endif
+
         countFrame();
         uiDirty = false;
     }
-#endif
 }

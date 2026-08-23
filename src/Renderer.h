@@ -20,12 +20,6 @@ public:
     // Fill the framebuffer with the background color.
     void clear();
 
-    // Point fadeFrame() at the buffer holding the last displayed frame.  With
-    // double buffering the buffer being drawn into holds the frame from two ago,
-    // so persistence has to fade forward from the displayed one rather than in
-    // place or the trail builds from every other frame.  nullptr = fade in place.
-    void setPreviousFrame(const uint16_t* prev) { _prev = prev; }
-
     // Fade the whole framebuffer toward the (black) background by keep/256 per
     // RGB565 channel — used instead of clear() for persistence/phosphor display.
     // keep == 256 leaves the frame unchanged; smaller values decay faster.
@@ -107,7 +101,4 @@ public:
 
     // Direct reference to the underlying driver (for advanced use by screens).
     GC9A01A_t3n& tft;
-
-private:
-    const uint16_t* _prev = nullptr;   // last displayed frame, for fadeFrame()
 };
