@@ -1,19 +1,14 @@
-// Fonts.h — Anti-aliased t3 fonts for the UI (Arial 13 / 16 / 24).
+// Fonts.h — UI typeface for the design refresh: Inter Bold Italic.
 //
-// The three UI sizes chosen on hardware:
-//   Arial_13 — small (FPS, hints)
-//   Arial_16 — default (readouts, menu items, STOP indicator)
-//   Arial_24 — large (mode flash)
-//
-// font_Arial.h ships with the Teensy ILI9341_t3 library.  It #includes
-// "ILI9341_t3.h" only to obtain the ILI9341_t3_font_t struct — but GC9A01A_t3n
-// already defines that struct, so we pre-define ILI9341_t3.h's include guard to
-// skip it and avoid a duplicate-struct compile error.
+// Packaged into the GC9A01A_t3n / ILI9341_t3 anti-aliased font system at four
+// sizes (see font_Inter.{h,cpp}).  Screens reference the semantic aliases below
+// rather than raw size names, so the size scale can be retuned in one place.
 #pragma once
 
-#include <GC9A01A_t3n.h>   // defines ILI9341_t3_font_t (via ILI9341_fonts.h)
+#include <GC9A01A_t3n.h>   // defines ILI9341_t3_font_t
+#include "font_Inter.h"
 
-#ifndef _ILI9341_t3H_
-#  define _ILI9341_t3H_
-#endif
-#include "font_Arial.h"
+#define FONT_SMALL  Inter_14_Bold_Italic   // FPS readout, bottom hint lines
+#define FONT_BODY   Inter_20_Bold_Italic   // readouts, menu items, indicators
+#define FONT_LARGE  Inter_36_Bold_Italic   // mode flash, edit value
+#define FONT_HUGE   Inter_42_Bold_Italic   // tuner hero readout

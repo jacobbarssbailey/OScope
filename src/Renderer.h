@@ -5,11 +5,13 @@
 // screens have finished drawing.  Screens draw exclusively through Renderer.
 //
 // Text is rendered with anti-aliased t3 fonts (see Fonts.h) — callers pass the
-// font (e.g. Arial_16) rather than a size multiplier.
+// font (e.g. FONT_BODY) rather than a size multiplier.
 #pragma once
 
 #include <GC9A01A_t3n.h>   // defines GC9A01A_t3n and ILI9341_t3_font_t
 #include <stdint.h>
+
+struct Icon;
 
 class Renderer {
 public:
@@ -33,6 +35,33 @@ public:
     void textCenterX(int16_t y, const char* s, uint16_t color,
                      const ILI9341_t3_font_t& font);
 
+    // Pixel width of a string in the given font (for manual layout).
+    int16_t textWidth(const char* s, const ILI9341_t3_font_t& font);
+
+    // ---- Value + unit ("1000mv", "A4", "440Hz") ----
+    // A large main string with a smaller trailing unit, the two sharing a
+    // baseline: the unit is dropped by the difference in cap heights.  Used for
+    // every numeric readout in the UI, so they all set the same way.
+    // `unitGap` is the horizontal gap between main and unit.
+    static constexpr int16_t kUnitGap = 2;
+
+    // Combined width of "<main><unit>" as drawn by textUnit().
+    int16_t textUnitWidth(const char* main, const char* unit,
+                          const ILI9341_t3_font_t& font,
+                          const ILI9341_t3_font_t& unitFont,
+                          int16_t unitGap = kUnitGap);
+
+    // Draw "<main><unit>" with the main string's top-left at (x, y).
+    void textUnit(int16_t x, int16_t y, const char* main, const char* unit,
+                  uint16_t color, const ILI9341_t3_font_t& font,
+                  const ILI9341_t3_font_t& unitFont, int16_t unitGap = kUnitGap);
+
+    // Draw "<main><unit>" centered on the display, main's top at y.
+    void textUnitCenterX(int16_t y, const char* main, const char* unit,
+                         uint16_t color, const ILI9341_t3_font_t& font,
+                         const ILI9341_t3_font_t& unitFont,
+                         int16_t unitGap = kUnitGap);
+
     // Draw a horizontal line of width w starting at (x, y).
     void hline(int16_t x, int16_t y, int16_t w, uint16_t c);
 
@@ -42,8 +71,33 @@ public:
     // Draw an arbitrary line from (x0, y0) to (x1, y1).
     void line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 
+    // Antialiased line between two Q8 fixed-point endpoints (see Mapping::FRAC).
+    // Sub-pixel endpoints are the point: fed whole-pixel coordinates it has
+    // nothing to blend and degenerates to a plain line with soft interiors.
+    void lineAA(int32_t x0, int32_t y0, int32_t x1, int32_t y1, uint16_t color);
+
     // Fill a w×h rectangle with its top-left at (x, y).
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+
+    // Fill / outline a w×h rectangle with corner radius r.  Both are shaded
+    // from the same distance field, so the corners come out antialiased.
+    void fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
+                       uint16_t color);
+    void drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
+                       uint16_t color);
+    // Shared implementation: `outline` <= 0 fills, otherwise it inks a band
+    // that many pixels wide just inside the edge.
+    void roundRectShaded(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
+                         uint16_t color, float outline);
+
+    // Draw a `thickness`-px ring of outer radius r, concentric with the round
+    // face.  `dashes` breaks it into that many evenly spaced dashes (0 = solid).
+    void ring(int16_t r, int16_t thickness, uint16_t color, uint8_t dashes = 0);
+
+    // Blit an icon with its top-left at (x, y), tinted: each coverage byte
+    // scales `tint`, so white reproduces the source art and any other colour
+    // recolours it.  Fully transparent pixels are skipped.
+    void icon(int16_t x, int16_t y, const Icon& ic, uint16_t tint);
 
     // Direct reference to the underlying driver (for advanced use by screens).
     GC9A01A_t3n& tft;

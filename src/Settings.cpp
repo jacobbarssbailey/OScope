@@ -5,9 +5,7 @@
 #include <EEPROM.h>
 
 void Settings::defaults() {
-    trigSource = TrigSource::A;
     trigEdge   = TrigEdge::Rising;
-    trigMode   = TrigMode::Auto;
     a4_hz      = 440;
     persist    = 0;
 }
@@ -19,14 +17,12 @@ void Settings::defaults() {
 
 static constexpr int      kEEAddr  = 0;
 static constexpr uint16_t kMagic   = 0x05C0;   // "OScope settings"
-static constexpr uint8_t  kVersion = 6;   // bumped: removed grid
+static constexpr uint8_t  kVersion = 7;   // bumped: removed trigSource + trigMode
 
 struct StoredSettings {
     uint16_t   magic;
     uint8_t    version;
-    TrigSource trigSource;
     TrigEdge   trigEdge;
-    TrigMode   trigMode;
     uint16_t   a4_hz;
     uint8_t    persist;
 };
@@ -35,9 +31,7 @@ void Settings::load() {
     StoredSettings s;
     EEPROM.get(kEEAddr, s);
     if (s.magic == kMagic && s.version == kVersion) {
-        trigSource = s.trigSource;
         trigEdge   = s.trigEdge;
-        trigMode   = s.trigMode;
         a4_hz      = s.a4_hz;
         persist    = s.persist;
     } else {
@@ -47,33 +41,19 @@ void Settings::load() {
 }
 
 void Settings::save() const {
-    StoredSettings s{kMagic, kVersion, trigSource, trigEdge, trigMode,
-                     a4_hz, persist};
+    StoredSettings s{kMagic, kVersion, trigEdge, a4_hz, persist};
     EEPROM.put(kEEAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 
 // ---- Per-setting adjust/format helpers -----------------------------------
-// Each setting is a two-state toggle, so any nonzero encoder delta flips it.
 
-static void adjSource(Settings& s, int8_t d) {
-    if (d) s.trigSource = (s.trigSource == TrigSource::A) ? TrigSource::B : TrigSource::A;
-}
-static void fmtSource(const Settings& s, char* b, uint8_t n) {
-    snprintf(b, n, "%s", s.trigSource == TrigSource::A ? "A" : "B");
-}
-
+// Trigger edge: a two-state toggle, so any nonzero encoder delta flips it.
 static void adjEdge(Settings& s, int8_t d) {
     if (d) s.trigEdge = (s.trigEdge == TrigEdge::Rising) ? TrigEdge::Falling : TrigEdge::Rising;
 }
-static void fmtEdge(const Settings& s, char* b, uint8_t n) {
-    snprintf(b, n, "%s", s.trigEdge == TrigEdge::Rising ? "Rising" : "Falling");
-}
-
-static void adjMode(Settings& s, int8_t d) {
-    if (d) s.trigMode = (s.trigMode == TrigMode::Auto) ? TrigMode::Normal : TrigMode::Auto;
-}
-static void fmtMode(const Settings& s, char* b, uint8_t n) {
-    snprintf(b, n, "%s", s.trigMode == TrigMode::Auto ? "Auto" : "Normal");
+static void fmtEdge(const Settings& s, char* b, uint8_t n, char* unit, uint8_t nu) {
+    snprintf(b, n, "%s", s.trigEdge == TrigEdge::Rising ? "rising" : "falling");
+    if (nu) unit[0] = '\0';
 }
 
 // A4 tuner reference: ±1 Hz per detent over the usual instrument range.
@@ -83,8 +63,9 @@ static void adjA4(Settings& s, int8_t d) {
     if (v > 480) v = 480;
     s.a4_hz = (uint16_t)v;
 }
-static void fmtA4(const Settings& s, char* b, uint8_t n) {
-    snprintf(b, n, "%u Hz", s.a4_hz);
+static void fmtA4(const Settings& s, char* b, uint8_t n, char* unit, uint8_t nu) {
+    snprintf(b, n, "%u", s.a4_hz);
+    snprintf(unit, nu, "Hz");
 }
 
 // Trace persistence: four levels, stepped (not wrapped) by the encoder.
@@ -94,19 +75,20 @@ static void adjPersist(Settings& s, int8_t d) {
     if (v > 3) v = 3;
     s.persist = (uint8_t)v;
 }
-static void fmtPersist(const Settings& s, char* b, uint8_t n) {
-    static const char* kNames[4] = {"Off", "Short", "Med", "Long"};
+static void fmtPersist(const Settings& s, char* b, uint8_t n, char* unit, uint8_t nu) {
+    static const char* kNames[4] = {"off", "short", "med", "long"};
     snprintf(b, n, "%s", kNames[s.persist <= 3 ? s.persist : 0]);
+    if (nu) unit[0] = '\0';
 }
 
 
 // ---- Descriptor table -----------------------------------------------------
+// Names are kept short: the menu sets them right-aligned against the values, so
+// a long name crowds the value rather than wrapping.
 static const SettingItem kItems[] = {
-    { "Trig Src",  adjSource,  fmtSource  },
-    { "Trig Edge", adjEdge,    fmtEdge    },
-    { "Trig Mode", adjMode,    fmtMode    },
-    { "A4 Tune",   adjA4,      fmtA4      },
-    { "Persist",   adjPersist, fmtPersist },
+    { "edge",    adjEdge,    fmtEdge    },
+    { "A4",      adjA4,      fmtA4      },
+    { "persist", adjPersist, fmtPersist },
 };
 
 const SettingItem* settingItems() { return kItems; }

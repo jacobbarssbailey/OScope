@@ -2,8 +2,9 @@
 //
 // Each EncoderParam has a name, an adjust() function that steps the value in
 // the ScopeState by a signed encoder detent, and a format() function that
-// writes a human-readable string (e.g. "500 us/div") into a caller-supplied
-// buffer.  All descriptors live in a static table — no heap allocation.
+// writes the current value and its unit as two strings ("500" + "us/div").
+// They are kept separate because the readout band sets them at different sizes
+// on a shared baseline.  All descriptors live in a static table — no heap.
 //
 // Key rules:
 //   - paramAppliesInMode(): Triggered → all three; Rolling and XY → Timebase +
@@ -21,9 +22,11 @@
 // Descriptor for one encoder-controlled parameter.
 struct Parameter {
     EncoderParam id;
-    const char*  name;
+    const char*  name;   // band label, e.g. "trigger"
     void (*adjust)(ScopeState&, int8_t delta);
-    void (*format)(const ScopeState&, char* buf, uint8_t n);
+    // Write the current value ("1.5") and its unit ("ms/div") separately.
+    void (*format)(const ScopeState&, char* val, uint8_t nv,
+                   char* unit, uint8_t nu);
 };
 
 // Return the descriptor for a given EncoderParam id.

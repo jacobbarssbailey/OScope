@@ -12,11 +12,16 @@ namespace Theme {
   constexpr uint16_t Background = 0x0000;  // Black
   constexpr uint16_t Grid       = 0x18E3;  // Dark grey-green
   constexpr uint16_t Frame      = 0xFFFF;  // White
-  constexpr uint16_t TraceA     = 0x07E0;  // Green (channel A)
-  constexpr uint16_t TraceB     = 0x07FF;  // Cyan  (channel B)
+  constexpr uint16_t TraceA     = 0xF81D;  // #FF03EA magenta (channel A)
+  constexpr uint16_t TraceB     = 0x5B7D;  // #5B6CED periwinkle (channel B)
   constexpr uint16_t Text       = 0xFFFF;  // White
-  constexpr uint16_t Dim        = 0xC618;  // Light grey (secondary labels)
-  constexpr uint16_t Highlight  = 0xFFE0;  // Yellow (selected item)
+  constexpr uint16_t Dim        = 0x8C71;  // #8E8E8E light grey (secondary labels)
+  constexpr uint16_t DimDark    = 0x4208;  // #404040 dark grey (inactive / behind traces)
+  constexpr uint16_t Highlight  = 0xF81D;  // Primary pink (= TraceA), selected value
+  // #FF6900 orange — the run-state ring.  Warm enough to read as "halted" while
+  // sitting ~80 deg of hue away from the pink trace; a true red would be only
+  // ~55 deg off and vibrate against it.  Quantises to RGB565 exactly.
+  constexpr uint16_t Stopped    = 0xFB40;
 
   // ---- Layout ----
   constexpr int16_t W         = 240;  // Display width  in pixels
@@ -25,17 +30,30 @@ namespace Theme {
   constexpr int16_t CY        = 120;  // Centre Y
   constexpr int16_t SafeInset = 30;   // Min margin from edge for readable content
 
-  // ---- RunScreen HUD positions (v2, anti-aliased Arial fonts) ----
+  // ---- RunScreen HUD positions (v2, Inter Bold Italic) ----
   // The waveform fills the whole canvas; the HUD is minimal and mostly hidden.
   // All these readouts are horizontally centered (textCenterX); the Y here is the
   // top of the text.  Tuned for the round face — kept clear of the edges.
-  constexpr int16_t StopY   = 20;   // "STOP"/"ARM" top indicator (Arial 16)
-  constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (Arial 24)
-  constexpr int16_t ParamY  = 196;  // selected-param readout, near bottom (Arial 16)
+  constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (36 px)
 
-  // FPS readout (Arial 13), top-left of the safe band — clear of the centered HUD.
-  constexpr int16_t FpsX    = 105;
-  constexpr int16_t FpsY    = 170;
+  // ---- Run-state ring ----
+  // Halted state is shown as a border around the bezel rather than a word in
+  // the middle of the trace: solid when frozen, dashed while a single-shot is
+  // armed.  Inset one pixel so a hair of physical bezel cannot swallow it.
+  constexpr int16_t RunRingR     = 119;  // outer radius
+  constexpr int16_t RunRingW     = 2;    // thickness
+  constexpr uint8_t RunRingDashes = 12;  // dashes around the ring when armed
+
+  // ---- Transient parameter band ----
+  // Acquisition settings are not on screen permanently: changing one raises a
+  // band across the middle of the face — blank (waveform masked out) between a
+  // grey rule top and bottom — holding the label over the value for BandHoldMs
+  // after the last input, then vanishing.
+  constexpr int16_t  BandTopY   = 94;    // upper rule
+  constexpr int16_t  BandBotY   = 166;   // lower rule
+  constexpr int16_t  BandLabelY = 100;   // label, top of text (14 px)
+  constexpr int16_t  BandValueY = 121;   // value, top of text (36 px + 20 px unit)
+  constexpr uint32_t BandHoldMs = 2000;  // time on screen after the last input
 
   // ---- Oscilloscope plot area ----
   // The round display is 240×240.  The waveform occupies the full 240×240 canvas;

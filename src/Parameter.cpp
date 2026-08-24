@@ -76,22 +76,27 @@ static void adjTime(ScopeState& s, int8_t d) {
 }
 
 // Render the timebase with one decimal for non-integer values (e.g. 1500 µs →
-// "1.5 ms/div").  µs below 1 ms, ms below 1 s, seconds at/above 1 s.
-static void fmtTime(const ScopeState& s, char* b, uint8_t n) {
+// "1.5" + "ms/div").  µs below 1 ms, ms below 1 s, seconds at/above 1 s.
+static void fmtTime(const ScopeState& s, char* b, uint8_t n,
+                    char* unit, uint8_t nu) {
     const uint32_t us = s.timebase();
+    uint32_t whole, tenths;
     if (us >= 1000000) {
-        uint32_t whole  = us / 1000000;
-        uint32_t tenths = (us % 1000000) / 100000;
-        if (tenths == 0) snprintf(b, n, "%lu s/div", (unsigned long)whole);
-        else             snprintf(b, n, "%lu.%lu s/div", (unsigned long)whole, (unsigned long)tenths);
+        whole  = us / 1000000;
+        tenths = (us % 1000000) / 100000;
+        snprintf(unit, nu, "s/div");
     } else if (us >= 1000) {
-        uint32_t whole  = us / 1000;
-        uint32_t tenths = (us % 1000) / 100;   // step table never goes finer than 0.1 ms
-        if (tenths == 0) snprintf(b, n, "%lu ms/div", (unsigned long)whole);
-        else             snprintf(b, n, "%lu.%lu ms/div", (unsigned long)whole, (unsigned long)tenths);
+        whole  = us / 1000;
+        tenths = (us % 1000) / 100;   // step table never goes finer than 0.1 ms
+        snprintf(unit, nu, "ms/div");
     } else {
-        snprintf(b, n, "%lu us/div", (unsigned long)us);
+        whole  = us;
+        tenths = 0;
+        snprintf(unit, nu, "us/div");
     }
+    if (tenths == 0) snprintf(b, n, "%lu", (unsigned long)whole);
+    else             snprintf(b, n, "%lu.%lu", (unsigned long)whole,
+                              (unsigned long)tenths);
 }
 
 // ---- Voltage scale (50 mV/div … 5 V/div, 12 steps) -----------------------
@@ -122,18 +127,19 @@ static void adjVScale(ScopeState& s, int8_t d) {
 // ch1 for B.  In Both mode ch0 is shown (both channels are edited together,
 // so either would be accurate; ch0 is the conventional lead channel).
 // Values ≥ 1 V show in volts (with one decimal for fractional values).
-static void fmtVScale(const ScopeState& s, char* b, uint8_t n) {
+static void fmtVScale(const ScopeState& s, char* b, uint8_t n,
+                      char* unit, uint8_t nu) {
     uint8_t c = (s.channel == ChannelSel::B) ? 1 : 0;
     uint16_t mv = s.vscale_mv_per_div[c];
     if (mv >= 1000) {
         uint16_t whole = mv / 1000;
         uint16_t tenths = (mv % 1000) / 100;   // step table never finer than 0.1 V
-        if (tenths == 0)
-            snprintf(b, n, "%u V/div", whole);
-        else
-            snprintf(b, n, "%u.%u V/div", whole, tenths);
+        snprintf(unit, nu, "v/div");
+        if (tenths == 0) snprintf(b, n, "%u", whole);
+        else             snprintf(b, n, "%u.%u", whole, tenths);
     } else {
-        snprintf(b, n, "%u mV/div", mv);
+        snprintf(unit, nu, "mv/div");
+        snprintf(b, n, "%u", mv);
     }
 }
 
@@ -159,8 +165,10 @@ static void adjTrig(ScopeState& s, int8_t d) {
         -range, range);
 }
 
-static void fmtTrig(const ScopeState& s, char* b, uint8_t n) {
-    snprintf(b, n, "%d mV", s.trigger_level_mv);
+static void fmtTrig(const ScopeState& s, char* b, uint8_t n,
+                    char* unit, uint8_t nu) {
+    snprintf(b, n, "%d", s.trigger_level_mv);
+    snprintf(unit, nu, "mv");
 }
 
 // ---- Static descriptor table (order matches EncoderParam enum) ------------
@@ -173,9 +181,9 @@ static_assert((uint8_t)EncoderParam::VScale == 1, "kParams order must match Enco
 static_assert((uint8_t)EncoderParam::TriggerLevel == 2, "kParams order must match EncoderParam");
 
 static const Parameter kParams[] = {
-    { EncoderParam::Timebase,     "Time",   adjTime,   fmtTime   },
-    { EncoderParam::VScale,       "V/div",  adjVScale, fmtVScale },
-    { EncoderParam::TriggerLevel, "Trig",   adjTrig,   fmtTrig   },
+    { EncoderParam::Timebase,     "time",    adjTime,   fmtTime   },
+    { EncoderParam::VScale,       "volts",   adjVScale, fmtVScale },
+    { EncoderParam::TriggerLevel, "trigger", adjTrig,   fmtTrig   },
 };
 
 // ---- Public API -----------------------------------------------------------

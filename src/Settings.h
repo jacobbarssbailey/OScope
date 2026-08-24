@@ -12,14 +12,12 @@
 
 #include <stdint.h>
 
-enum class TrigSource : uint8_t { A, B };
-enum class TrigEdge   : uint8_t { Rising, Falling };
-enum class TrigMode   : uint8_t { Auto, Normal };
+enum class TrigEdge : uint8_t { Rising, Falling };
 
 struct Settings {
-    TrigSource trigSource = TrigSource::A;
+    // Trigger source is always channel A and the mode is always auto; only the
+    // edge is user-selectable.
     TrigEdge   trigEdge   = TrigEdge::Rising;
-    TrigMode   trigMode   = TrigMode::Auto;
     uint16_t   a4_hz      = 440;   // Tuner reference: frequency of note A4
     uint8_t    persist    = 0;     // trace persistence: 0=Off,1=Short,2=Med,3=Long
 
@@ -39,11 +37,14 @@ struct Settings {
 
 // ---- Editable setting descriptors (used by MenuScreen / EditValueScreen) ----
 // Every setting is a small discrete set, so adjust() cycles/toggles the value
-// and format() writes its current label.  Same shape as Parameter.
+// and format() writes its current label.  Same shape as Parameter: the value
+// and its unit are separate strings because they are set at different sizes on
+// a shared baseline ("440" + "Hz").  A setting with no unit leaves it empty.
 struct SettingItem {
     const char* name;
     void (*adjust)(Settings&, int8_t delta);
-    void (*format)(const Settings&, char* buf, uint8_t n);
+    void (*format)(const Settings&, char* val, uint8_t nv,
+                   char* unit, uint8_t nu);
 };
 
 // Access to the static descriptor table.

@@ -57,7 +57,7 @@ private:
     float analyze(const uint16_t* raw);
     // Fold a new reading into a smoothed estimate (snap on a big jump).
     static float smooth(float prev, float fresh);
-    // Draw one channel's readout in a half of the display.
+    // Draw one channel's readout (big glyph + subscript) and its cents meter.
     void drawChannel(Renderer& r, float freq, uint16_t color,
-                     int16_t bigY, int16_t barY) const;
+                     int16_t bigY, int16_t meterY) const;
 };

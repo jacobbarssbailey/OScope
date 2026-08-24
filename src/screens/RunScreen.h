@@ -49,10 +49,32 @@ private:
     bool     _stateDirty  = false;
     uint32_t _lastChangeMs = 0;
 
+    // A sweep has been published since the last render.  The active mode folds
+    // it in at draw time rather than when it is acquired, so the per-frame
+    // analysis runs once per displayed frame instead of once per capture — see
+    // the note in tick().
+    bool     _framePending = false;
+
     // Mode-change flash: the large mode label is shown centered for a short time
     // after a mode change, then hidden so it doesn't obscure the waveform.
     bool     _modeFlash   = false;
     uint32_t _modeFlashMs = 0;
+
+    // Transient parameter band: acquisition settings are off screen until one is
+    // selected or changed, then the band holds "<label> / <value><unit>" across
+    // the middle of the face for Theme::BandHoldMs after the last input.
+    char     _bandLabel[12] = {0};
+    char     _bandValue[12] = {0};
+    char     _bandUnit[10]  = {0};
+    bool     _band          = false;
+    uint32_t _bandMs        = 0;
+
+    // Raise the band with the given readout (empty label/value = no band).
+    void showBand(const char* label, const char* value, const char* unit);
+    // Raise the band for the currently selected shared parameter, if one applies.
+    void showSelectedParam(const ScopeState& s);
+    // True while the band is still within its hold time.
+    bool bandActive() const;
 
     Screen*       _menu = nullptr;
     Acquisition   _acq;

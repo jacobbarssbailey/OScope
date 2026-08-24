@@ -62,19 +62,35 @@ public:
     virtual void render(Renderer& r, const ScopeState& state,
                         const SampleBuffers& buf) = 0;
 
-    // Called exactly once each time a new sweep completes, before render.
-    // Modes that accumulate cross-frame history (Rolling) ingest it here so a
-    // UI-triggered redraw never double-counts the same frame.  Default: no-op.
+    // Called at most once per rendered frame, immediately before render(), and
+    // only when a new sweep has been published since the last one — so a
+    // UI-triggered redraw never double-counts a frame, and sweeps acquired
+    // faster than the display can show them collapse into the freshest.
+    //
+    // This is where per-frame analysis belongs (Tuner's YIN, Spectrum's and
+    // Waterfall's FFT).  It is deliberately tied to the *display* rate, not the
+    // acquisition rate: YIN costs 8 ms, and running it per published sweep put
+    // the CPU at 99% once the display transfer stopped throttling the loop.
     virtual void onFrame(const SampleBuffers& /*buf*/) {}
 
     // --- Optional mode-owned encoder parameters ---
-    // A mode with its own adjustable parameters (Spectrum) returns true here;
+    // A mode with its own adjustable parameter (Tuner) returns true here;
     // RunScreen then routes the encoder button (cycle to next param) and the
     // encoder rotation (adjust the selected param) to this mode instead of the
-    // shared Timebase/V-div/Trigger set, and shows formatParam() as the bottom
-    // readout.  Default: the mode has no parameters of its own.
+    // shared Timebase/V-div/Trigger set.  Default: the mode has no parameters
+    // of its own.
     virtual bool ownsEncoder() const { return false; }
     virtual void encoderPress() {}
     virtual void encoderTurn(int8_t /*delta*/) {}
-    virtual void formatParam(char* buf, uint8_t n) const { if (n) buf[0] = '\0'; }
+
+    // --- Optional mode-owned B2 (Channel) button ---
+    // A mode that repurposes the otherwise-unused B2 short press (Waterfall's
+    // flow direction) returns true here and handles it in channelPress(), which
+    // fills label/value with a readout for RunScreen's parameter band — leave
+    // them empty to raise no band.  Default: B2 does nothing.
+    virtual bool ownsChannelButton() const { return false; }
+    virtual void channelPress(char* label, uint8_t nl, char* value, uint8_t nv) {
+        if (nl) label[0] = '\0';
+        if (nv) value[0] = '\0';
+    }
 };
