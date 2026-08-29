@@ -95,21 +95,6 @@ void setup() {
     lastFpsTime = millis();
 }
 
-#if UI_DEBUG_GRID
-// Layout ruler: 16 px lines anchored on the display centre (so the centre axes
-// land on a line), drawn over everything.  The centre axes are brighter so the
-// eye can count divisions outward from them.
-static void drawDebugGrid(Renderer& r) {
-    for (int16_t d = 0; d <= Theme::CX; d += 16) {
-        const uint16_t c = (d == 0) ? Theme::Dim : Theme::DimDark;
-        r.vline((int16_t)(Theme::CX - d), 0, Theme::H, c);
-        r.vline((int16_t)(Theme::CX + d), 0, Theme::H, c);
-        r.hline(0, (int16_t)(Theme::CY - d), Theme::W, c);
-        r.hline(0, (int16_t)(Theme::CY + d), Theme::W, c);
-    }
-}
-#endif
-
 // Redraw only when something changed: a handled input event (UI dirty) or a
 // newly completed acquisition frame.  Between those the loop just polls input
 // and nudges acquisition, so iterations are microseconds long and input stays
@@ -135,11 +120,6 @@ void loop() {
         const uint32_t drawStart = micros();
 #endif
         screens.draw(renderer, ctx);
-
-#if UI_DEBUG_GRID
-        drawDebugGrid(renderer);
-#endif
-
         tft.updateScreen();
 
 #if ACQ_DIAG

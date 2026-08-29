@@ -93,16 +93,17 @@ Type is Inter Bold Italic at four sizes (`src/Fonts.h` → `src/font_Inter.cpp`)
 through semantic aliases (`FONT_BODY`, not `Inter_20_Bold_Italic`). The t3 font renderer
 treats the cursor Y as the **top of the cap height**, so `y` positions a capital's top edge
 and `Renderer::textUnit()` uses the cap-height difference to sit a smaller unit on the same
-baseline. `src/Icons.*` holds generated 8-bit coverage masks for the button glyphs; tinting
-one white reproduces the source art exactly.
+baseline. `src/Icons.*` holds 8-bit coverage masks for the button and parameter glyphs;
+tinting one white reproduces the source art exactly, and tinting it `Theme::Dim` reproduces
+the design's grey variant, so only the white master is stored. Regenerate with
+`python3 tools/icons/gen_icons.py` after dropping new art in `tools/icons/art/` — never
+hand-edit `Icons.cpp`.
 
-Two aids for checking layout against design mockups:
-
-- `just preview` (`tools/preview/`) rasterises the real glyph data on the host and renders
-  each screen to a PNG, so positions can be checked without a flash cycle. It scrapes the
-  layout constants out of the C++ sources, but each screen's `draw()` is transcribed by
-  hand — change a screen's structure and the preview needs the same change.
-- `UI_DEBUG_GRID` in `src/Config.h`, set to 1, overlays a 16 px ruler on the device itself.
+Layout is checked against design mockups on the host, not on the device: `just preview`
+(`tools/preview/`) rasterises the real glyph data and renders each screen to a PNG, so
+positions can be judged without a flash cycle. It scrapes the layout constants out of the
+C++ sources, but each screen's `draw()` is transcribed by hand — change a screen's structure
+and the preview needs the same change.
 
 ## Conventions
 

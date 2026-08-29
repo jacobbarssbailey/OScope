@@ -364,7 +364,10 @@ bool Acquisition::updateFreeRunning(const ScopeState& state, const Settings& /*s
 // overlay, and the bench logs in docs/acq-characterization.md are keyed on this
 // exact tag.
 static void cellTag(const ScopeState& state, char* b, uint8_t n) {
-    char tb[16], unit[10];
+    // Sized to what fmtTime actually writes ("1000", "ms") rather than to the
+    // Parameter contract's generous maximum, so -Wformat-truncation can see the
+    // tag fits its 32-byte destination.
+    char tb[8], unit[4];
     parameterFor(EncoderParam::Timebase).format(state, tb, sizeof tb, unit, sizeof unit);
     snprintf(b, n, "[%s %s/div %s]", tb, unit, modeName(state.mode));
 }
