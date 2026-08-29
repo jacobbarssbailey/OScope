@@ -92,12 +92,28 @@ def draw_grid(c):
 
 
 def band(c, label, value, unit):
-    """RunScreen's transient parameter band."""
+    """RunScreen's transient readout band (mode-owned readouts)."""
     c.fill_rect(0, T["BandTopY"] + 1, W, T["BandBotY"] - T["BandTopY"] - 1, BG)
     c.hline(0, T["BandTopY"], W, DIM)
     c.hline(0, T["BandBotY"], W, DIM)
     c.text_center(T["BandLabelY"], label, TEXT, 14)
     c.text_unit_center(T["BandValueY"], value, unit, TEXT, 36, 20)
+
+
+def settings_overlay(c, rows, selected):
+    """RunScreen's transient settings overlay: scrim + one row per parameter.
+
+    `rows` is [(icon name, value, unit), ...] and `selected` indexes the row
+    being edited — it inks in TEXT, the rest in DIM.
+    """
+    c.fade(T["OverlayKeep"])
+    cy = T["SettingRowsCY"] - (len(rows) - 1) * T["SettingRowH"] // 2
+    for i, (icon, value, unit) in enumerate(rows):
+        tint = TEXT if i == selected else DIM
+        c.icon(T["SettingIconX"], cy - T["SettingIconSz"] // 2, ICONS[icon], tint)
+        c.text_unit(T["SettingValueX"], cy - T["SettingValueCap"] // 2,
+                    value, unit, tint, 20, 14)
+        cy += T["SettingRowH"]
 
 
 STOPPED = (0xFF, 0x69, 0x00)
@@ -109,11 +125,8 @@ def run_ring(c, armed=False):
            T["RunRingDashes"] if armed else 0)
 
 
-def scope(stopped=False, armed=False):
-    """Triggered mode with the trigger level being changed."""
-    c = Canvas()
-    draw_grid(c)
-    # Sub-pixel y + antialiased lines, matching the scope modes.
+def draw_traces(c):
+    """Two synthetic sweeps, sub-pixel y + antialiased, as the scope modes draw."""
     for color, amp, freq, phase in ((TRACE_B, 55, 2.0, 0.6),
                                     (TRACE_A, 78, 1.0, 0.0)):
         prev = None
@@ -122,7 +135,18 @@ def scope(stopped=False, armed=False):
             if prev:
                 c.line_aa(prev[0], prev[1], x, y, color)
             prev = (x, y)
-    band(c, "trigger", "1000", "mv")
+
+
+def scope(stopped=False, armed=False, rows=None, selected=0):
+    """Triggered mode, mid-edit: the settings overlay over a live trace."""
+    c = Canvas()
+    draw_grid(c)
+    draw_traces(c)
+    if rows is None:
+        rows = [("Timebase", "10", "ms"),
+                ("VScale", "1", "V"),
+                ("Trigger", "1000", "mV")]
+    settings_overlay(c, rows, selected)
     if stopped or armed:
         run_ring(c, armed)
     return c
@@ -134,6 +158,30 @@ def scope_stopped():
 
 def scope_armed():
     return scope(armed=True)
+
+
+def scope_settings_wide():
+    """Widest the overlay ever gets: trigger driven to its ±10 V clamp."""
+    return scope(rows=[("Timebase", "1.5", "ms"),
+                       ("VScale", "1.5", "V"),
+                       ("Trigger", "-10000", "mV")], selected=2)
+
+
+def scope_settings_roll():
+    """Rolling drops the trigger row, so two rows re-centre on the face."""
+    c = Canvas()
+    draw_grid(c)
+    draw_traces(c)
+    settings_overlay(c, [("Timebase", "500", "ms"), ("VScale", "500", "mV")], 1)
+    return c
+
+
+def scope_clean():
+    """The same frame with the overlay timed out — what you see most of the time."""
+    c = Canvas()
+    draw_grid(c)
+    draw_traces(c)
+    return c
 
 
 # ------------------------------------------------------------ Waterfall ----
@@ -257,7 +305,10 @@ SCREENS = {
     "aa_sub": aa_sub,
     "aa_on": aa_on,
     "tuner": tuner,
-    "scope_band": scope,
+    "scope_settings": scope,
+    "scope_settings_wide": scope_settings_wide,
+    "scope_settings_roll": scope_settings_roll,
+    "scope_clean": scope_clean,
     "scope_stopped": scope_stopped,
     "scope_armed": scope_armed,
     "waterfall_up": waterfall_up,

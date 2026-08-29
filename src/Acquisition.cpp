@@ -358,12 +358,15 @@ bool Acquisition::updateFreeRunning(const ScopeState& state, const Settings& /*s
     return true;
 }
 
-// Compact "[500 us/div ROLL]" tag identifying a characterization cell.  Both
-// halves are reused from existing formatters so the log and the display agree.
+// Compact "[500 us/div ROLL]" tag identifying a characterization cell.  The
+// value is reused from the display's formatter so the log and the screen agree;
+// "/div" is spelled out here because fmtTime dropped it for the settings
+// overlay, and the bench logs in docs/acq-characterization.md are keyed on this
+// exact tag.
 static void cellTag(const ScopeState& state, char* b, uint8_t n) {
     char tb[16], unit[10];
     parameterFor(EncoderParam::Timebase).format(state, tb, sizeof tb, unit, sizeof unit);
-    snprintf(b, n, "[%s %s %s]", tb, unit, modeName(state.mode));
+    snprintf(b, n, "[%s %s/div %s]", tb, unit, modeName(state.mode));
 }
 
 void Acquisition::rebaseDiagWindow(uint32_t now) {

@@ -77,6 +77,22 @@ class Canvas:
         if 0 <= x < W and 0 <= y < H:
             self.px[y][x] = c
 
+    def fade(self, keep):
+        """Renderer::fadeFrame — scale every pixel by keep/256.
+
+        The firmware scales RGB565 channels, so it quantises as it dims; the
+        round trip through 565 here keeps the preview honest about that.
+        """
+        def scale(v, bits):
+            q = v >> (8 - bits)                    # 888 -> 565
+            q = (q * keep) >> 8
+            return (q << (8 - bits)) | (q >> (2 * bits - 8))   # 565 -> 888
+        for y in range(H):
+            row = self.px[y]
+            for x in range(W):
+                r, g, b = row[x]
+                row[x] = (scale(r, 5), scale(g, 6), scale(b, 5))
+
     # ---- shapes ----
     def hline(self, x, y, w, c):
         for i in range(w):

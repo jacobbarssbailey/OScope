@@ -60,21 +60,33 @@ private:
     bool     _modeFlash   = false;
     uint32_t _modeFlashMs = 0;
 
-    // Transient parameter band: acquisition settings are off screen until one is
-    // selected or changed, then the band holds "<label> / <value><unit>" across
-    // the middle of the face for Theme::BandHoldMs after the last input.
+    // Transient readout band, for the readouts a mode owns (Waterfall's flow
+    // direction): holds "<label> / <value><unit>" across the middle of the face
+    // for Theme::BandHoldMs after the last input.
     char     _bandLabel[12] = {0};
     char     _bandValue[12] = {0};
     char     _bandUnit[10]  = {0};
     bool     _band          = false;
     uint32_t _bandMs        = 0;
 
+    // Transient settings overlay: acquisition settings are off screen until one
+    // is selected or changed, then the whole face dims and every parameter that
+    // applies in the current mode is listed for Theme::BandHoldMs.  Only the
+    // timer is state — the rows themselves are read from ScopeState at draw
+    // time, so an edit is on screen the moment it lands.
+    bool     _settings      = false;
+    uint32_t _settingsMs    = 0;
+
     // Raise the band with the given readout (empty label/value = no band).
     void showBand(const char* label, const char* value, const char* unit);
-    // Raise the band for the currently selected shared parameter, if one applies.
-    void showSelectedParam(const ScopeState& s);
-    // True while the band is still within its hold time.
+    // Raise the settings overlay, unless the mode has no adjustable parameters.
+    void showSettings(const ScopeState& s);
+    // True while the band / overlay is still within its hold time.
     bool bandActive() const;
+    bool settingsActive() const;
+    // Draw the dimmed face and the parameter rows.  Call last — it masks
+    // everything under it.
+    void drawSettings(Renderer& r, const ScopeState& s);
 
     Screen*       _menu = nullptr;
     Acquisition   _acq;
