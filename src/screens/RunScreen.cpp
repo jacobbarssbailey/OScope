@@ -36,7 +36,6 @@
 #include "../Fonts.h"
 
 #include <Arduino.h>   // snprintf on Teensy
-#include <string.h>    // strncpy
 
 // How long the large mode label stays up after a mode change.
 static constexpr uint32_t kModeFlashMs = 1500;
@@ -79,34 +78,10 @@ void RunScreen::onEnter(AppContext& ctx) {
 }
 
 // --------------------------------------------------------------------------
-// Transient readout band
-// --------------------------------------------------------------------------
-bool RunScreen::bandActive() const {
-    return _band && (millis() - _bandMs) < Theme::BandHoldMs;
-}
-
-void RunScreen::showBand(const char* label, const char* value, const char* unit) {
-    if (label == nullptr || label[0] == '\0' || value == nullptr || value[0] == '\0') {
-        _band = false;
-        return;
-    }
-    strncpy(_bandLabel, label, sizeof _bandLabel - 1);
-    strncpy(_bandValue, value, sizeof _bandValue - 1);
-    strncpy(_bandUnit, unit ? unit : "", sizeof _bandUnit - 1);
-    _bandLabel[sizeof _bandLabel - 1] = '\0';
-    _bandValue[sizeof _bandValue - 1] = '\0';
-    _bandUnit[sizeof _bandUnit - 1]   = '\0';
-    _band      = true;
-    _bandMs    = millis();
-    _settings  = false;   // both dim the face; only one may be up
-    _modeFlash = false;   // the band occupies the same space as the mode label
-}
-
-// --------------------------------------------------------------------------
 // Transient settings overlay
 // --------------------------------------------------------------------------
 bool RunScreen::settingsActive() const {
-    return _settings && (millis() - _settingsMs) < Theme::BandHoldMs;
+    return _settings && (millis() - _settingsMs) < Theme::SettingsHoldMs;
 }
 
 void RunScreen::showSettings(const ScopeState& s) {
@@ -115,7 +90,6 @@ void RunScreen::showSettings(const ScopeState& s) {
     if (!paramAppliesInMode(s.selected, s.mode)) { _settings = false; return; }
     _settings   = true;
     _settingsMs = millis();
-    _band       = false;
     _modeFlash  = false;
 }
 
@@ -171,11 +145,11 @@ bool RunScreen::tick(AppContext& ctx) {
         _stateDirty = false;
     }
 
-    // Keep requesting redraws while the mode flash, the band or the settings
-    // overlay is up so each can time out on its own even when stopped/idle
-    // (draw() clears them when they expire).
+    // Keep requesting redraws while the mode flash or the settings overlay is
+    // up so each can time out on its own even when stopped/idle (draw() clears
+    // them when they expire).
     const bool flashActive = (_modeFlash && (millis() - _modeFlashMs) < kModeFlashMs)
-                             || _band || _settings;
+                             || _settings;
 
     if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
@@ -241,9 +215,7 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
             // still works either way.
             case Btn::Channel:
                 if (activeMode && activeMode->ownsChannelButton()) {
-                    char label[12] = {0}, value[12] = {0};
-                    activeMode->channelPress(label, sizeof label, value, sizeof value);
-                    showBand(label, value, "");
+                    activeMode->channelPress();
                 }
                 break;
 
@@ -383,23 +355,6 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     if (_settings) {
         if (settingsActive()) drawSettings(r, s);
         else                  _settings = false;
-    }
-
-    // Readout band: it masks the waveform behind it, so nothing else may draw
-    // over it.  It clears itself once the hold time expires.
-    if (_band) {
-        if (bandActive()) {
-            r.fillRect(Theme::PlotX, (int16_t)(Theme::BandTopY + 1), Theme::PlotW,
-                       (int16_t)(Theme::BandBotY - Theme::BandTopY - 1),
-                       Theme::Background);
-            r.hline(Theme::PlotX, Theme::BandTopY, Theme::PlotW, Theme::Dim);
-            r.hline(Theme::PlotX, Theme::BandBotY, Theme::PlotW, Theme::Dim);
-            r.textCenterX(Theme::BandLabelY, _bandLabel, Theme::Text, FONT_SMALL);
-            r.textUnitCenterX(Theme::BandValueY, _bandValue, _bandUnit, Theme::Text,
-                              FONT_LARGE, FONT_BODY);
-        } else {
-            _band = false;
-        }
     }
 
     // Run state, outermost of all so nothing (not even the band) masks it: a

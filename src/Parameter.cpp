@@ -169,10 +169,27 @@ static void adjTrig(ScopeState& s, int8_t d) {
         -range, range);
 }
 
+// Millivolts below 1 V, volts at or above it — the level reaches ±10 V, and
+// "-10000mV" is both wider than the round face likes and harder to read at a
+// glance than "-10V".  Crosses over at the same 1000 mV as fmtVScale.
+//
+// The tenth is rounded, not truncated, because the detent is V/div ÷ 5 and so
+// is not always a multiple of 100 mV.  At 300 mV/div (60 mV steps) that still
+// leaves one pair — 1020 and 1080 mV both read "1.0V" — which is the only place
+// in the whole range where two adjacent detents show the same number.
 static void fmtTrig(const ScopeState& s, char* b, uint8_t n,
                     char* unit, uint8_t nu) {
-    snprintf(b, n, "%d", s.trigger_level_mv);
-    snprintf(unit, nu, "mV");
+    const int mv = s.trigger_level_mv;
+    if (mv > -1000 && mv < 1000) {
+        snprintf(b, n, "%d", mv);
+        snprintf(unit, nu, "mV");
+        return;
+    }
+    const int   tenths = ((mv < 0 ? -mv : mv) + 50) / 100;
+    const char* sign   = (mv < 0) ? "-" : "";
+    snprintf(unit, nu, "V");
+    if (tenths % 10 == 0) snprintf(b, n, "%s%d", sign, tenths / 10);
+    else                  snprintf(b, n, "%s%d.%d", sign, tenths / 10, tenths % 10);
 }
 
 // ---- Static descriptor table (order matches EncoderParam enum) ------------

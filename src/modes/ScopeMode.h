@@ -85,12 +85,10 @@ public:
 
     // --- Optional mode-owned B2 (Channel) button ---
     // A mode that repurposes the otherwise-unused B2 short press (Waterfall's
-    // flow direction) returns true here and handles it in channelPress(), which
-    // fills label/value with a readout for RunScreen's parameter band — leave
-    // them empty to raise no band.  Default: B2 does nothing.
+    // flow direction) returns true here and handles it in channelPress().  It
+    // reports nothing: the readout overlay is for settings the encoder walks,
+    // and a mode-owned toggle with one visible outcome shows itself.
+    // Default: B2 does nothing.
     virtual bool ownsChannelButton() const { return false; }
-    virtual void channelPress(char* label, uint8_t nl, char* value, uint8_t nv) {
-        if (nl) label[0] = '\0';
-        if (nv) value[0] = '\0';
-    }
+    virtual void channelPress() {}
 };

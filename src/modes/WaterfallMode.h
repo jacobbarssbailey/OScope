@@ -43,7 +43,7 @@ public:
 
     // B2 toggles the flow direction (see the header comment).
     bool ownsChannelButton() const override { return true; }
-    void channelPress(char* label, uint8_t nl, char* value, uint8_t nv) override;
+    void channelPress() override;
 
 private:
     enum class Flow : uint8_t { Up, Out };

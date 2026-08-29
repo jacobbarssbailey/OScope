@@ -21,7 +21,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from sim import (Canvas, ICONS, REPO, BG, GRID, TRACE_A, TRACE_B, TEXT, DIM,   # noqa: E402
+from sim import (Canvas, ICONS, REPO, GRID, TRACE_A, TRACE_B, TEXT, DIM,   # noqa: E402
                  DIM_DARK, HILITE, CX, CY, W, H)
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
@@ -83,21 +83,12 @@ def tuner():
     return c
 
 
-# --------------------------------------------------------- Scope + band ----
+# ------------------------------------------------------ Scope + settings ----
 def draw_grid(c):
     for col in range(1, 8):
         c.vline(col * T["GridDiv"], 0, H, GRID)
     for row in range(1, 8):
         c.hline(0, row * T["GridDiv"], W, GRID)
-
-
-def band(c, label, value, unit):
-    """RunScreen's transient readout band (mode-owned readouts)."""
-    c.fill_rect(0, T["BandTopY"] + 1, W, T["BandBotY"] - T["BandTopY"] - 1, BG)
-    c.hline(0, T["BandTopY"], W, DIM)
-    c.hline(0, T["BandBotY"], W, DIM)
-    c.text_center(T["BandLabelY"], label, TEXT, 14)
-    c.text_unit_center(T["BandValueY"], value, unit, TEXT, 36, 20)
 
 
 def settings_overlay(c, rows, selected):
@@ -145,7 +136,7 @@ def scope(stopped=False, armed=False, rows=None, selected=0):
     if rows is None:
         rows = [("Timebase", "10", "ms"),
                 ("VScale", "1", "V"),
-                ("Trigger", "1000", "mV")]
+                ("Trigger", "2.4", "V")]
     settings_overlay(c, rows, selected)
     if stopped or armed:
         run_ring(c, armed)
@@ -161,10 +152,10 @@ def scope_armed():
 
 
 def scope_settings_wide():
-    """Widest the overlay ever gets: trigger driven to its ±10 V clamp."""
+    """Widest the rows get in Triggered: the trigger just under the V crossover."""
     return scope(rows=[("Timebase", "1.5", "ms"),
-                       ("VScale", "1.5", "V"),
-                       ("Trigger", "-10000", "mV")], selected=2)
+                       ("VScale", "500", "mV"),
+                       ("Trigger", "-980", "mV")], selected=2)
 
 
 def scope_settings_roll():
@@ -223,7 +214,6 @@ def _waterfall(flow):
                 c.set(W - 1 - x, y, tuple(k * vb // 255 for k in TRACE_B))
     c.vline(CX - 1, 0, H, GRID)
     c.vline(CX, 0, H, GRID)
-    band(c, "flow", flow, "")
     return c
 
 
