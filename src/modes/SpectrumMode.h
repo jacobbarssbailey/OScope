@@ -1,14 +1,22 @@
 // modes/SpectrumMode.h — FFT spectrum analyzer mode.
 //
 // Runs a 256-point real FFT (ARM CMSIS-DSP, hardware FP on the Cortex-M7) on the
-// newest samples of each channel and draws a 128-bucket magnitude spectrum:
-// channel A grows up from the centre line, channel B grows down (inverted), over
-// vertical division grid lines and one centre horizontal line.
+// newest samples of each channel and draws a magnitude spectrum: channel A grows
+// up from the centre line, channel B grows down (inverted), over vertical
+// division grid lines and one centre horizontal line.
+//
+// The encoder rotation sets how many buckets those bars are divided into.  The
+// block keeps its width whatever the count, so the bars get wider as they get
+// fewer, and the counts are exactly the divisors of SpecBarsW that leave a
+// bucket no wider than kMaxBucketW: 128 x 1 px, 64 x 2 px, 32 x 4 px.  Fewer
+// buckets average more FFT bins together, which is the coarser view.
 //
 // The display window and amplitude mapping are fixed (bench-tuned defaults, no
 // runtime controls):
-//   Fmin/Fmax : the frequency window the 128 buckets span (a zoom over the FFT
-//               bins; buckets nearest-map onto bins).
+//   Fmin/Fmax : the frequency window the buckets span (a zoom over the FFT
+//               bins).  A bucket covering several bins averages them; where the
+//               window is zoomed in far enough that a bucket falls inside one
+//               bin, it takes the nearest.
 //   Scale     : 0 % = linear amplitude, 100 % = log; blended in between.
 //   Zero/Full : the magnitudes mapped to 0 and full bar height.
 //
@@ -37,6 +45,11 @@ public:
     // button means something here.
     bool honoursChannelEnable() const override { return true; }
 
+    // The encoder rotation walks the bucket count; this mode has none of the
+    // shared settings for it to drive.
+    bool ownsEncoderTurn() const override { return true; }
+    void encoderTurn(int8_t delta) override;
+
     // Wire the capture source the FFT block is read from (called by RunScreen).
     void setSource(Acquisition* acq) { _src = acq; }
 
@@ -47,7 +60,14 @@ public:
 private:
     static constexpr uint16_t kFFT  = 256;                 // FFT length
     static constexpr uint16_t kNBin = kFFT / 2;            // usable bins (1..128)
-    static constexpr uint16_t kBins = 128;                 // display buckets
+    static constexpr uint16_t kMaxBins    = 128;   // widest count = array size
+    static constexpr int16_t  kMaxBucketW = 4;     // widest a single bucket gets
+
+    // Selectable bucket counts, coarse to fine.  These are every divisor of
+    // Theme::SpecBarsW (128) whose quotient is <= kMaxBucketW, which is what
+    // keeps the block exactly as wide at every setting with uniform bars.
+    static const uint16_t kBinSteps[3];
+    uint8_t  _binStep = 2;      // index into kBinSteps; starts at the finest
 
     // Fixed display parameters (bench-tuned defaults).
     static constexpr int32_t kMinHz    = 0;        // low edge of the window
@@ -67,13 +87,18 @@ private:
     uint16_t _rawB[kFFT];
     float    _magA[kNBin];      // per-bin magnitudes (bins 1..128)
     float    _magB[kNBin];
-    uint8_t  _barsA[kBins] = {0};  // bucket heights in px (0..SpecMaxPx)
-    uint8_t  _barsB[kBins] = {0};
+    uint8_t  _barsA[kMaxBins] = {0};  // bucket heights in px (0..SpecMaxPx)
+    uint8_t  _barsB[kMaxBins] = {0};
+
+    // Active bucket count and the width each one draws at.  Their product is
+    // always Theme::SpecBarsW.
+    uint16_t bins() const;
+    int16_t  bucketW() const;
 
     // Window + FFT one channel's kFFT samples into per-bin magnitudes.
     void computeMag(const uint16_t* src, float* mag);
-    // Map per-bin magnitudes onto the 128 display buckets using the frequency
-    // window and amplitude parameters.
+    // Map per-bin magnitudes onto the active display buckets using the
+    // frequency window and amplitude parameters.
     void mapBars(const float* mag, uint8_t* bars) const;
     // Blended linear/log magnitude -> bar height in px.
     int  ampToPx(float mag) const;

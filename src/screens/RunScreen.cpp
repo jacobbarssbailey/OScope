@@ -254,10 +254,13 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 break;
         }
     } else if (e.type == EventType::EncoderTurn) {
-        // Encoder rotation always drives the shared settings — no mode claims
-        // it — and does nothing where none apply.  The new value goes up in the
-        // overlay, which re-times itself on every detent.
-        if (paramAppliesInMode(s.selected, s.mode)) {
+        // Encoder rotation: the mode's own value if it claims the turn
+        // (Spectrum's bin count), otherwise the shared settings, which do
+        // nothing where none apply.  A shared value goes up in the overlay,
+        // which re-times itself on every detent; a mode-owned one shows itself.
+        if (activeMode && activeMode->ownsEncoderTurn()) {
+            activeMode->encoderTurn(e.delta);
+        } else if (paramAppliesInMode(s.selected, s.mode)) {
             parameterFor(s.selected).adjust(s, e.delta);
             showSettings(s);
         }

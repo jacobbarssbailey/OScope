@@ -187,6 +187,98 @@ def scope_single():
     return scope_clean(armed=True)
 
 
+# -------------------------------------------------------------- Spectrum ---
+# SpecLeftX and SpecCenterY are expressions in Theme.h, so consts() skips them;
+# recompute here from the same formulas.
+SPEC_LEFT_X   = (W - T["SpecBarsW"]) // 2
+SPEC_CENTER_Y = CY
+
+
+def _spec_mag(f_hz):
+    """Synthetic spectrum: a harmonic series over a sloping noise floor.
+
+    Peaks are given a realistic width (a Hann-windowed bin is a few bins wide)
+    so the coarse bucket counts have something real to average.
+    """
+    v = 0.30 * math.exp(-f_hz / 5000.0) + 0.04      # sloping floor
+    f0 = 512.0
+    for k in range(1, 13):
+        amp = 0.95 / (k ** 0.75)
+        v = max(v, amp * math.exp(-((f_hz - k * f0) / 190.0) ** 2))
+    return min(v, 1.0)
+
+
+BIN_HZ = 126.0        # SpectrumMode's FFT bin width
+SPEC_MAX_HZ = 8192    # SpectrumMode::kMaxHz
+N_BIN = 128           # SpectrumMode::kNBin
+
+
+def _bucket_mag(i, nbins):
+    """One bucket's magnitude, mirroring SpectrumMode::mapBars.
+
+    Averages the FFT bin centres that fall inside the bucket, and falls back to
+    the nearest bin where the bucket is narrower than the bin spacing.
+    """
+    f_lo = SPEC_MAX_HZ * i / nbins
+    f_hi = SPEC_MAX_HZ * (i + 1) / nbins
+    b_lo = max(1, math.ceil(f_lo / BIN_HZ))
+    b_hi = min(N_BIN, math.floor(f_hi / BIN_HZ))
+    if b_hi >= b_lo:
+        return sum(_spec_mag(b * BIN_HZ) for b in range(b_lo, b_hi + 1)) / (b_hi - b_lo + 1)
+    b = min(N_BIN, max(1, round((f_lo + f_hi) * 0.5 / BIN_HZ)))
+    return _spec_mag(b * BIN_HZ)
+
+
+def _spectrum(nbins, gap=0):
+    """SpectrumMode at one bucket count: the block keeps its total width as the
+    bars widen, and only the outer end of each bar is capped.
+
+    `gap` leaves that many pixels between bars (not in the firmware — it is here
+    so the choice can be looked at before committing to it).
+    """
+    c = Canvas()
+    for col in range(1, 8):
+        c.vline(col * T["GridDiv"], 0, H, GRID)
+    c.hline(0, SPEC_CENTER_Y, W, GRID)
+
+    pitch = T["SpecBarsW"] // nbins
+    w = max(1, pitch - gap)
+    rad = w // 2
+    for i in range(nbins):
+        m = _bucket_mag(i, nbins)
+        ha = int(m * T["SpecMaxPx"])
+        hb = int(m * 0.72 * T["SpecMaxPx"])
+        x = SPEC_LEFT_X + i * pitch
+        if ha > 0:
+            c.bar_rounded(x, SPEC_CENTER_Y - ha, w, ha, rad, TRACE_A, True)
+        if hb > 0:
+            c.bar_rounded(x, SPEC_CENTER_Y + 1, w, hb, rad, TRACE_B, False)
+    return c
+
+
+def spectrum_128():
+    """The finest setting: 128 buckets at 1 px, unchanged from before."""
+    return _spectrum(128)
+
+
+def spectrum_64():
+    return _spectrum(64)
+
+
+def spectrum_32():
+    """The coarsest: 32 buckets at 4 px."""
+    return _spectrum(32)
+
+
+def spectrum_32_gap():
+    """32 buckets with a 1 px gap — not in the firmware, drawn for comparison."""
+    return _spectrum(32, gap=1)
+
+
+def spectrum_64_gap():
+    return _spectrum(64, gap=1)
+
+
 # ------------------------------------------------------------ Waterfall ----
 HALF = W // 2
 
@@ -311,6 +403,11 @@ SCREENS = {
     "scope_settings_wide": scope_settings_wide,
     "scope_settings_roll": scope_settings_roll,
     "scope_clean": scope_clean,
+    "spectrum_128": spectrum_128,
+    "spectrum_64": spectrum_64,
+    "spectrum_32": spectrum_32,
+    "spectrum_32_gap": spectrum_32_gap,
+    "spectrum_64_gap": spectrum_64_gap,
     "scope_frozen": scope_frozen,
     "scope_single": scope_single,
     "scope_stopped": scope_stopped,

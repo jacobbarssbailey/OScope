@@ -75,19 +75,58 @@ void SpectrumMode::computeMag(const uint16_t* src, float* mag) {
     mag[kNBin - 1] = fabsf(_out[1]);
 }
 
+const uint16_t SpectrumMode::kBinSteps[3] = {32, 64, 128};
+
+uint16_t SpectrumMode::bins() const { return kBinSteps[_binStep]; }
+
+int16_t SpectrumMode::bucketW() const {
+    return (int16_t)(Theme::SpecBarsW / (int16_t)bins());
+}
+
+void SpectrumMode::encoderTurn(int8_t delta) {
+    if (delta == 0) return;
+    const int last = (int)(sizeof kBinSteps / sizeof kBinSteps[0]) - 1;
+    int v = (int)_binStep + (delta > 0 ? 1 : -1);
+    if (v < 0) v = 0;
+    if (v > last) v = last;      // steps, not wraps: the ends are meaningful
+    _binStep = (uint8_t)v;
+}
+
 void SpectrumMode::mapBars(const float* mag, uint8_t* bars) const {
-    // Each display bucket spans an equal slice of [minHz, maxHz]; its centre
-    // frequency picks the nearest FFT bin.  When the window is narrower than the
-    // full spectrum this zooms in (several buckets share a bin); wider slices
-    // skip bins.
-    const float lo = (float)kMinHz;
-    const float width = (float)(kMaxHz - kMinHz);
-    for (uint16_t i = 0; i < kBins; ++i) {
-        const float freq = lo + (i + 0.5f) * width / (float)kBins;
-        int bin = (int)(freq / _binHz + 0.5f);   // bin number 1..kNBin
-        if (bin < 1) bin = 1;
-        if (bin > kNBin) bin = kNBin;
-        bars[i] = (uint8_t)ampToPx(mag[bin - 1]);
+    // Each display bucket spans an equal slice of [minHz, maxHz].  Averaging the
+    // bins it covers is what makes a low bucket count a genuinely coarser view
+    // rather than a decimated one — with 32 buckets each averages four bins, so
+    // nothing between them is simply dropped.
+    //
+    // Where the window is zoomed in far enough that a bucket falls between two
+    // bin centres it covers none, and the nearest bin is used instead; that is
+    // the only behaviour the original nearest-map had, and it is still right
+    // when buckets are finer than bins.
+    const uint16_t n     = bins();
+    const float    lo    = (float)kMinHz;
+    const float    width = (float)(kMaxHz - kMinHz);
+    for (uint16_t i = 0; i < n; ++i) {
+        const float fLo = lo + (float)i * width / (float)n;
+        const float fHi = lo + (float)(i + 1) * width / (float)n;
+
+        int binLo = (int)ceilf(fLo / _binHz);          // first bin centre in range
+        int binHi = (int)floorf(fHi / _binHz);         // last bin centre in range
+        if (binLo < 1) binLo = 1;
+        if (binHi > (int)kNBin) binHi = (int)kNBin;
+
+        float m;
+        if (binHi >= binLo) {
+            float sum = 0.0f;
+            for (int b = binLo; b <= binHi; ++b) sum += mag[b - 1];
+            m = sum / (float)(binHi - binLo + 1);
+        } else {
+            const float freq = (fLo + fHi) * 0.5f;
+            int bin = (int)(freq / _binHz + 0.5f);
+            if (bin < 1) bin = 1;
+            if (bin > (int)kNBin) bin = (int)kNBin;
+            m = mag[bin - 1];
+        }
+        bars[i] = (uint8_t)ampToPx(m);
     }
 }
 
@@ -114,15 +153,22 @@ void SpectrumMode::render(Renderer& r, const ScopeState& state,
 
     // Channel A grows up from the centre line, channel B down (inverted).  Bars
     // stop one row short of the centre so the horizontal grid line stays visible.
-    for (uint16_t i = 0; i < kBins; ++i) {
-        const int16_t x = Theme::SpecLeftX + (int16_t)i * Theme::SpecBucketW;
+    //
+    // Only the outer end is capped: the end at the centre line stays square so
+    // the two channels meet the baseline flat.  At 1 px wide there is no corner
+    // to round and barRounded falls through to a plain fill.
+    const uint16_t n = bins();
+    const int16_t  w = bucketW();
+    const int16_t  rad = (int16_t)(w / 2);
+    for (uint16_t i = 0; i < n; ++i) {
+        const int16_t x = Theme::SpecLeftX + (int16_t)i * w;
         if (state.channelEnabled[0] && _barsA[i] > 0) {
-            r.fillRect(x, Theme::SpecCenterY - _barsA[i],
-                       Theme::SpecBucketW, _barsA[i], Theme::TraceA);
+            r.barRounded(x, (int16_t)(Theme::SpecCenterY - _barsA[i]),
+                         w, _barsA[i], rad, Theme::TraceA, true);
         }
         if (state.channelEnabled[1] && _barsB[i] > 0) {
-            r.fillRect(x, Theme::SpecCenterY + 1,
-                       Theme::SpecBucketW, _barsB[i], Theme::TraceB);
+            r.barRounded(x, (int16_t)(Theme::SpecCenterY + 1),
+                         w, _barsB[i], rad, Theme::TraceB, false);
         }
     }
     // HUD drawn by RunScreen on top afterward.

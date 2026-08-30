@@ -80,10 +80,16 @@ public:
     // returning true here and acting in encoderPress().  The toggle reports
     // nothing: its outcome is the whole face, which shows itself.
     //
-    // Only the press is claimable.  Encoder *rotation* always belongs to the
-    // shared settings, and simply does nothing in a mode that has none.
     virtual bool ownsEncoderPress() const { return false; }
     virtual void encoderPress() {}
+
+    // --- Optional mode-owned encoder rotation ---
+    // Same bargain for the turn: a mode with a value of its own but none of the
+    // shared settings (Spectrum's bin count) claims the rotation here.  A mode
+    // that does not claim it gets the shared settings, which do nothing where
+    // none apply.
+    virtual bool ownsEncoderTurn() const { return false; }
+    virtual void encoderTurn(int8_t /*delta*/) {}
 
     // --- Trigger alignment ---
     // True only for the mode whose sweeps are aligned to a trigger crossing.

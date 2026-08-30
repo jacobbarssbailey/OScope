@@ -258,6 +258,53 @@ void Renderer::drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h,
     roundRectShaded(x, y, w, h, r, color, 1.0f);
 }
 
+void Renderer::barRounded(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
+                          uint16_t color, bool capAtTop) {
+    if (w <= 0 || h <= 0) return;
+    uint16_t* fb = tft.getFrameBuffer();
+    if (r > w / 2) r = (int16_t)(w / 2);
+    if (r > h)     r = h;
+    if (fb == nullptr || r <= 0) {   // 1 px bars land here, as does no framebuffer
+        fillRect(x, y, w, h, color);
+        return;
+    }
+
+    // Round only the far end.  The geometry is extended r px past the square end
+    // so that end's corners fall outside the rows we actually paint; clipping the
+    // scan to the true bar keeps the join flat.
+    const int16_t gy = capAtTop ? y : (int16_t)(y - r);
+    const int16_t gh = (int16_t)(h + r);
+    const float cx = (float)x + (float)w * 0.5f - 0.5f;
+    const float cy = (float)gy + (float)gh * 0.5f - 0.5f;
+    const float hx = (float)w * 0.5f;
+    const float hy = (float)gh * 0.5f;
+
+    // The cap is the only part that needs shading; the rest is a flat fill.
+    // One extra row on the capped side catches the antialiased fringe.
+    const int16_t capLo = capAtTop ? (int16_t)(y - 1) : (int16_t)(y + h - r);
+    const int16_t capHi = capAtTop ? (int16_t)(y + r - 1) : (int16_t)(y + h);
+    if (capAtTop) { if (h > r) fillRect(x, (int16_t)(y + r), w, (int16_t)(h - r), color); }
+    else          { if (h > r) fillRect(x, y, w, (int16_t)(h - r), color); }
+
+    int16_t yLo = capLo, yHi = capHi;
+    int16_t xLo = (int16_t)(x - 1), xHi = (int16_t)(x + w);
+    if (yLo < 0) yLo = 0;
+    if (xLo < 0) xLo = 0;
+    if (yHi > Theme::H - 1) yHi = Theme::H - 1;
+    if (xHi > Theme::W - 1) xHi = Theme::W - 1;
+
+    for (int16_t py = yLo; py <= yHi; ++py) {
+        for (int16_t px = xLo; px <= xHi; ++px) {
+            const float d = roundRectSDF((float)px - cx, (float)py - cy, hx, hy,
+                                         (float)r);
+            float cov = -d + 0.5f;
+            if (cov <= 0.0f) continue;
+            if (cov > 1.0f) cov = 1.0f;
+            blendPixel(fb, px, py, color, (uint8_t)(cov * 31.0f));
+        }
+    }
+}
+
 void Renderer::ring(int16_t r, int16_t thickness, uint16_t color, uint8_t dashes) {
     if (r <= 0 || thickness <= 0) return;
 

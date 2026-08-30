@@ -152,6 +152,32 @@ class Canvas:
                 if cov > 0.0:
                     self.blend(px, py, c, min(cov, 1.0))
 
+    def bar_rounded(self, x, y, w, h, r, c, cap_at_top):
+        """Renderer::barRounded — a bar capped at one end, square at the other."""
+        if w <= 0 or h <= 0:
+            return
+        r = min(r, w // 2, h)
+        if r <= 0:                       # 1 px bars have no corner to round
+            self.fill_rect(x, y, w, h, c)
+            return
+
+        # Geometry extends r past the square end so that end's corners fall
+        # outside the rows actually painted.
+        gy = y if cap_at_top else y - r
+        gh = h + r
+        cx, cy = x + w * 0.5 - 0.5, gy + gh * 0.5 - 0.5
+        hx, hy = w * 0.5, gh * 0.5
+
+        if h > r:                        # flat body, shaded cap only
+            self.fill_rect(x, y + r if cap_at_top else y, w, h - r, c)
+        cap_lo = (y - 1) if cap_at_top else (y + h - r)
+        cap_hi = (y + r - 1) if cap_at_top else (y + h)
+        for py in range(max(0, cap_lo), min(H, cap_hi + 1)):
+            for px in range(max(0, x - 1), min(W, x + w + 1)):
+                cov = -self._round_rect_sdf(px - cx, py - cy, hx, hy, r) + 0.5
+                if cov > 0.0:
+                    self.blend(px, py, c, min(cov, 1.0))
+
     def fill_round_rect(self, x, y, w, h, r, c):
         self.round_rect_shaded(x, y, w, h, r, c, 0.0)
 

@@ -90,6 +90,15 @@ public:
     void roundRectShaded(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
                          uint16_t color, float outline);
 
+    // Fill a w×h bar with only the two corners at one end rounded: the far end
+    // gets a cap, the near end stays square so bars can butt against a baseline
+    // without a notch.  `capAtTop` rounds y, otherwise y+h-1.  r is clamped to
+    // w/2 and to h; r <= 0 (or w == 1) degenerates to a plain fillRect, which is
+    // also the no-framebuffer fallback.  Only the cap rows are shaded — the body
+    // is a flat fill — so a screen full of bars costs about what fillRect does.
+    void barRounded(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
+                    uint16_t color, bool capAtTop);
+
     // Draw a `thickness`-px ring of outer radius r, concentric with the round
     // face.  `dashes` breaks it into that many evenly spaced dashes (0 = solid).
     void ring(int16_t r, int16_t thickness, uint16_t color, uint8_t dashes = 0);
