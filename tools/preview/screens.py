@@ -167,12 +167,24 @@ def scope_settings_roll():
     return c
 
 
-def scope_clean():
+def scope_clean(stopped=False, armed=False):
     """The same frame with the overlay timed out — what you see most of the time."""
     c = Canvas()
     draw_grid(c)
     draw_traces(c)
+    if stopped or armed:
+        run_ring(c, armed)
     return c
+
+
+def scope_frozen():
+    """Run/Stop pressed: the last frame held behind a solid ring."""
+    return scope_clean(stopped=True)
+
+
+def scope_single():
+    """Run/Stop held: single shot armed, ring dashed until a trigger lands."""
+    return scope_clean(armed=True)
 
 
 # ------------------------------------------------------------ Waterfall ----
@@ -299,6 +311,8 @@ SCREENS = {
     "scope_settings_wide": scope_settings_wide,
     "scope_settings_roll": scope_settings_roll,
     "scope_clean": scope_clean,
+    "scope_frozen": scope_frozen,
+    "scope_single": scope_single,
     "scope_stopped": scope_stopped,
     "scope_armed": scope_armed,
     "waterfall_up": waterfall_up,

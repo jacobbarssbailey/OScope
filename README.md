@@ -2,6 +2,9 @@
 
 A Teensy 4.0-based dual-channel oscilloscope Eurorack module.
 
+**Using the module?** See [docs/user-guide.md](docs/user-guide.md) — the
+controls, the six display modes, and the settings menu.
+
 ## Hardware
 
 - **MCU**: Teensy 4.0
