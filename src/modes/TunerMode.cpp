@@ -83,8 +83,8 @@ void TunerMode::onFrame(const SampleBuffers& /*buf*/) {
     _freqB = smooth(_freqB, analyze(_rawB));
 }
 
-void TunerMode::encoderTurn(int8_t delta) {
-    if (delta) _showNote = !_showNote;
+void TunerMode::encoderPress() {
+    _showNote = !_showNote;
 }
 
 // Draw the cents meter: a tick ruler centred at cy (a taller centre tick), with

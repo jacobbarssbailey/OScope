@@ -3,15 +3,16 @@
 // Button mapping (short press):
 //   B1 (Mode)    — cycle acquisition mode: TRIG → ROLL → X-Y → TRIG …
 //                  then clampSelectable() to fix selection if now invalid.
-//   B2 (Channel) — cycle channel: A → B → A+B → A …
+//   B2 (Channel) — show/hide channel A (modes that honour the enable flags)
 //   B3 (RunStop) — toggle run/stop (also disarms a pending single-shot)
-//   Encoder      — advance selected parameter (skips N/A params for current mode)
+//   Encoder      — advance selected parameter (skips N/A params for current
+//                  mode), or the mode's own toggle if it claims the press
 //   Encoder turn — adjust the selected parameter value by encoder delta
 // Long press:
 //   B1 (Mode)    — open the settings menu (push MenuScreen)
-//   B2 (Channel) — toggle the focused channel's trace on/off
-//   B3 (RunStop) — arm single-shot: run until the next successful triggered
-//                  capture, then freeze and disarm
+//   B2 (Channel) — show/hide channel B
+//   B3 (RunStop) — arm single-shot (Triggered only): run until the next
+//                  successful triggered capture, then freeze and disarm
 //   Encoder      — reset all state to defaults
 //
 // Draw Z-order (bottom → top):
@@ -36,12 +37,6 @@
 #include "../Fonts.h"
 
 #include <Arduino.h>   // snprintf on Teensy
-
-// Channel index (0 or 1) that single-channel operations act on.  For Both,
-// the conventional lead channel (A = 0) is used, matching fmtVScale's display.
-static uint8_t focusedChannel(ChannelSel sel) {
-    return (sel == ChannelSel::B) ? 1 : 0;
-}
 
 // How long the acquisition setup must be unchanged before it is written to
 // EEPROM.  Batches a burst of encoder detents into a single write.
@@ -197,15 +192,13 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 _settings = false;
                 break;
 
-            // B2: channel selection is fixed to A+B in the v2 UI, so short-press
-            // channel cycling is disabled (the ChannelSel logic is kept for a
-            // possible future per-channel view).  Modes that repurpose the
-            // button (Waterfall's flow direction) take it instead, and flash
-            // whatever readout they return.  B2 long-press (enable toggle)
-            // still works either way.
+            // B2: show/hide channel A.  One button per channel would need four
+            // buttons; instead the press takes A and the hold takes B.  Modes
+            // that ignore the enable flags swallow it, so the button never
+            // changes state you cannot see.
             case Btn::Channel:
-                if (activeMode && activeMode->ownsChannelButton()) {
-                    activeMode->channelPress();
+                if (activeMode && activeMode->honoursChannelEnable()) {
+                    s.channelEnabled[0] = !s.channelEnabled[0];
                 }
                 break;
 
@@ -216,11 +209,12 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 s.singleArmed = false;
                 break;
 
-            // Encoder press: cycle the active mode's own parameters if it has
-            // them (Tuner), otherwise advance to the next shared parameter that
-            // applies in the current mode and raise the settings overlay.
+            // Encoder press: hand it to the mode if it claims the press for a
+            // toggle of its own (Tuner's Hz/note, Waterfall's flow direction),
+            // otherwise advance to the next shared setting that applies here and
+            // raise the overlay.
             case Btn::Encoder:
-                if (activeMode && activeMode->ownsEncoder()) {
+                if (activeMode && activeMode->ownsEncoderPress()) {
                     activeMode->encoderPress();
                 } else {
                     s.selected = nextSelectable(s);
@@ -245,32 +239,35 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 if (_menu) ctx.screens.push(_menu, ctx);
                 break;
 
-            // B2 long-press: toggle the focused channel's trace on/off.  When
-            // disabled the trace isn't drawn and its V/div edits are skipped.
-            case Btn::Channel: {
-                const uint8_t c = focusedChannel(s.channel);
-                s.channelEnabled[c] = !s.channelEnabled[c];
+            // B2 long-press: show/hide channel B, the counterpart to the short
+            // press.  When hidden the trace isn't drawn and its V/div edits are
+            // skipped.
+            case Btn::Channel:
+                if (activeMode && activeMode->honoursChannelEnable()) {
+                    s.channelEnabled[1] = !s.channelEnabled[1];
+                }
                 break;
-            }
 
             // B3 long-press: arm single-shot — run until the next successful
-            // triggered capture, then freeze (completion handled in draw()).
+            // triggered capture, then freeze (completion handled in tick()).
+            // Only in the trigger-aligned mode: the free-running paths never
+            // report a trigger, so arming there would leave the armed ring up
+            // and the scope running until you pressed B3 again.
             case Btn::RunStop:
-                s.singleArmed = true;
-                s.running = true;
+                if (activeMode && activeMode->triggerAligned()) {
+                    s.singleArmed = true;
+                    s.running = true;
+                }
                 break;
 
             default:
                 break;
         }
     } else if (e.type == EventType::EncoderTurn) {
-        // Encoder rotation: adjust the active mode's own selected parameter
-        // (Tuner), otherwise the shared parameter — unless none applies.  The
-        // new value goes up in the settings overlay, which re-times itself on
-        // every detent.
-        if (activeMode && activeMode->ownsEncoder()) {
-            activeMode->encoderTurn(e.delta);
-        } else if (paramAppliesInMode(s.selected, s.mode)) {
+        // Encoder rotation always drives the shared settings — no mode claims
+        // it — and does nothing where none apply.  The new value goes up in the
+        // overlay, which re-times itself on every detent.
+        if (paramAppliesInMode(s.selected, s.mode)) {
             parameterFor(s.selected).adjust(s, e.delta);
             showSettings(s);
         }

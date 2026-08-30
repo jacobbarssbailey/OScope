@@ -32,9 +32,10 @@ public:
                 const SampleBuffers& buf) override;
     void onFrame(const SampleBuffers& buf) override;
 
-    // Encoder rotation toggles the Hz/Note readout (this mode owns the encoder).
-    bool ownsEncoder() const override { return true; }
-    void encoderTurn(int8_t delta) override;
+    // The encoder press toggles the Hz/Note readout (this mode has no shared
+    // settings for the press to walk).
+    bool ownsEncoderPress() const override { return true; }
+    void encoderPress() override;
 
 private:
     static constexpr uint16_t kWin       = 1024;   // YIN window length

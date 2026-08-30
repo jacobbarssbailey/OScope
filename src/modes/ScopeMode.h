@@ -73,22 +73,28 @@ public:
     // the CPU at 99% once the display transfer stopped throttling the loop.
     virtual void onFrame(const SampleBuffers& /*buf*/) {}
 
-    // --- Optional mode-owned encoder parameters ---
-    // A mode with its own adjustable parameter (Tuner) returns true here;
-    // RunScreen then routes the encoder button (cycle to next param) and the
-    // encoder rotation (adjust the selected param) to this mode instead of the
-    // shared Timebase/V-div/Trigger set.  Default: the mode has no parameters
-    // of its own.
-    virtual bool ownsEncoder() const { return false; }
+    // --- Optional mode-owned encoder press ---
+    // The encoder press walks the shared Timebase/V-div/Trigger settings.  A
+    // mode with no shared settings but its own one-shot toggle (Tuner's Hz/note
+    // readout, Waterfall's flow direction) claims the press instead by
+    // returning true here and acting in encoderPress().  The toggle reports
+    // nothing: its outcome is the whole face, which shows itself.
+    //
+    // Only the press is claimable.  Encoder *rotation* always belongs to the
+    // shared settings, and simply does nothing in a mode that has none.
+    virtual bool ownsEncoderPress() const { return false; }
     virtual void encoderPress() {}
-    virtual void encoderTurn(int8_t /*delta*/) {}
 
-    // --- Optional mode-owned B2 (Channel) button ---
-    // A mode that repurposes the otherwise-unused B2 short press (Waterfall's
-    // flow direction) returns true here and handles it in channelPress().  It
-    // reports nothing: the readout overlay is for settings the encoder walks,
-    // and a mode-owned toggle with one visible outcome shows itself.
-    // Default: B2 does nothing.
-    virtual bool ownsChannelButton() const { return false; }
-    virtual void channelPress() {}
+    // --- Trigger alignment ---
+    // True only for the mode whose sweeps are aligned to a trigger crossing.
+    // Single shot completes on a trigger, so it can only be armed here; the
+    // free-running modes would hold a pending arm forever.
+    virtual bool triggerAligned() const { return false; }
+
+    // --- Per-channel show/hide ---
+    // True if this mode consults ScopeState::channelEnabled when it renders.
+    // The Channel button only toggles a channel in a mode that does, so the
+    // button never mutates state with no visible effect: X-Y plots both axes by
+    // construction, and Tuner and Waterfall always show both halves.
+    virtual bool honoursChannelEnable() const { return false; }
 };

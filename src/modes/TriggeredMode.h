@@ -12,6 +12,13 @@ class TriggeredMode : public ScopeMode {
 public:
     const char* name() const override { return "TRIG"; }
 
+    // Draws each channel only when its enable flag is set, so the Channel
+    // button means something here.
+    bool honoursChannelEnable() const override { return true; }
+
+    // The only trigger-aligned mode, so the only one that can arm single shot.
+    bool triggerAligned() const override { return true; }
+
     // Draw the grid, then each enabled channel's waveform.
     // Z-order: grid first, traces on top of grid, HUD drawn by RunScreen on top of both.
     void render(Renderer& r, const ScopeState& state,

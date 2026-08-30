@@ -33,6 +33,10 @@ public:
 
     const char* name() const override { return "SPEC"; }
 
+    // Draws each channel only when its enable flag is set, so the Channel
+    // button means something here.
+    bool honoursChannelEnable() const override { return true; }
+
     // Wire the capture source the FFT block is read from (called by RunScreen).
     void setSource(Acquisition* acq) { _src = acq; }
 

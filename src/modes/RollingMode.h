@@ -15,6 +15,10 @@ class RollingMode : public ScopeMode {
 public:
     const char* name() const override { return "ROLL"; }
 
+    // Draws each channel only when its enable flag is set, so the Channel
+    // button means something here.
+    bool honoursChannelEnable() const override { return true; }
+
     void render(Renderer& r, const ScopeState& state,
                 const SampleBuffers& buf) override;
 

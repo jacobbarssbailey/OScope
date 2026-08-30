@@ -21,12 +21,15 @@ every mode.
 | Control | Short press | Hold (0.5 s) | Turn |
 |---|---|---|---|
 | **Mode** (B1) | next display mode | open the settings menu | — |
-| **Channel** (B2) | mode-specific (see below) | show/hide channel A's trace | — |
+| **Channel** (B2) | show/hide channel A | show/hide channel B | — |
 | **Run/Stop** (B3) | freeze / resume | arm single shot | — |
 | **Encoder** | select the next setting | reset everything to defaults | change the selected setting |
 
-The **Channel** short press does nothing in most modes. Only Waterfall claims
-it, where it flips the scroll direction.
+Two of those bend where a mode has nothing for them to act on. The **encoder
+press** normally walks the settings, but in Tuner and Waterfall — which have no
+settings — it takes the mode's own toggle instead: hertz-or-note in Tuner, flow
+direction in Waterfall. The **Channel** button does nothing in the modes that
+always draw both channels.
 
 ### Every control in every mode
 
@@ -34,27 +37,30 @@ Every cell is spelled out — a dash means the control does nothing in that mode
 
 | | TRIG | ROLL | X-Y | SPEC | TUNE | WFAL |
 |---|---|---|---|---|---|---|
-| **Encoder turn** | change setting | change setting | change setting | — | Hz ↔ note | — |
-| **Encoder press** | next setting (of 3) | next setting (of 2) | next setting (of 2) | — | — | — |
+| **Encoder turn** | change setting | change setting | change setting | — | — | — |
+| **Encoder press** | next setting (of 3) | next setting (of 2) | next setting (of 2) | — | Hz ↔ note | flow direction |
 | **Encoder hold** | reset settings | reset settings | reset settings | reset settings | reset settings | reset settings |
 | **Mode press** | next mode | next mode | next mode | next mode | next mode | next mode |
 | **Mode hold** | settings menu | settings menu | settings menu | settings menu | settings menu | settings menu |
-| **Channel press** | — | — | — | — | — | flow direction |
-| **Channel hold** | hide/show A | hide/show A | — | hide/show A | — | — |
+| **Channel press** | hide/show A | hide/show A | — | hide/show A | — | — |
+| **Channel hold** | hide/show B | hide/show B | — | hide/show B | — | — |
 | **Run/Stop press** | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume |
 | **Run/Stop hold** | arm single shot | — | — | — | — | — |
 
 Five of those nine depend on the mode; the other four — reset, next mode,
-settings menu, freeze — do the same thing wherever you are. Two rows are worth
+settings menu, freeze — do the same thing wherever you are. Three rows are worth
 reading twice:
 
-- **Channel hold** hides a trace only where a mode consults the flag. X-Y always
-  plots both by design, and Tuner and Waterfall ignore it entirely. It also only
-  ever acts on **channel A** — see [Known limitations](#current-limitations).
+- **Encoder press** walks the settings where there are settings, and otherwise
+  becomes the mode's own toggle. Tuner and Waterfall are the two modes with a
+  single thing worth switching and nothing to dial.
+- **Channel press and hold** hide channel A and channel B respectively, and only
+  in the modes that consult the flags. X-Y plots both axes by construction, and
+  Tuner and Waterfall always draw both halves, so the button is inert there
+  rather than silently changing something you would only see later.
 - **Run/Stop hold** arms a single shot, which completes on the next *triggered*
-  capture. The free-running modes never trigger, so arming outside Triggered
-  leaves the dashed ring up and the scope running until you press Run/Stop
-  again.
+  capture. Only Triggered produces one, so the hold is ignored in the other
+  modes rather than arming something that could never fire.
 
 ---
 
@@ -130,15 +136,15 @@ spectrum: channel A grows up from the centre line, channel B grows down. The
 frequency window and amplitude mapping are fixed.
 
 **TUNE — Tuner.** Pitch detection on both channels, A in the top half of the
-face and B in the bottom. **Turn the encoder** to switch the readout between
+face and B in the bottom. **Press the encoder** to switch the readout between
 frequency in hertz and musical note; in note mode a bar either side of centre
 shows how sharp or flat each channel is. The A4 reference is in the settings
 menu.
 
 **WFAL — Waterfall.** A scrolling spectrogram — each FFT frame becomes a line of
 colour and the lines scroll over time, so you watch the spectrum evolve.
-Channel A owns the left half of the face, channel B the right. **Press Channel**
-to switch the flow direction:
+Channel A owns the left half of the face, channel B the right. **Press the
+encoder** to switch the flow direction:
 
 - *Up* — frequency across the face, time scrolling upward from the bottom.
 - *Out* — frequency up the face, time scrolling outward from the centre.
@@ -157,10 +163,10 @@ settings while frozen — the readouts update even though the trace does not.
 outline, the scope runs until the next successful triggered capture, then
 freezes on it and disarms.
 
-Since it waits for a trigger, this is a Triggered-mode tool. The free-running
-modes never trigger, so arming in one of those leaves the dashed ring up and the
-scope running indefinitely. A press of Run/Stop cancels a pending single shot
-either way.
+Since it waits for a trigger, this is a Triggered-mode tool — nothing else
+produces a trigger-aligned capture, so holding Run/Stop in the other modes does
+nothing at all rather than arming something that could never fire. A press of
+Run/Stop cancels a pending single shot.
 
 ---
 
@@ -228,23 +234,25 @@ does not touch the settings menu — edge, A4 and persist keep their values.
 
 Honest notes about the interface as it stands, so nothing reads as a fault:
 
-- **Hiding a trace only works on channel A, and only in three modes.** Holding
-  Channel toggles the focused channel, and the focus is currently pinned to A+B
-  with A as the lead, so channel B cannot be hidden. Only Triggered, Rolling and
-  Spectrum consult the flag — X-Y plots both by design, and Tuner and Waterfall
-  ignore it. Related: with A hidden, a Volts edit moves channel B's scale while
-  the readout still shows A's.
+- **The Volts readout always shows channel A.** Hiding a channel also excludes
+  it from Volts edits, so with A hidden the encoder moves channel B's scale
+  while the overlay still reads A's — and with *both* hidden nothing moves at
+  all. The blank face makes the second case obvious, but the readout is wrong
+  in the first.
+- **Hiding a trace only does something in three modes.** Triggered, Rolling and
+  Spectrum consult the enable flags; X-Y plots both axes by construction and
+  Tuner and Waterfall always draw both halves, so the Channel button is inert
+  there.
 - **The three panel LEDs do nothing.** They are wired and assigned pins, but no
   firmware drives them yet.
-- **Channel selection is not exposed.** The scope always acquires and displays
-  both channels; the per-channel plumbing exists but the v2 interface does not
-  surface a way to focus one.
+- **There is no way to focus a single channel.** Hiding a trace stops it being
+  drawn, but the scope still acquires both, and Volts still edits whichever
+  channels are visible rather than one you picked. The per-channel plumbing
+  exists underneath; nothing surfaces it. This is what makes the Volts readout
+  above ambiguous.
 - **Spectrum, Tuner and Waterfall have no adjustable acquisition settings.**
   Their sample rates, frequency windows and scaling are fixed at bench-tuned
   values.
-- **Single shot never completes outside Triggered.** Arming it in a free-running
-  mode is accepted — dashed ring and all — but no capture is trigger-aligned
-  there, so it waits forever. Press Run/Stop to cancel.
 
 ---
 
@@ -254,14 +262,14 @@ Honest notes about the interface as it stands, so nothing reads as a fault:
 Mode  (B1)   press  next mode: TRIG > ROLL > X-Y > SPEC > TUNE > WFAL
              hold   settings menu       (in a menu: press = back / cancel)
 
-Chan  (B2)   press  Waterfall: flow direction; other modes: nothing
-             hold   show/hide channel A's trace
+Chan  (B2)   press  show / hide channel A    (TRIG, ROLL and SPEC only)
+             hold   show / hide channel B
 
 Run   (B3)   press  freeze / resume     (solid orange ring = frozen)
-             hold   arm single shot     (dashed ring = armed)
+             hold   arm single shot     (dashed ring = armed; TRIG only)
 
 Enc          press  next setting        (in a menu: open / confirm)
+                    TUNE: Hz <-> note.  WFAL: flow direction
              hold   reset acquisition settings to defaults
              turn   change the selected setting
-                    Tuner: switch the readout between Hz and note
 ```
