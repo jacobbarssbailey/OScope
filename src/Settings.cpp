@@ -11,6 +11,7 @@ void Settings::defaults() {
     // jitter and modulation legible, and a scope that shows it out of the box
     // reads as working rather than as needing to be switched on.
     persist    = 3;
+    persistLast = 3;
 }
 
 // ---- Persistence ----------------------------------------------------------
@@ -20,7 +21,7 @@ void Settings::defaults() {
 
 static constexpr int      kEEAddr  = 0;
 static constexpr uint16_t kMagic   = 0x05C0;   // "OScope settings"
-static constexpr uint8_t  kVersion = 7;   // bumped: removed trigSource + trigMode
+static constexpr uint8_t  kVersion = 8;   // bumped: added persistLast
 
 struct StoredSettings {
     uint16_t   magic;
@@ -28,15 +29,18 @@ struct StoredSettings {
     TrigEdge   trigEdge;
     uint16_t   a4_hz;
     uint8_t    persist;
+    uint8_t    persistLast;
 };
 
 void Settings::load() {
     StoredSettings s;
     EEPROM.get(kEEAddr, s);
     if (s.magic == kMagic && s.version == kVersion) {
-        trigEdge   = s.trigEdge;
-        a4_hz      = s.a4_hz;
-        persist    = s.persist;
+        trigEdge    = s.trigEdge;
+        a4_hz       = s.a4_hz;
+        persist     = s.persist;
+        // A stored 0 would leave B2 with nothing to switch back on.
+        persistLast = s.persistLast ? s.persistLast : 3;
     } else {
         defaults();
         save();   // initialise EEPROM so subsequent boots read a valid record
@@ -44,7 +48,7 @@ void Settings::load() {
 }
 
 void Settings::save() const {
-    StoredSettings s{kMagic, kVersion, trigEdge, a4_hz, persist};
+    StoredSettings s{kMagic, kVersion, trigEdge, a4_hz, persist, persistLast};
     EEPROM.put(kEEAddr, s);   // put() only rewrites changed bytes (flash wear)
 }
 

@@ -37,12 +37,11 @@ public:
     bool ownsEncoderPress() const override { return true; }
     void encoderPress() override;
 
-    // TODO: B2 is the per-mode option key and Tuner is the one mode with
-    // nothing on it.  Candidates: a hold on the last confident reading so a
-    // plucked string can be read after it decays; a fine/coarse cents scale;
-    // or transpose, since the A4 reference in the menu only shifts the whole
-    // grid.  Until one is chosen, ownsChannelButton() stays false and B2 does
-    // nothing here — see docs/user-guide.md's control matrix.
+    // B2 holds the last confident reading.  YIN gives up as a plucked note
+    // decays, which is exactly when you want to read it, so with hold on the
+    // readout keeps the last pitch it was sure of instead of dropping to "--".
+    bool ownsChannelButton() const override { return true; }
+    void channelPress() override;
 
 private:
     static constexpr uint16_t kWin       = 1024;   // YIN window length
@@ -52,9 +51,12 @@ private:
     Acquisition*    _src      = nullptr;
     const Settings* _settings = nullptr;
     bool  _showNote = true;     // false = Hz readout, true = note readout
+    bool  _hold     = false;    // keep the last confident reading when YIN loses it
     float _fsHz     = 16129.0f; // sample rate (set in the constructor)
     float _freqA    = -1.0f;    // smoothed detected pitch, -1 = none
     float _freqB    = -1.0f;
+    float _heldA    = -1.0f;    // last pitch either channel was confident of
+    float _heldB    = -1.0f;
 
     uint16_t _rawA[kWin];
     uint16_t _rawB[kWin];
@@ -66,6 +68,8 @@ private:
     // Fold a new reading into a smoothed estimate (snap on a big jump).
     static float smooth(float prev, float fresh);
     // Draw one channel's readout (big glyph + subscript) and its cents meter.
+    // `held` greys the readout — the channel colour stays on the meter marker,
+    // so what the dimming says is "this is not live", not "this is not yours".
     void drawChannel(Renderer& r, float freq, uint16_t color,
-                     int16_t bigY, int16_t meterY) const;
+                     int16_t bigY, int16_t meterY, bool held) const;
 };

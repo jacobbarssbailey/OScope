@@ -202,10 +202,12 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                     activeMode->channelPress();
                 } else if (activeMode && activeMode->honoursPersistence()) {
                     if (ctx.settings.persist != 0) {
-                        _persistLast = ctx.settings.persist;   // keep the level
+                        // Keep the level so switching back on restores the
+                        // trail length the menu is set to, not a default.
+                        ctx.settings.persistLast = ctx.settings.persist;
                         ctx.settings.persist = 0;
                     } else {
-                        ctx.settings.persist = _persistLast;
+                        ctx.settings.persist = ctx.settings.persistLast;
                     }
                     ctx.settings.save();   // a single press, so no debounce needed
                 }
