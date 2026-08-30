@@ -3,14 +3,13 @@
 // Button mapping (short press):
 //   B1 (Mode)    — cycle acquisition mode: TRIG → ROLL → X-Y → TRIG …
 //                  then clampSelectable() to fix selection if now invalid.
-//   B2 (Channel) — show/hide channel A (modes that honour the enable flags)
+//   B2 (Channel) — show/hide channel B (modes that honour the enable flags)
 //   B3 (RunStop) — toggle run/stop (also disarms a pending single-shot)
 //   Encoder      — advance selected parameter (skips N/A params for current
 //                  mode), or the mode's own toggle if it claims the press
 //   Encoder turn — adjust the selected parameter value by encoder delta
 // Long press:
 //   B1 (Mode)    — open the settings menu (push MenuScreen)
-//   B2 (Channel) — show/hide channel B
 //   B3 (RunStop) — arm single-shot (Triggered only): run until the next
 //                  successful triggered capture, then freeze and disarm
 //   Encoder      — reset all state to defaults
@@ -192,13 +191,13 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 _settings = false;
                 break;
 
-            // B2: show/hide channel A.  One button per channel would need four
-            // buttons; instead the press takes A and the hold takes B.  Modes
-            // that ignore the enable flags swallow it, so the button never
-            // changes state you cannot see.
+            // B2: show/hide channel B.  Channel A is the reference trace and
+            // always shows; B is the one you flip in and out against it, so the
+            // button needs no second gesture.  Modes that ignore the enable
+            // flags swallow it, so it never changes state you cannot see.
             case Btn::Channel:
                 if (activeMode && activeMode->honoursChannelEnable()) {
-                    s.channelEnabled[0] = !s.channelEnabled[0];
+                    s.channelEnabled[1] = !s.channelEnabled[1];
                 }
                 break;
 
@@ -237,15 +236,6 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
             // B1 long-press: open the settings menu.
             case Btn::Mode:
                 if (_menu) ctx.screens.push(_menu, ctx);
-                break;
-
-            // B2 long-press: show/hide channel B, the counterpart to the short
-            // press.  When hidden the trace isn't drawn and its V/div edits are
-            // skipped.
-            case Btn::Channel:
-                if (activeMode && activeMode->honoursChannelEnable()) {
-                    s.channelEnabled[1] = !s.channelEnabled[1];
-                }
                 break;
 
             // B3 long-press: arm single-shot — run until the next successful

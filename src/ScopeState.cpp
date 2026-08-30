@@ -69,6 +69,11 @@ void ScopeState::load() {
     timebase_us_per_div[(uint8_t)Mode::Tuner]     = kTunerTimebaseUs;
     timebase_us_per_div[(uint8_t)Mode::Waterfall] = kWaterfallTimebaseUs;
 
+    // Channel A is the reference trace: no control hides it, so no stored
+    // record may either.  A board that saved A hidden under earlier firmware
+    // would otherwise come up without it and have no way to bring it back.
+    channelEnabled[0] = true;
+
     // Transient fields always boot to a sane state, regardless of what was saved.
     running     = true;
     singleArmed = false;

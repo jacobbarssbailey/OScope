@@ -118,9 +118,10 @@ static void adjVScale(ScopeState& s, int8_t d) {
     uint8_t lo = (s.channel == ChannelSel::B) ? 1 : 0;
     uint8_t hi = (s.channel == ChannelSel::A) ? 0 : 1;
     for (uint8_t c = lo; c <= hi && c < 2; ++c) {
-        // Skip channels whose trace is disabled — V/div on a hidden channel
-        // would have no visible effect, so leave its stored scale untouched.
-        if (!s.channelEnabled[c]) continue;
+        // A hidden channel is scaled too.  Skipping it used to seem tidy, but
+        // it meant the readout (which shows ch 0) could describe a channel the
+        // encoder was not moving, and it left a hidden trace at a stale scale
+        // to reappear wrong.  One control, both channels, always.
         int i = indexOf(steps, s.vscale_mv_per_div[c]);
         i = clampi(i + d, 0, count - 1);
         s.vscale_mv_per_div[c] = steps[i];

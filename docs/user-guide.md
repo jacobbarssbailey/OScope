@@ -21,7 +21,7 @@ every mode.
 | Control | Short press | Hold (0.5 s) | Turn |
 |---|---|---|---|
 | **Mode** (B1) | next display mode | open the settings menu | — |
-| **Channel** (B2) | show/hide channel A | show/hide channel B | — |
+| **Channel** (B2) | show/hide channel B | — | — |
 | **Run/Stop** (B3) | freeze / resume | arm single shot | — |
 | **Encoder** | select the next setting | reset everything to defaults | change the selected setting |
 
@@ -29,7 +29,8 @@ Two of those bend where a mode has nothing for them to act on. The **encoder
 press** normally walks the settings, but in Tuner and Waterfall — which have no
 settings — it takes the mode's own toggle instead: hertz-or-note in Tuner, flow
 direction in Waterfall. The **Channel** button does nothing in the modes that
-always draw both channels.
+always draw both channels, and it has no hold at all: channel A is the reference
+trace and always shows, so B is the only one to flip.
 
 ### Every control in every mode
 
@@ -42,22 +43,22 @@ Every cell is spelled out — a dash means the control does nothing in that mode
 | **Encoder hold** | reset settings | reset settings | reset settings | reset settings | reset settings | reset settings |
 | **Mode press** | next mode | next mode | next mode | next mode | next mode | next mode |
 | **Mode hold** | settings menu | settings menu | settings menu | settings menu | settings menu | settings menu |
-| **Channel press** | hide/show A | hide/show A | — | hide/show A | — | — |
-| **Channel hold** | hide/show B | hide/show B | — | hide/show B | — | — |
+| **Channel press** | hide/show B | hide/show B | — | hide/show B | — | — |
+| **Channel hold** | — | — | — | — | — | — |
 | **Run/Stop press** | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume |
 | **Run/Stop hold** | arm single shot | — | — | — | — | — |
 
-Five of those nine depend on the mode; the other four — reset, next mode,
-settings menu, freeze — do the same thing wherever you are. Three rows are worth
-reading twice:
+Four of those nine depend on the mode. Four more — reset, next mode, settings
+menu, freeze — do the same thing wherever you are, and Channel hold is unused
+everywhere. Three rows are worth reading twice:
 
 - **Encoder press** walks the settings where there are settings, and otherwise
   becomes the mode's own toggle. Tuner and Waterfall are the two modes with a
   single thing worth switching and nothing to dial.
-- **Channel press and hold** hide channel A and channel B respectively, and only
-  in the modes that consult the flags. X-Y plots both axes by construction, and
-  Tuner and Waterfall always draw both halves, so the button is inert there
-  rather than silently changing something you would only see later.
+- **Channel press** hides channel B, and only in the modes that consult the
+  flags. X-Y plots both axes by construction, and Tuner and Waterfall always
+  draw both halves, so the button is inert there rather than silently changing
+  something you would only see later. Channel A always shows.
 - **Run/Stop hold** arms a single shot, which completes on the next *triggered*
   capture. Only Triggered produces one, so the hold is ignored in the other
   modes rather than arming something that could never fire.
@@ -96,9 +97,11 @@ restores what you last set there.
 Steps follow a 1‑1.5‑2‑3‑5‑7 sequence per decade, so one detent is a small,
 even change rather than a jump to the next decade.
 
-**Volts** runs 50 mV to 5 V per division in twelve steps, and moves both
-channels together. The face is eight divisions tall, so at the 3 V/div default
-the visible window is ±12 V — wider than the ±10 V inputs can reach.
+**Volts** runs 50 mV to 5 V per division in twelve steps, and always moves both
+channels together — hiding channel B does not take it out of the scaling, so it
+comes back at the scale you would expect. The face is eight divisions tall, so
+at the 3 V/div default the visible window is ±12 V — wider than the ±10 V inputs
+can reach.
 
 **Trigger** moves in proportion to what is on screen rather than in a fixed
 step: one detent is a fifth of a division, and the range is the visible
@@ -234,22 +237,16 @@ does not touch the settings menu — edge, A4 and persist keep their values.
 
 Honest notes about the interface as it stands, so nothing reads as a fault:
 
-- **The Volts readout always shows channel A.** Hiding a channel also excludes
-  it from Volts edits, so with A hidden the encoder moves channel B's scale
-  while the overlay still reads A's — and with *both* hidden nothing moves at
-  all. The blank face makes the second case obvious, but the readout is wrong
-  in the first.
-- **Hiding a trace only does something in three modes.** Triggered, Rolling and
-  Spectrum consult the enable flags; X-Y plots both axes by construction and
+- **Hiding channel B only does something in three modes.** Triggered, Rolling
+  and Spectrum consult the enable flag; X-Y plots both axes by construction and
   Tuner and Waterfall always draw both halves, so the Channel button is inert
   there.
 - **The three panel LEDs do nothing.** They are wired and assigned pins, but no
   firmware drives them yet.
-- **There is no way to focus a single channel.** Hiding a trace stops it being
-  drawn, but the scope still acquires both, and Volts still edits whichever
-  channels are visible rather than one you picked. The per-channel plumbing
-  exists underneath; nothing surfaces it. This is what makes the Volts readout
-  above ambiguous.
+- **There is no way to scale one channel independently.** Volts moves both
+  together by design, and hiding B does not change that. The per-channel
+  plumbing exists underneath — each channel stores its own V/div — but nothing
+  surfaces a way to set them apart.
 - **Spectrum, Tuner and Waterfall have no adjustable acquisition settings.**
   Their sample rates, frequency windows and scaling are fixed at bench-tuned
   values.
@@ -262,8 +259,8 @@ Honest notes about the interface as it stands, so nothing reads as a fault:
 Mode  (B1)   press  next mode: TRIG > ROLL > X-Y > SPEC > TUNE > WFAL
              hold   settings menu       (in a menu: press = back / cancel)
 
-Chan  (B2)   press  show / hide channel A    (TRIG, ROLL and SPEC only)
-             hold   show / hide channel B
+Chan  (B2)   press  show / hide channel B    (TRIG, ROLL and SPEC only)
+             hold   nothing
 
 Run   (B3)   press  freeze / resume     (solid orange ring = frozen)
              hold   arm single shot     (dashed ring = armed; TRIG only)
