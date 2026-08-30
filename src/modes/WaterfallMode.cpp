@@ -55,11 +55,9 @@ void WaterfallMode::reshape() {
     memset(_hist, 0, sizeof _hist);
 }
 
-void WaterfallMode::channelPress(char* label, uint8_t nl, char* value, uint8_t nv) {
+void WaterfallMode::channelPress() {
     _flow = (_flow == Flow::Up) ? Flow::Out : Flow::Up;
     reshape();
-    snprintf(label, nl, "flow");
-    snprintf(value, nv, _flow == Flow::Up ? "up" : "out");
 }
 
 void WaterfallMode::computeMag(const uint16_t* src, float* mag) {

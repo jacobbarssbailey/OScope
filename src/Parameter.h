@@ -1,10 +1,10 @@
 // Parameter.h — Descriptor abstraction for encoder-controlled parameters.
 //
-// Each EncoderParam has a name, an adjust() function that steps the value in
-// the ScopeState by a signed encoder detent, and a format() function that
-// writes the current value and its unit as two strings ("500" + "us/div").
-// They are kept separate because the readout band sets them at different sizes
-// on a shared baseline.  All descriptors live in a static table — no heap.
+// Each EncoderParam has a name, an icon, an adjust() function that steps the
+// value in the ScopeState by a signed encoder detent, and a format() function
+// that writes the current value and its unit as two strings ("500" + "us").
+// They are kept separate because the settings overlay sets them at different
+// sizes on a shared baseline.  All descriptors live in a static table — no heap.
 //
 // Key rules:
 //   - paramAppliesInMode(): Triggered → all three; Rolling and XY → Timebase +
@@ -17,12 +17,14 @@
 #pragma once
 
 #include "ScopeState.h"
+#include "Icons.h"
 #include <stdint.h>
 
 // Descriptor for one encoder-controlled parameter.
 struct Parameter {
     EncoderParam id;
-    const char*  name;   // band label, e.g. "trigger"
+    const char*  name;   // readout label, e.g. "trigger"
+    const Icon*  icon;   // glyph shown beside the value in the settings overlay
     void (*adjust)(ScopeState&, int8_t delta);
     // Write the current value ("1.5") and its unit ("ms/div") separately.
     void (*format)(const ScopeState&, char* val, uint8_t nv,

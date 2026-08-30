@@ -44,16 +44,26 @@ namespace Theme {
   constexpr int16_t RunRingW     = 2;    // thickness
   constexpr uint8_t RunRingDashes = 12;  // dashes around the ring when armed
 
-  // ---- Transient parameter band ----
-  // Acquisition settings are not on screen permanently: changing one raises a
-  // band across the middle of the face — blank (waveform masked out) between a
-  // grey rule top and bottom — holding the label over the value for BandHoldMs
-  // after the last input, then vanishing.
-  constexpr int16_t  BandTopY   = 94;    // upper rule
-  constexpr int16_t  BandBotY   = 166;   // lower rule
-  constexpr int16_t  BandLabelY = 100;   // label, top of text (14 px)
-  constexpr int16_t  BandValueY = 121;   // value, top of text (36 px + 20 px unit)
-  constexpr uint32_t BandHoldMs = 2000;  // time on screen after the last input
+  // ---- Transient settings overlay ----
+  // Acquisition settings are not on screen permanently: touching one dims the
+  // whole face and lists every parameter that applies in the current mode, one
+  // icon + value row each, with the edited row in Text and the rest in Dim.
+  //
+  // This is the only transient readout.  A control the encoder does not walk
+  // through, and whose effect is visible on the face (Waterfall's flow
+  // direction), reports nothing — it shows itself.
+  //
+  // OverlayKeep is the per-channel multiplier the dim applies (out of 256): the
+  // design's 60% black scrim leaves 40% of the frame, and 102/256 = 0.398.
+  constexpr uint16_t OverlayKeep    = 102;
+  constexpr uint32_t SettingsHoldMs = 2000; // time on screen after the last input
+  constexpr int16_t  SettingIconX   = 26;   // left edge of the icon (32-34 px wide)
+  constexpr int16_t  SettingValueX  = 68;   // left edge of the value text
+  constexpr int16_t  SettingRowH    = 50;   // row pitch
+  constexpr int16_t  SettingRowsCY  = 120;  // the row block is centred on this
+  constexpr int16_t  SettingIconSz  = 32;   // icon height, for centring in a row
+  // Cap height of the value font (FONT_BODY), for centring text against the icon.
+  constexpr int16_t  SettingValueCap = 20;
 
   // ---- Oscilloscope plot area ----
   // The round display is 240×240.  The waveform occupies the full 240×240 canvas;

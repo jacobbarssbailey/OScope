@@ -34,7 +34,9 @@ static constexpr uint32_t kWaterfallTimebaseUs = kSpectrumTimebaseUs;
 enum class ChannelSel : uint8_t { A, B, Both };
 
 // Which parameter the encoder currently controls.
-enum class EncoderParam : uint8_t { Timebase, VScale, TriggerLevel };
+// COUNT is a sentinel, not a selectable value; it must stay last so the stored
+// values of the real parameters never move (ScopeState is persisted).
+enum class EncoderParam : uint8_t { Timebase, VScale, TriggerLevel, COUNT };
 
 struct ScopeState {
     Mode         mode     = Mode::Triggered;

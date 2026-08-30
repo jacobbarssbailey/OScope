@@ -40,10 +40,3 @@
 // it is compile-time rather than a settings toggle (nothing to leave switched on
 // by accident, and the reporting code drops out entirely).
 #define ACQ_DIAG 0
-
-// ---- UI layout debugging ----
-// Set to 1 to overlay a 16 px ruler grid (anchored on the display centre, with
-// the centre axes picked out brighter) on top of every screen.  It is the
-// measuring stick for tuning margins and text positions against the design
-// mockups; always 0 in shipping builds.
-#define UI_DEBUG_GRID 0

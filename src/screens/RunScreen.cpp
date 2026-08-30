@@ -19,6 +19,7 @@
 //   2. Grid underlay (drawn here, shared by the scope modes)
 //   3. Waveform traces (activeMode->render())
 //   4. HUD text overlay (drawn here, after render())
+//   5. Settings overlay — dims everything above and lists the parameters
 //
 // Acquisition: driven by tick() (called every main-loop iteration), which
 // advances the non-blocking Acquisition state machine one sample at a time.
@@ -35,7 +36,6 @@
 #include "../Fonts.h"
 
 #include <Arduino.h>   // snprintf on Teensy
-#include <string.h>    // strncpy
 
 // How long the large mode label stays up after a mode change.
 static constexpr uint32_t kModeFlashMs = 1500;
@@ -78,34 +78,58 @@ void RunScreen::onEnter(AppContext& ctx) {
 }
 
 // --------------------------------------------------------------------------
-// Transient parameter band
+// Transient settings overlay
 // --------------------------------------------------------------------------
-bool RunScreen::bandActive() const {
-    return _band && (millis() - _bandMs) < Theme::BandHoldMs;
+bool RunScreen::settingsActive() const {
+    return _settings && (millis() - _settingsMs) < Theme::SettingsHoldMs;
 }
 
-void RunScreen::showBand(const char* label, const char* value, const char* unit) {
-    if (label == nullptr || label[0] == '\0' || value == nullptr || value[0] == '\0') {
-        _band = false;
-        return;
+void RunScreen::showSettings(const ScopeState& s) {
+    // Spectrum, Tuner and Waterfall have no adjustable acquisition parameters,
+    // so there is nothing to raise — an empty scrim would just hide the trace.
+    if (!paramAppliesInMode(s.selected, s.mode)) { _settings = false; return; }
+    _settings   = true;
+    _settingsMs = millis();
+    _modeFlash  = false;
+}
+
+// One icon + "<value><unit>" row per parameter that applies in this mode,
+// stacked at SettingRowH pitch and centred as a block on SettingRowsCY, over a
+// scrim that dims whatever was already drawn.  The edited row is inked in Text
+// and the rest in Dim, which is exactly the design's two icon variants.
+void RunScreen::drawSettings(Renderer& r, const ScopeState& s) {
+    r.fadeFrame(Theme::OverlayKeep);
+
+    // Count first: the block's height, and so its top, depends on how many
+    // parameters this mode exposes (Rolling and XY drop the trigger level).
+    const int kCount = (int)EncoderParam::COUNT;
+    int rows = 0;
+    for (int i = 0; i < kCount; ++i) {
+        if (paramAppliesInMode((EncoderParam)i, s.mode)) ++rows;
     }
-    strncpy(_bandLabel, label, sizeof _bandLabel - 1);
-    strncpy(_bandValue, value, sizeof _bandValue - 1);
-    strncpy(_bandUnit, unit ? unit : "", sizeof _bandUnit - 1);
-    _bandLabel[sizeof _bandLabel - 1] = '\0';
-    _bandValue[sizeof _bandValue - 1] = '\0';
-    _bandUnit[sizeof _bandUnit - 1]   = '\0';
-    _band      = true;
-    _bandMs    = millis();
-    _modeFlash = false;   // the band occupies the same space as the mode label
-}
+    int16_t centreY = (int16_t)(Theme::SettingRowsCY -
+                                (rows - 1) * Theme::SettingRowH / 2);
 
-void RunScreen::showSelectedParam(const ScopeState& s) {
-    if (!paramAppliesInMode(s.selected, s.mode)) { _band = false; return; }
-    const Parameter& p = parameterFor(s.selected);
-    char val[12], unit[10];
-    p.format(s, val, sizeof val, unit, sizeof unit);
-    showBand(p.name, val, unit);
+    for (int i = 0; i < kCount; ++i) {
+        const EncoderParam id = (EncoderParam)i;
+        if (!paramAppliesInMode(id, s.mode)) continue;
+
+        const Parameter& p    = parameterFor(id);
+        const uint16_t   tint = (id == s.selected) ? Theme::Text : Theme::Dim;
+
+        char val[12], unit[10];
+        p.format(s, val, sizeof val, unit, sizeof unit);
+
+        // The icon is centred on the row; the text is centred by cap height, so
+        // digits sit on the icon's optical middle rather than hanging off it.
+        r.icon(Theme::SettingIconX,
+               (int16_t)(centreY - Theme::SettingIconSz / 2), *p.icon, tint);
+        r.textUnit(Theme::SettingValueX,
+                   (int16_t)(centreY - Theme::SettingValueCap / 2),
+                   val, unit, tint, FONT_BODY, FONT_SMALL);
+
+        centreY = (int16_t)(centreY + Theme::SettingRowH);
+    }
 }
 
 // --------------------------------------------------------------------------
@@ -121,11 +145,11 @@ bool RunScreen::tick(AppContext& ctx) {
         _stateDirty = false;
     }
 
-    // Keep requesting redraws while the mode flash or the parameter band is up
-    // so each can time out on its own even when stopped/idle (draw() clears them
-    // when they expire).
+    // Keep requesting redraws while the mode flash or the settings overlay is
+    // up so each can time out on its own even when stopped/idle (draw() clears
+    // them when they expire).
     const bool flashActive = (_modeFlash && (millis() - _modeFlashMs) < kModeFlashMs)
-                             || _band;
+                             || _settings;
 
     if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
 
@@ -174,6 +198,11 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
             case Btn::Mode:
                 s.mode = (Mode)(((int)s.mode + 1) % (int)Mode::COUNT);
                 clampSelectable(s);
+                // The mode label takes the face; drop the overlay rather than
+                // let it dim the label — and the new mode may expose no
+                // parameters at all (Spectrum, Tuner, Waterfall), which would
+                // leave a scrim over nothing.
+                _settings    = false;
                 _modeFlash   = true;
                 _modeFlashMs = millis();
                 break;
@@ -186,9 +215,7 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
             // still works either way.
             case Btn::Channel:
                 if (activeMode && activeMode->ownsChannelButton()) {
-                    char label[12] = {0}, value[12] = {0};
-                    activeMode->channelPress(label, sizeof label, value, sizeof value);
-                    showBand(label, value, "");
+                    activeMode->channelPress();
                 }
                 break;
 
@@ -201,13 +228,13 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
 
             // Encoder press: cycle the active mode's own parameters if it has
             // them (Tuner), otherwise advance to the next shared parameter that
-            // applies in the current mode and flash it in the band.
+            // applies in the current mode and raise the settings overlay.
             case Btn::Encoder:
                 if (activeMode && activeMode->ownsEncoder()) {
                     activeMode->encoderPress();
                 } else {
                     s.selected = nextSelectable(s);
-                    showSelectedParam(s);
+                    showSettings(s);
                 }
                 break;
 
@@ -249,12 +276,13 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
     } else if (e.type == EventType::EncoderTurn) {
         // Encoder rotation: adjust the active mode's own selected parameter
         // (Tuner), otherwise the shared parameter — unless none applies.  The
-        // new value goes up in the band, which re-times itself on every detent.
+        // new value goes up in the settings overlay, which re-times itself on
+        // every detent.
         if (activeMode && activeMode->ownsEncoder()) {
             activeMode->encoderTurn(e.delta);
         } else if (paramAppliesInMode(s.selected, s.mode)) {
             parameterFor(s.selected).adjust(s, e.delta);
-            showSelectedParam(s);
+            showSettings(s);
         }
     }
 
@@ -321,21 +349,12 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
         }
     }
 
-    // Parameter band, last of all: it masks the waveform behind it, so nothing
-    // else may draw over it.  It clears itself once the hold time expires.
-    if (_band) {
-        if (bandActive()) {
-            r.fillRect(Theme::PlotX, (int16_t)(Theme::BandTopY + 1), Theme::PlotW,
-                       (int16_t)(Theme::BandBotY - Theme::BandTopY - 1),
-                       Theme::Background);
-            r.hline(Theme::PlotX, Theme::BandTopY, Theme::PlotW, Theme::Dim);
-            r.hline(Theme::PlotX, Theme::BandBotY, Theme::PlotW, Theme::Dim);
-            r.textCenterX(Theme::BandLabelY, _bandLabel, Theme::Text, FONT_SMALL);
-            r.textUnitCenterX(Theme::BandValueY, _bandValue, _bandUnit, Theme::Text,
-                              FONT_LARGE, FONT_BODY);
-        } else {
-            _band = false;
-        }
+    // Settings overlay, over everything above: it dims the whole face, so
+    // nothing drawn before it survives at full brightness.  Clears itself once
+    // the hold time expires.
+    if (_settings) {
+        if (settingsActive()) drawSettings(r, s);
+        else                  _settings = false;
     }
 
     // Run state, outermost of all so nothing (not even the band) masks it: a

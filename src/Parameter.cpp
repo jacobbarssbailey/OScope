@@ -76,7 +76,11 @@ static void adjTime(ScopeState& s, int8_t d) {
 }
 
 // Render the timebase with one decimal for non-integer values (e.g. 1500 µs →
-// "1.5" + "ms/div").  µs below 1 ms, ms below 1 s, seconds at/above 1 s.
+// "1.5" + "ms").  µs below 1 ms, ms below 1 s, seconds at/above 1 s.
+//
+// The unit is bare rather than "ms/div": the settings overlay always shows it
+// beside the timebase icon, which already says what the number measures, and
+// "/div" costs more width than the round face has next to a 32 px icon.
 static void fmtTime(const ScopeState& s, char* b, uint8_t n,
                     char* unit, uint8_t nu) {
     const uint32_t us = s.timebase();
@@ -84,15 +88,15 @@ static void fmtTime(const ScopeState& s, char* b, uint8_t n,
     if (us >= 1000000) {
         whole  = us / 1000000;
         tenths = (us % 1000000) / 100000;
-        snprintf(unit, nu, "s/div");
+        snprintf(unit, nu, "s");
     } else if (us >= 1000) {
         whole  = us / 1000;
         tenths = (us % 1000) / 100;   // step table never goes finer than 0.1 ms
-        snprintf(unit, nu, "ms/div");
+        snprintf(unit, nu, "ms");
     } else {
         whole  = us;
         tenths = 0;
-        snprintf(unit, nu, "us/div");
+        snprintf(unit, nu, "us");
     }
     if (tenths == 0) snprintf(b, n, "%lu", (unsigned long)whole);
     else             snprintf(b, n, "%lu.%lu", (unsigned long)whole,
@@ -134,11 +138,11 @@ static void fmtVScale(const ScopeState& s, char* b, uint8_t n,
     if (mv >= 1000) {
         uint16_t whole = mv / 1000;
         uint16_t tenths = (mv % 1000) / 100;   // step table never finer than 0.1 V
-        snprintf(unit, nu, "v/div");
+        snprintf(unit, nu, "V");
         if (tenths == 0) snprintf(b, n, "%u", whole);
         else             snprintf(b, n, "%u.%u", whole, tenths);
     } else {
-        snprintf(unit, nu, "mv/div");
+        snprintf(unit, nu, "mV");
         snprintf(b, n, "%u", mv);
     }
 }
@@ -165,10 +169,27 @@ static void adjTrig(ScopeState& s, int8_t d) {
         -range, range);
 }
 
+// Millivolts below 1 V, volts at or above it — the level reaches ±10 V, and
+// "-10000mV" is both wider than the round face likes and harder to read at a
+// glance than "-10V".  Crosses over at the same 1000 mV as fmtVScale.
+//
+// The tenth is rounded, not truncated, because the detent is V/div ÷ 5 and so
+// is not always a multiple of 100 mV.  At 300 mV/div (60 mV steps) that still
+// leaves one pair — 1020 and 1080 mV both read "1.0V" — which is the only place
+// in the whole range where two adjacent detents show the same number.
 static void fmtTrig(const ScopeState& s, char* b, uint8_t n,
                     char* unit, uint8_t nu) {
-    snprintf(b, n, "%d", s.trigger_level_mv);
-    snprintf(unit, nu, "mv");
+    const int mv = s.trigger_level_mv;
+    if (mv > -1000 && mv < 1000) {
+        snprintf(b, n, "%d", mv);
+        snprintf(unit, nu, "mV");
+        return;
+    }
+    const int   tenths = ((mv < 0 ? -mv : mv) + 50) / 100;
+    const char* sign   = (mv < 0) ? "-" : "";
+    snprintf(unit, nu, "V");
+    if (tenths % 10 == 0) snprintf(b, n, "%s%d", sign, tenths / 10);
+    else                  snprintf(b, n, "%s%d.%d", sign, tenths / 10, tenths % 10);
 }
 
 // ---- Static descriptor table (order matches EncoderParam enum) ------------
@@ -181,9 +202,9 @@ static_assert((uint8_t)EncoderParam::VScale == 1, "kParams order must match Enco
 static_assert((uint8_t)EncoderParam::TriggerLevel == 2, "kParams order must match EncoderParam");
 
 static const Parameter kParams[] = {
-    { EncoderParam::Timebase,     "time",    adjTime,   fmtTime   },
-    { EncoderParam::VScale,       "volts",   adjVScale, fmtVScale },
-    { EncoderParam::TriggerLevel, "trigger", adjTrig,   fmtTrig   },
+    { EncoderParam::Timebase,     "time",    &IconTimebase, adjTime,   fmtTime   },
+    { EncoderParam::VScale,       "volts",   &IconVScale,   adjVScale, fmtVScale },
+    { EncoderParam::TriggerLevel, "trigger", &IconTrigger,  adjTrig,   fmtTrig   },
 };
 
 // ---- Public API -----------------------------------------------------------
@@ -228,7 +249,7 @@ EncoderParam nextSelectable(const ScopeState& s) {
     // always applies, so the loop finds one within 3 iterations; Spectrum has
     // none, and the fallback (VScale) is returned but never adjusted because
     // handleEvent gates encoder turns on paramAppliesInMode.
-    const int kCount = 3;
+    const int kCount = (int)EncoderParam::COUNT;
     int i = ((int)s.selected + 1) % kCount;
     for (int guard = 0; guard < kCount; ++guard, i = (i + 1) % kCount) {
         if (paramAppliesInMode((EncoderParam)i, s.mode))
