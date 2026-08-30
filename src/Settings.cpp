@@ -7,7 +7,10 @@
 void Settings::defaults() {
     trigEdge   = TrigEdge::Rising;
     a4_hz      = 440;
-    persist    = 0;
+    // Persistence on by default, at the longest setting: a trail is what makes
+    // jitter and modulation legible, and a scope that shows it out of the box
+    // reads as working rather than as needing to be switched on.
+    persist    = 3;
 }
 
 // ---- Persistence ----------------------------------------------------------

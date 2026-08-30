@@ -30,12 +30,6 @@ namespace Theme {
   constexpr int16_t CY        = 120;  // Centre Y
   constexpr int16_t SafeInset = 30;   // Min margin from edge for readable content
 
-  // ---- RunScreen HUD positions (v2, Inter Bold Italic) ----
-  // The waveform fills the whole canvas; the HUD is minimal and mostly hidden.
-  // All these readouts are horizontally centered (textCenterX); the Y here is the
-  // top of the text.  Tuned for the round face — kept clear of the edges.
-  constexpr int16_t ModeY   = 104;  // mode flash, vertically ~centered (36 px)
-
   // ---- Run-state ring ----
   // Halted state is shown as a border around the bezel rather than a word in
   // the middle of the trace: solid when frozen, dashed while a single-shot is

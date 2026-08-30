@@ -18,8 +18,8 @@
 //   1. Background clear (r.clear())
 //   2. Grid underlay (drawn here, shared by the scope modes)
 //   3. Waveform traces (activeMode->render())
-//   4. HUD text overlay (drawn here, after render())
-//   5. Settings overlay — dims everything above and lists the parameters
+//   4. Settings overlay — dims everything above and lists the parameters
+//   5. Run-state ring, outermost, so nothing masks it
 //
 // Acquisition: driven by tick() (called every main-loop iteration), which
 // advances the non-blocking Acquisition state machine one sample at a time.
@@ -36,9 +36,6 @@
 #include "../Fonts.h"
 
 #include <Arduino.h>   // snprintf on Teensy
-
-// How long the large mode label stays up after a mode change.
-static constexpr uint32_t kModeFlashMs = 1500;
 
 // Channel index (0 or 1) that single-channel operations act on.  For Both,
 // the conventional lead channel (A = 0) is used, matching fmtVScale's display.
@@ -90,7 +87,6 @@ void RunScreen::showSettings(const ScopeState& s) {
     if (!paramAppliesInMode(s.selected, s.mode)) { _settings = false; return; }
     _settings   = true;
     _settingsMs = millis();
-    _modeFlash  = false;
 }
 
 // One icon + "<value><unit>" row per parameter that applies in this mode,
@@ -145,13 +141,11 @@ bool RunScreen::tick(AppContext& ctx) {
         _stateDirty = false;
     }
 
-    // Keep requesting redraws while the mode flash or the settings overlay is
-    // up so each can time out on its own even when stopped/idle (draw() clears
-    // them when they expire).
-    const bool flashActive = (_modeFlash && (millis() - _modeFlashMs) < kModeFlashMs)
-                             || _settings;
+    // Keep requesting redraws while the settings overlay is up so it can time
+    // out on its own even when stopped/idle (draw() clears it when it expires).
+    const bool overlayUp = _settings;
 
-    if (!s.running) return flashActive;   // frozen: hold last frame, but honor flash
+    if (!s.running) return overlayUp;   // frozen: hold last frame, but honor the overlay
 
     // Rolling, XY, Spectrum, Tuner, and Waterfall are free-running: they
     // republish/read the newest window whenever samples arrive.  Triggered still
@@ -181,7 +175,7 @@ bool RunScreen::tick(AppContext& ctx) {
             s.singleArmed = false;
         }
     }
-    return _framePending || flashActive;
+    return _framePending || overlayUp;
 }
 
 // --------------------------------------------------------------------------
@@ -194,17 +188,13 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
     if (e.type == EventType::ShortPress) {
         switch (e.button) {
             // B1: advance acquisition mode, then fix selection if invalidated.
-            // Flash the large mode label briefly to confirm the change.
             case Btn::Mode:
                 s.mode = (Mode)(((int)s.mode + 1) % (int)Mode::COUNT);
                 clampSelectable(s);
-                // The mode label takes the face; drop the overlay rather than
-                // let it dim the label — and the new mode may expose no
-                // parameters at all (Spectrum, Tuner, Waterfall), which would
-                // leave a scrim over nothing.
-                _settings    = false;
-                _modeFlash   = true;
-                _modeFlashMs = millis();
+                // Drop the overlay: the new mode may expose no parameters at
+                // all (Spectrum, Tuner, Waterfall), which would leave a scrim
+                // over nothing.  The mode announces itself by what it draws.
+                _settings = false;
                 break;
 
             // B2: channel selection is fixed to A+B in the v2 UI, so short-press
@@ -338,18 +328,7 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     }
     // activeMode is never null (all modes registered); the guard is defensive.
 
-    // 4. Minimal HUD, drawn last (on top of the waveform).
-
-    // Large mode label, centered, for a moment after a mode change.
-    if (_modeFlash) {
-        if (millis() - _modeFlashMs < kModeFlashMs) {
-            r.textCenterX(Theme::ModeY, modeName(s.mode), Theme::Text, FONT_LARGE);
-        } else {
-            _modeFlash = false;
-        }
-    }
-
-    // Settings overlay, over everything above: it dims the whole face, so
+    // 4. Settings overlay, over everything above: it dims the whole face, so
     // nothing drawn before it survives at full brightness.  Clears itself once
     // the hold time expires.
     if (_settings) {

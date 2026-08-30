@@ -55,11 +55,6 @@ private:
     // the note in tick().
     bool     _framePending = false;
 
-    // Mode-change flash: the large mode label is shown centered for a short time
-    // after a mode change, then hidden so it doesn't obscure the waveform.
-    bool     _modeFlash   = false;
-    uint32_t _modeFlashMs = 0;
-
     // Transient settings overlay: acquisition settings are off screen until one
     // is selected or changed, then the whole face dims and every parameter that
     // applies in the current mode is listed for Theme::SettingsHoldMs.  Only the
