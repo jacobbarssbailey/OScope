@@ -229,6 +229,83 @@ def _bucket_mag(i, nbins):
     return _spec_mag(b * BIN_HZ)
 
 
+SPEC_RAD_INNER = T["SpecRadInner"]
+SPEC_RAD_OUTER = T["SpecRadOuter"]
+
+
+def _spec_radial(nbins, outward):
+    """SpectrumMode's radial layouts: each channel's buckets become a fan of
+    spokes over a half circle, A on the left and B on the right, low frequency
+    at the top of both."""
+    c = Canvas()
+    span = SPEC_RAD_OUTER - SPEC_RAD_INNER
+    for pct in (T["SpecRadRing1"], T["SpecRadRing2"]):
+        c.ring(SPEC_RAD_INNER + span * pct // 100, 1, GRID)
+    c.ring(SPEC_RAD_OUTER, 1, GRID)
+    c.vline(CX, 0, H, GRID)
+
+    wedge = math.pi / nbins
+    for side, color, scale in ((-1, TRACE_A, 1.0), (1, TRACE_B, 0.72)):
+        for i in range(nbins):
+            mag = int(_bucket_mag(i, nbins) * scale * T["SpecMaxPx"])
+            length = mag * span // T["SpecMaxPx"]
+            if length <= 0:
+                continue
+            r0 = SPEC_RAD_INNER if outward else SPEC_RAD_OUTER - length
+            r1 = SPEC_RAD_INNER + length if outward else SPEC_RAD_OUTER
+            # Spoke count follows the arc at this bar's own outer radius.
+            spokes = max(1, int(wedge * r1 * 0.9))
+            for k in range(spokes):
+                t = (i + (k + 0.5) / spokes) * wedge
+                sx, sy = side * math.sin(t), -math.cos(t)
+                c.line_aa(CX + sx * r0, CY + sy * r0,
+                          CX + sx * r1, CY + sy * r1, color)
+    return c
+
+
+def _spec_mirror(nbins):
+    """The bar block a quarter turn round: frequency down the face, A left of
+    the centre line and B right."""
+    c = Canvas()
+    for row in range(1, 8):
+        c.hline(0, row * T["GridDiv"], W, GRID)
+    c.vline(CX, 0, H, GRID)
+
+    hgt = T["SpecBarsW"] // nbins
+    rad = hgt // 2
+    top = CY - T["SpecBarsW"] // 2
+    for i in range(nbins):
+        m = _bucket_mag(i, nbins)
+        la = int(m * T["SpecMaxPx"])
+        lb = int(m * 0.72 * T["SpecMaxPx"])
+        y = top + i * hgt
+        if la > 0:
+            c.bar_rounded(CX - la, y, la, hgt, rad, TRACE_A, "left")
+        if lb > 0:
+            c.bar_rounded(CX + 1, y, lb, hgt, rad, TRACE_B, "right")
+    return c
+
+
+def spectrum_mirror_32():
+    return _spec_mirror(32)
+
+
+def spectrum_radial_out_32():
+    return _spec_radial(32, True)
+
+
+def spectrum_radial_out_128():
+    return _spec_radial(128, True)
+
+
+def spectrum_radial_in_32():
+    return _spec_radial(32, False)
+
+
+def spectrum_radial_in_128():
+    return _spec_radial(128, False)
+
+
 def _spectrum(nbins, gap=0):
     """SpectrumMode at one bucket count: the block keeps its total width as the
     bars widen, and only the outer end of each bar is capped.
@@ -250,9 +327,9 @@ def _spectrum(nbins, gap=0):
         hb = int(m * 0.72 * T["SpecMaxPx"])
         x = SPEC_LEFT_X + i * pitch
         if ha > 0:
-            c.bar_rounded(x, SPEC_CENTER_Y - ha, w, ha, rad, TRACE_A, True)
+            c.bar_rounded(x, SPEC_CENTER_Y - ha, w, ha, rad, TRACE_A, "top")
         if hb > 0:
-            c.bar_rounded(x, SPEC_CENTER_Y + 1, w, hb, rad, TRACE_B, False)
+            c.bar_rounded(x, SPEC_CENTER_Y + 1, w, hb, rad, TRACE_B, "bottom")
     return c
 
 
@@ -407,6 +484,11 @@ SCREENS = {
     "spectrum_64": spectrum_64,
     "spectrum_32": spectrum_32,
     "spectrum_32_gap": spectrum_32_gap,
+    "spectrum_mirror_32": spectrum_mirror_32,
+    "spectrum_radial_out_32": spectrum_radial_out_32,
+    "spectrum_radial_out_128": spectrum_radial_out_128,
+    "spectrum_radial_in_32": spectrum_radial_in_32,
+    "spectrum_radial_in_128": spectrum_radial_in_128,
     "spectrum_64_gap": spectrum_64_gap,
     "scope_frozen": scope_frozen,
     "scope_single": scope_single,

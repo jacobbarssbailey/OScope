@@ -87,4 +87,14 @@ namespace Theme {
   constexpr int16_t SpecLeftX     = PlotX + (PlotW - SpecBarsW) / 2; // 56
   constexpr int16_t SpecCenterY   = PlotCY;                         // 120
   constexpr int16_t SpecMaxPx     = 80;                             // full-scale bar height
+
+  // Radial layouts: each channel's buckets become spokes over a half circle,
+  // A sweeping the left half and B the right, low frequency at the top of both.
+  // The outer radius clears the run-state ring at 119 so a frozen display still
+  // reads; the inner one leaves a hole so the spokes do not collide at the hub.
+  constexpr int16_t SpecRadInner  = 22;
+  constexpr int16_t SpecRadOuter  = 110;
+  // Reference rings, as a percentage of the inner→outer span.
+  constexpr int16_t SpecRadRing1  = 33;
+  constexpr int16_t SpecRadRing2  = 67;
 }

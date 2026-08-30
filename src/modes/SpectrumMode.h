@@ -45,10 +45,12 @@ public:
     // button means something here.
     bool honoursChannelEnable() const override { return true; }
 
-    // The encoder rotation walks the bucket count; this mode has none of the
-    // shared settings for it to drive.
+    // The encoder rotation walks the bucket count and the press walks the
+    // layout; this mode has none of the shared settings for either to drive.
     bool ownsEncoderTurn() const override { return true; }
     void encoderTurn(int8_t delta) override;
+    bool ownsEncoderPress() const override { return true; }
+    void encoderPress() override;
 
     // Wire the capture source the FFT block is read from (called by RunScreen).
     void setSource(Acquisition* acq) { _src = acq; }
@@ -56,6 +58,17 @@ public:
     void render(Renderer& r, const ScopeState& state,
                 const SampleBuffers& buf) override;
     void onFrame(const SampleBuffers& buf) override;
+
+    // How the buckets are arranged on the face.  Bars is the classic reading;
+    // the rest trade the linear frequency axis for one that uses the round face
+    // instead of fighting it.
+    enum class Layout : uint8_t {
+        Bars,        // A up / B down from a horizontal centre line
+        Mirror,      // the same block a quarter turn round: A left / B right
+        RadialOut,   // spokes from a hub outward, A left half / B right half
+        RadialIn,    // spokes from the rim inward, same halves
+        COUNT
+    };
 
 private:
     static constexpr uint16_t kFFT  = 256;                 // FFT length
@@ -68,6 +81,7 @@ private:
     // keeps the block exactly as wide at every setting with uniform bars.
     static const uint16_t kBinSteps[3];
     uint8_t  _binStep = 2;      // index into kBinSteps; starts at the finest
+    Layout   _layout  = Layout::Bars;
 
     // Fixed display parameters (bench-tuned defaults).
     static constexpr int32_t kMinHz    = 0;        // low edge of the window
@@ -103,6 +117,13 @@ private:
     // Blended linear/log magnitude -> bar height in px.
     int  ampToPx(float mag) const;
 
-    // Draw the spectrum grid: vertical division lines + one centre horizontal.
+    // One per Layout; each draws its own grid, since they share no axes.
     void drawGrid(Renderer& r) const;
+    void renderBars(Renderer& r, const ScopeState& s) const;
+    void renderMirror(Renderer& r, const ScopeState& s) const;
+    void renderRadial(Renderer& r, const ScopeState& s, bool outward) const;
+    // Lay one channel's spokes over a half circle.  `side` is -1 for the left
+    // half (A) and +1 for the right (B).
+    void radialChannel(Renderer& r, const uint8_t* bars, int side, bool outward,
+                       uint16_t color) const;
 };

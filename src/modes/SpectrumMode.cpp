@@ -3,6 +3,7 @@
 #include "SpectrumMode.h"
 #include "../Theme.h"
 #include "../Acquisition.h"
+#include "../Mapping.h"   // FRAC_ONE, for lineAA's Q8 endpoints
 #include <math.h>
 
 // Full-scale reference note: a full-scale sinusoid (±512 counts) through a Hann
@@ -83,6 +84,10 @@ int16_t SpectrumMode::bucketW() const {
     return (int16_t)(Theme::SpecBarsW / (int16_t)bins());
 }
 
+void SpectrumMode::encoderPress() {
+    _layout = (Layout)(((int)_layout + 1) % (int)Layout::COUNT);
+}
+
 void SpectrumMode::encoderTurn(int8_t delta) {
     if (delta == 0) return;
     const int last = (int)(sizeof kBinSteps / sizeof kBinSteps[0]) - 1;
@@ -140,17 +145,35 @@ void SpectrumMode::onFrame(const SampleBuffers& /*buf*/) {
 }
 
 void SpectrumMode::drawGrid(Renderer& r) const {
-    for (int16_t col = 1; col < Theme::GridCols; ++col) {
-        r.vline(Theme::PlotX + col * Theme::GridDiv, Theme::PlotY, Theme::PlotH,
-                Theme::Grid);
+    if (_layout == Layout::Bars) {
+        for (int16_t col = 1; col < Theme::GridCols; ++col) {
+            r.vline(Theme::PlotX + col * Theme::GridDiv, Theme::PlotY,
+                    Theme::PlotH, Theme::Grid);
+        }
+        r.hline(Theme::PlotX, Theme::SpecCenterY, Theme::PlotW, Theme::Grid);
+        return;
     }
-    r.hline(Theme::PlotX, Theme::SpecCenterY, Theme::PlotW, Theme::Grid);
+    if (_layout == Layout::Mirror) {
+        // The Bars grid a quarter turn round, so the axes still read.
+        for (int16_t row = 1; row < Theme::GridRows; ++row) {
+            r.hline(Theme::PlotX, Theme::PlotY + row * Theme::GridDiv,
+                    Theme::PlotW, Theme::Grid);
+        }
+        r.vline(Theme::CX, Theme::PlotY, Theme::PlotH, Theme::Grid);
+        return;
+    }
+    // Radial: the split between the two halves, plus two amplitude rings.  The
+    // rings are where the spokes start and stop, so they read as a scale.
+    const int16_t span = Theme::SpecRadOuter - Theme::SpecRadInner;
+    r.ring((int16_t)(Theme::SpecRadInner + span * Theme::SpecRadRing1 / 100), 1,
+           Theme::Grid);
+    r.ring((int16_t)(Theme::SpecRadInner + span * Theme::SpecRadRing2 / 100), 1,
+           Theme::Grid);
+    r.ring(Theme::SpecRadOuter, 1, Theme::Grid);
+    r.vline(Theme::CX, Theme::PlotY, Theme::PlotH, Theme::Grid);
 }
 
-void SpectrumMode::render(Renderer& r, const ScopeState& state,
-                          const SampleBuffers& /*buf*/) {
-    drawGrid(r);
-
+void SpectrumMode::renderBars(Renderer& r, const ScopeState& s) const {
     // Channel A grows up from the centre line, channel B down (inverted).  Bars
     // stop one row short of the centre so the horizontal grid line stays visible.
     //
@@ -162,14 +185,93 @@ void SpectrumMode::render(Renderer& r, const ScopeState& state,
     const int16_t  rad = (int16_t)(w / 2);
     for (uint16_t i = 0; i < n; ++i) {
         const int16_t x = Theme::SpecLeftX + (int16_t)i * w;
-        if (state.channelEnabled[0] && _barsA[i] > 0) {
+        if (s.channelEnabled[0] && _barsA[i] > 0) {
             r.barRounded(x, (int16_t)(Theme::SpecCenterY - _barsA[i]),
-                         w, _barsA[i], rad, Theme::TraceA, true);
+                         w, _barsA[i], rad, Theme::TraceA, Renderer::Cap::Top);
         }
-        if (state.channelEnabled[1] && _barsB[i] > 0) {
+        if (s.channelEnabled[1] && _barsB[i] > 0) {
             r.barRounded(x, (int16_t)(Theme::SpecCenterY + 1),
-                         w, _barsB[i], rad, Theme::TraceB, false);
+                         w, _barsB[i], rad, Theme::TraceB, Renderer::Cap::Bottom);
         }
+    }
+}
+
+void SpectrumMode::renderMirror(Renderer& r, const ScopeState& s) const {
+    // The same block turned a quarter: frequency runs down the face, A grows
+    // left of the centre line and B right.  The round face is widest across the
+    // middle, which is where the low buckets — usually the tallest — sit.
+    const uint16_t n = bins();
+    const int16_t  hgt = bucketW();          // rows per bucket, same arithmetic
+    const int16_t  rad = (int16_t)(hgt / 2);
+    const int16_t  top = (int16_t)(Theme::CY - Theme::SpecBarsW / 2);
+    for (uint16_t i = 0; i < n; ++i) {
+        const int16_t y = (int16_t)(top + (int16_t)i * hgt);
+        if (s.channelEnabled[0] && _barsA[i] > 0) {
+            r.barRounded((int16_t)(Theme::CX - _barsA[i]), y,
+                         _barsA[i], hgt, rad, Theme::TraceA, Renderer::Cap::Left);
+        }
+        if (s.channelEnabled[1] && _barsB[i] > 0) {
+            r.barRounded((int16_t)(Theme::CX + 1), y,
+                         _barsB[i], hgt, rad, Theme::TraceB, Renderer::Cap::Right);
+        }
+    }
+}
+
+void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars, int side,
+                                 bool outward, uint16_t color) const {
+    const uint16_t n    = bins();
+    const int16_t  rIn  = Theme::SpecRadInner;
+    const int16_t  rOut = Theme::SpecRadOuter;
+    const int16_t  span = (int16_t)(rOut - rIn);
+
+    // Each bucket owns a wedge of the half circle.  Filling a wedge as a polygon
+    // would need a scanline fill; drawing it as a fan of antialiased spokes
+    // spaced under a pixel apart costs about the same and keeps the radial
+    // texture, which is the point of the layout.  So the spoke count follows arc
+    // length rather than the bucket count — and it is taken at each bar's own
+    // outer radius, not the rim, which is most of the cost of a short bar near
+    // the hub in the outward layout.
+    const float wedge = (float)M_PI / (float)n;
+
+    for (uint16_t i = 0; i < n; ++i) {
+        const int mag = bars[i];
+        if (mag <= 0) continue;
+        const int16_t len = (int16_t)((int32_t)mag * span / Theme::SpecMaxPx);
+        if (len <= 0) continue;
+        const int16_t r0 = outward ? rIn : (int16_t)(rOut - len);
+        const int16_t r1 = outward ? (int16_t)(rIn + len) : rOut;
+
+        int spokes = (int)(wedge * (float)r1 * 0.9f);   // 0.9 leaves a hair of gap
+        if (spokes < 1) spokes = 1;
+
+        for (int k = 0; k < spokes; ++k) {
+            // Low frequency at the top of both halves, sweeping down each side.
+            const float t = ((float)i + ((float)k + 0.5f) / (float)spokes) * wedge;
+            const float sx = (float)side * sinf(t);
+            const float sy = -cosf(t);
+            r.lineAA((int32_t)((Theme::CX + sx * r0) * Mapping::FRAC_ONE),
+                     (int32_t)((Theme::CY + sy * r0) * Mapping::FRAC_ONE),
+                     (int32_t)((Theme::CX + sx * r1) * Mapping::FRAC_ONE),
+                     (int32_t)((Theme::CY + sy * r1) * Mapping::FRAC_ONE),
+                     color);
+        }
+    }
+}
+
+void SpectrumMode::renderRadial(Renderer& r, const ScopeState& s,
+                                bool outward) const {
+    if (s.channelEnabled[0]) radialChannel(r, _barsA, -1, outward, Theme::TraceA);
+    if (s.channelEnabled[1]) radialChannel(r, _barsB, +1, outward, Theme::TraceB);
+}
+
+void SpectrumMode::render(Renderer& r, const ScopeState& state,
+                          const SampleBuffers& /*buf*/) {
+    drawGrid(r);
+    switch (_layout) {
+        case Layout::Mirror:    renderMirror(r, state);        break;
+        case Layout::RadialOut: renderRadial(r, state, true);  break;
+        case Layout::RadialIn:  renderRadial(r, state, false); break;
+        default:                renderBars(r, state);          break;
     }
     // HUD drawn by RunScreen on top afterward.
 }
