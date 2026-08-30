@@ -1,109 +1,141 @@
 # OScope
 
-A Teensy 4.0-based dual-channel oscilloscope Eurorack module.
+A Teensy 4.0 dual-channel oscilloscope in a Eurorack module: two ±10 V inputs on
+a 240×240 round display, driven by three buttons and a rotary encoder.
 
-**Using the module?** See [docs/user-guide.md](docs/user-guide.md) — the
-controls, the six display modes, and the settings menu.
+Six display modes — triggered sweep, rolling, X-Y, FFT spectrum, instrument
+tuner and a scrolling spectrogram. The face stays clear of menus: settings
+appear over a dimmed trace when you reach for the encoder and clear themselves
+two seconds later.
+
+**Using the module?** → **[docs/user-guide.md](docs/user-guide.md)** — the
+controls, what each one does in each mode, and every setting.
 
 ## Hardware
 
 - **MCU**: Teensy 4.0
-- **Display**: 240x240 round display with GC9A01A driver
-- **Inputs**: 2 DC channels (+/- 10V → 0–3.3V via level shifting)
-- **Controls**:
-  - 1 rotary encoder
-  - 4 buttons with pullup resistors
-  - 3 indicator LEDs
+- **Display**: 240×240 round, GC9A01A driver, mounted at rotation 2
+- **Inputs**: 2 DC-coupled channels (±10 V → 0–3.3 V via level shifting)
+- **Controls**: 1 rotary encoder with push switch, 3 buttons (active-low, pulled up)
+- **Indicators**: 3 LEDs — wired and assigned pins, not yet driven by firmware
 
-## Pin Mapping
+## Pin mapping
+
+Pin numbers are Arduino digital pins. `src/Config.h` is the single source of
+truth; this table mirrors it, so change both together.
 
 ### Display (GC9A01A)
-- SCK: Pin 20 (Arduino Digital 13)
-- MOSI/SDA: Pin 13 (Arduino Digital 11)
-- DC: Pin 12 (Arduino Digital 10)
-- CS: Pin 11 (Arduino Digital 9)
-- RST: Pin 10 (Arduino Digital 8)
+| Signal | Pin |
+|---|---|
+| SCK | 13 |
+| MOSI / SDA | 11 |
+| DC | 10 |
+| CS | 9 |
+| RST | 8 |
 
 ### Controls
-- Encoder Switch: SW_ENC (Pin 28, Arduino Digital 21)
-- Rotary Encoder A: ENC_A (Pin 27, Arduino Digital 20)
-- Rotary Encoder B: ENC_B (Pin 26, Arduino Digital 19)
-- Switch 1: SW1 (Pin 25, Arduino Digital 18)
-- Switch 2: SW2 (Pin 22, Arduino Digital 15)
-- Switch 3: SW3 (Pin 21, Arduino Digital 14)
+| Signal | Pin | Role |
+|---|---|---|
+| `SW_ENC` | 21 | encoder push switch |
+| `ENC_A` | 20 | encoder quadrature A |
+| `ENC_B` | 19 | encoder quadrature B |
+| `BTN_MODE` | 18 | B1 — Mode |
+| `BTN_CHAN` | 15 | B2 — Channel |
+| `BTN_RUN` | 14 | B3 — Run/Stop |
+
+### Analog inputs
+| Signal | Pin | Note |
+|---|---|---|
+| `SIGNAL_A` | A3 (17) | channel A |
+| `SIGNAL_B` | A2 (16) | channel B |
+
+A and B are swapped relative to the obvious ordering to match the physical
+wiring — channel A really is on A3.
 
 ### LEDs
-- LED 1: Pin 1 (Pin 4, Arduino Digital 2)
-- LED 2: Pin 5 (Pin 5, Arduino Digital 3)
-- LED 3: Pin 6 (Pin 6, Arduino Digital 4)
+| Signal | Pin |
+|---|---|
+| `LED1` | 2 |
+| `LED2` | 3 |
+| `LED3` | 4 |
 
-### Analog Inputs
-- Channel A: SIGNAL_A (Pin 24, Arduino Digital 17 / Analog 3)
-- Channel B: SIGNAL_B (Pin 23, Arduino Digital 16 / Analog 2)
+### Unused breakouts
+`X1` 23/A9 · `X2` 22/A8 · `X3` 5 · `X4` 6 · `X5` 7
 
-### Unusued Breakouts
-- X1: Pin 30, Arduino Digital 23 / Analog 9
-- X2: Pin 29, Arduino Digital 22 / Analog 8
-- X3: Pin 7, Arduino Digital 5
-- X4: Pin 8, Arduino Digital 6
-- X5: Pin 9, Arduino Digital 7
+## Building
 
+Firmware entry point is `src/OScope.ino`. PlatformIO is the supported
+toolchain; `platformio.ini` pins the board, libraries and both environments.
 
-## Firmware
+**With [just](https://github.com/casey/just):**
 
-Location: `src/OScope.ino`
-
-**Quick commands ([just](https://github.com/casey/just)):**
 ```bash
-just build   # Compile the firmware (pio run)
-just run     # Build and upload to the Teensy (pio run -t upload)
-just debug   # Upload, then open the serial monitor
+just build     # pio run — compile
+just run       # pio run -t upload — build and flash
+just debug     # upload, then open the serial monitor
+just test      # pio test -e native — AcqCore unit tests on the host
+just preview   # render UI previews to tools/preview/out
 ```
-Run `just` on its own to list available recipes.
 
-**Required Libraries:**
+Run `just` on its own to list every recipe.
+
+**Without just**, the same things are `pio run`, `pio run -t upload`,
+`pio test -e native`, and `python3 tools/preview/screens.py`.
+
+Incremental builds take about a second, so build after every change rather than
+batching.
+
+### Dependencies
+
+Declared in `platformio.ini` and fetched on first build:
+
+- [GC9A01A_t3n](https://github.com/mjs513/GC9A01A_t3n) — display driver with
+  framebuffer support, tuned for Teensy 4.x SPI
 - Adafruit GFX Library
-- GC9A01A_t3n Library (https://github.com/mjs513/GC9A01A_t3n)
+- Encoder (PJRC) — interrupt-driven quadrature decoding
 
-**Build & Upload (PlatformIO - Recommended):**
-```bash
-# Build
-pio run
+ADC, EEPROM and SPI come from the Teensy core and need no declaration.
 
-# Upload to Teensy
-pio run -t upload
+### Host-side tools
 
-# Upload and monitor serial
-pio run -t upload && pio device monitor
+- `python3 tools/preview/screens.py [screen…]` renders each screen to a PNG in
+  `tools/preview/out/`, rasterising the real glyph data and scraping the layout
+  constants out of the C++ sources. Checking a layout change does not need a
+  flash cycle.
+- `python3 tools/icons/gen_icons.py` regenerates `src/Icons.cpp` from the art in
+  `tools/icons/art/`. Pass `--check` to verify it is up to date. Never hand-edit
+  `Icons.cpp`.
+
+Both run on a bare `python3` — no third-party packages.
+
+## Layout
+
+```
+src/
+  OScope.ino        main loop; owns the framebuffer and the one updateScreen() call
+  Acquisition.*     timer-paced ADC -> eDMA capture, trigger search, diagnostics
+  RingCapture.*     per-channel sample rings written by DMA, never by the CPU
+  Input.*           button/encoder debouncing into an event queue
+  Renderer.*        the drawing API screens use
+  Theme.h           every colour and layout constant
+  Config.h          every pin assignment and compile-time flag
+  screens/          RunScreen, MenuScreen, EditValueScreen + the screen stack
+  modes/            one strategy per display mode
+lib/AcqCore/        hardware-free acquisition logic, unit-tested on the host
+test/               native test suites
+tools/              preview renderer and icon generator
+docs/               user guide, acquisition characterization, display notes
 ```
 
-**Build & Upload (Arduino IDE):**
-1. Install Adafruit GFX Library via Library Manager
-2. Install GC9A01A_t3n from GitHub: https://github.com/mjs513/GC9A01A_t3n
-   - Download as ZIP and add via Sketch → Include Library → Add .ZIP Library
-3. Open `src/OScope.ino` in Arduino IDE
-4. Select board: Tools → Board → Teensy 4.0
-5. Select USB Type: Tools → USB Type → Serial
-6. Upload to Teensy
+`lib/AcqCore/` is the only host-testable part; everything else needs the Teensy
+toolchain. See `CLAUDE.md` for the architecture in more depth — the layering
+rules, the two acquisition paths, and why the display blit is synchronous.
 
-**Performance Benefits:**
-The GC9A01A_t3n library offers significant performance improvements on Teensy 4.x:
-- Optimized SPI communication for Teensy 4.x hardware
-- Frame buffer support for flicker-free updates
-- Asynchronous DMA updates for non-blocking graphics
-- Auto-detection of SPI bus based on pin configuration
+## Documentation
 
-**Expected Behavior:**
-- Displays oscilloscope-style grid with crosshairs
-- Shows "OScope" title text
-- Animated color-changing circle in center
-
-## Development Status
-
-- [x] Basic display driver test
-- [ ] ADC input reading
-- [ ] Rotary encoder input
-- [ ] Button handling
-- [ ] Waveform rendering
-- [ ] Trigger logic
-- [ ] UI/menu system
+| | |
+|---|---|
+| [docs/user-guide.md](docs/user-guide.md) | Operating the module — controls, modes, settings |
+| [docs/display-async.md](docs/display-async.md) | Why the blit is synchronous, and what breaks if it isn't |
+| [docs/acq-characterization.md](docs/acq-characterization.md) | Bench protocol and results for capture integrity |
+| [CLAUDE.md](CLAUDE.md) | Architecture and conventions for working on the firmware |

@@ -28,6 +28,33 @@ every mode.
 The **Channel** short press does nothing in most modes. Only Waterfall claims
 it, where it flips the scroll direction.
 
+### Every control in every mode
+
+The same press does the same thing everywhere; what changes is whether the mode
+has anything for it to act on. A dash means the control does nothing here.
+
+| | TRIG | ROLL | X-Y | SPEC | TUNE | WFAL |
+|---|---|---|---|---|---|---|
+| **Encoder turn** | change setting | change setting | change setting | — | Hz ↔ note | — |
+| **Encoder press** | next of 3 settings | next of 2 | next of 2 | — | — | — |
+| **Encoder hold** | reset acquisition settings | ← | ← | ← | ← | ← |
+| **Mode press** | next mode | ← | ← | ← | ← | ← |
+| **Mode hold** | settings menu | ← | ← | ← | ← | ← |
+| **Channel press** | — | — | — | — | — | flow direction |
+| **Channel hold** | hide/show A | hide/show A | — | hide/show A | — | — |
+| **Run/Stop press** | freeze / resume | ← | ← | ← | ← | ← |
+| **Run/Stop hold** | arm single shot | — | — | — | — | — |
+
+An arrow means *same as Triggered*. Two rows are worth reading twice:
+
+- **Channel hold** hides a trace only where a mode consults the flag. X-Y always
+  plots both by design, and Tuner and Waterfall ignore it entirely. It also only
+  ever acts on **channel A** — see [Known limitations](#current-limitations).
+- **Run/Stop hold** arms a single shot, which completes on the next *triggered*
+  capture. The free-running modes never trigger, so arming outside Triggered
+  leaves the dashed ring up and the scope running until you press Run/Stop
+  again.
+
 ---
 
 ## Adjusting the acquisition settings
@@ -80,8 +107,9 @@ is the expected way to check where the trace actually reaches.
 
 ## The six modes
 
-Press **Mode** to cycle. The mode's name flashes in the middle of the face for a
-moment and then gets out of the way.
+Press **Mode** to cycle. Nothing announces the change — each mode is
+unmistakable from what it draws, and a label would cover the thing you switched
+modes to look at.
 
 **TRIG — Triggered.** The conventional oscilloscope view. Each sweep is aligned
 to the point where the signal crosses the trigger level, so a repeating waveform
@@ -126,8 +154,12 @@ settings while frozen — the readouts update even though the trace does not.
 
 **Hold Run/Stop** to arm a single shot: the ring turns to a dashed orange
 outline, the scope runs until the next successful triggered capture, then
-freezes on it and disarms. Since it waits for a trigger, this is a Triggered-mode
-tool. A manual press of Run/Stop cancels a pending single shot.
+freezes on it and disarms.
+
+Since it waits for a trigger, this is a Triggered-mode tool. The free-running
+modes never trigger, so arming in one of those leaves the dashed ring up and the
+scope running indefinitely. A press of Run/Stop cancels a pending single shot
+either way.
 
 ---
 
@@ -153,7 +185,25 @@ there before.
 **Persist** leaves a phosphor-like trail behind the trace, which makes jitter
 and modulation visible as a band rather than a flicker. It applies to Triggered
 and X-Y only — Rolling already shows time as a scroll, and the FFT modes manage
-their own display.
+their own display. It defaults to **long**.
+
+### How long is a trail, in seconds?
+
+The trail is measured in **frames**, not seconds: each frame the untouched
+pixels are multiplied down, and a trace pixel takes a fixed number of frames to
+reach black.
+
+| | fade per frame | frames to black | at 32 fps | at 6.2 fps |
+|---|---|---|---|---|
+| **short** | ×0.59 | 6 | 0.19 s | 0.97 s |
+| **med** | ×0.78 | 10 | 0.31 s | 1.6 s |
+| **long** | ×0.91 | 18 | 0.56 s | 2.9 s |
+
+So the same setting gives a visibly longer trail at slow timebases. The two
+columns are the real ends of the range: the display blit caps the frame rate at
+about **32 fps**, which is what you get in X-Y and in Triggered at most
+timebases, while Triggered at 10 ms/div is sweep-bound and drops to about
+**6.2 fps**. In between, scale accordingly.
 
 ---
 
@@ -177,10 +227,12 @@ does not touch the settings menu — edge, A4 and persist keep their values.
 
 Honest notes about the interface as it stands, so nothing reads as a fault:
 
-- **Hiding a trace only works on channel A.** Holding Channel toggles the
-  focused channel, and the focus is currently pinned to A+B with A as the lead,
-  so channel B cannot be hidden. Related: with A hidden, a Volts edit moves
-  channel B's scale while the readout still shows A's.
+- **Hiding a trace only works on channel A, and only in three modes.** Holding
+  Channel toggles the focused channel, and the focus is currently pinned to A+B
+  with A as the lead, so channel B cannot be hidden. Only Triggered, Rolling and
+  Spectrum consult the flag — X-Y plots both by design, and Tuner and Waterfall
+  ignore it. Related: with A hidden, a Volts edit moves channel B's scale while
+  the readout still shows A's.
 - **The three panel LEDs do nothing.** They are wired and assigned pins, but no
   firmware drives them yet.
 - **Channel selection is not exposed.** The scope always acquires and displays
@@ -189,6 +241,9 @@ Honest notes about the interface as it stands, so nothing reads as a fault:
 - **Spectrum, Tuner and Waterfall have no adjustable acquisition settings.**
   Their sample rates, frequency windows and scaling are fixed at bench-tuned
   values.
+- **Single shot never completes outside Triggered.** Arming it in a free-running
+  mode is accepted — dashed ring and all — but no capture is trigger-aligned
+  there, so it waits forever. Press Run/Stop to cancel.
 
 ---
 
