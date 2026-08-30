@@ -30,22 +30,23 @@ it, where it flips the scroll direction.
 
 ### Every control in every mode
 
-The same press does the same thing everywhere; what changes is whether the mode
-has anything for it to act on. A dash means the control does nothing here.
+Every cell is spelled out — a dash means the control does nothing in that mode.
 
 | | TRIG | ROLL | X-Y | SPEC | TUNE | WFAL |
 |---|---|---|---|---|---|---|
 | **Encoder turn** | change setting | change setting | change setting | — | Hz ↔ note | — |
-| **Encoder press** | next of 3 settings | next of 2 | next of 2 | — | — | — |
-| **Encoder hold** | reset acquisition settings | ← | ← | ← | ← | ← |
-| **Mode press** | next mode | ← | ← | ← | ← | ← |
-| **Mode hold** | settings menu | ← | ← | ← | ← | ← |
+| **Encoder press** | next setting (of 3) | next setting (of 2) | next setting (of 2) | — | — | — |
+| **Encoder hold** | reset settings | reset settings | reset settings | reset settings | reset settings | reset settings |
+| **Mode press** | next mode | next mode | next mode | next mode | next mode | next mode |
+| **Mode hold** | settings menu | settings menu | settings menu | settings menu | settings menu | settings menu |
 | **Channel press** | — | — | — | — | — | flow direction |
 | **Channel hold** | hide/show A | hide/show A | — | hide/show A | — | — |
-| **Run/Stop press** | freeze / resume | ← | ← | ← | ← | ← |
+| **Run/Stop press** | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume |
 | **Run/Stop hold** | arm single shot | — | — | — | — | — |
 
-An arrow means *same as Triggered*. Two rows are worth reading twice:
+Five of those nine depend on the mode; the other four — reset, next mode,
+settings menu, freeze — do the same thing wherever you are. Two rows are worth
+reading twice:
 
 - **Channel hold** hides a trace only where a mode consults the flag. X-Y always
   plots both by design, and Tuner and Waterfall ignore it entirely. It also only
