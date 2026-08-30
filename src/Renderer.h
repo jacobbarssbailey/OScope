@@ -91,14 +91,14 @@ public:
                          uint16_t color, float outline);
 
     // Which end of a bar gets the rounded cap.
-    enum class Cap : uint8_t { Top, Bottom, Left, Right };
+    enum class Cap : uint8_t { Top, Bottom };
 
-    // Fill a w×h bar with only the two corners at one end rounded: that end gets
-    // a cap, the other stays square so bars can butt against a baseline without
-    // a notch.  r is clamped to half the bar's thickness and to its length; r <= 0
-    // (a 1 px bar, say) degenerates to a plain fillRect, which is also the
-    // no-framebuffer fallback.  Only the cap band is shaded — the body is a flat
-    // fill — so a screen full of bars costs about what fillRect does.
+    // Fill a w×h bar with only the two top or bottom corners rounded: that end
+    // gets a cap, the other stays square so bars can butt against a baseline
+    // without a notch.  r is clamped to w/2 and to h; r <= 0 (a 1 px bar, say)
+    // degenerates to a plain fillRect, which is also the no-framebuffer
+    // fallback.  Only the cap band is shaded — the body is a flat fill — so a
+    // screen full of bars costs about what fillRect does.
     void barRounded(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
                     uint16_t color, Cap cap);
 

@@ -64,7 +64,6 @@ public:
     // instead of fighting it.
     enum class Layout : uint8_t {
         Bars,        // A up / B down from a horizontal centre line
-        Mirror,      // the same block a quarter turn round: A left / B right
         RadialOut,   // spokes from a hub outward, A left half / B right half
         RadialIn,    // spokes from the rim inward, same halves
         COUNT
@@ -120,7 +119,6 @@ private:
     // One per Layout; each draws its own grid, since they share no axes.
     void drawGrid(Renderer& r) const;
     void renderBars(Renderer& r, const ScopeState& s) const;
-    void renderMirror(Renderer& r, const ScopeState& s) const;
     void renderRadial(Renderer& r, const ScopeState& s, bool outward) const;
     // Lay one channel's spokes over a half circle.  `side` is -1 for the left
     // half (A) and +1 for the right (B).

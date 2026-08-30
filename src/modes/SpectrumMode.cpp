@@ -153,15 +153,6 @@ void SpectrumMode::drawGrid(Renderer& r) const {
         r.hline(Theme::PlotX, Theme::SpecCenterY, Theme::PlotW, Theme::Grid);
         return;
     }
-    if (_layout == Layout::Mirror) {
-        // The Bars grid a quarter turn round, so the axes still read.
-        for (int16_t row = 1; row < Theme::GridRows; ++row) {
-            r.hline(Theme::PlotX, Theme::PlotY + row * Theme::GridDiv,
-                    Theme::PlotW, Theme::Grid);
-        }
-        r.vline(Theme::CX, Theme::PlotY, Theme::PlotH, Theme::Grid);
-        return;
-    }
     // Radial: the split between the two halves, plus two amplitude rings.  The
     // rings are where the spokes start and stop, so they read as a scale.
     const int16_t span = Theme::SpecRadOuter - Theme::SpecRadInner;
@@ -192,27 +183,6 @@ void SpectrumMode::renderBars(Renderer& r, const ScopeState& s) const {
         if (s.channelEnabled[1] && _barsB[i] > 0) {
             r.barRounded(x, (int16_t)(Theme::SpecCenterY + 1),
                          w, _barsB[i], rad, Theme::TraceB, Renderer::Cap::Bottom);
-        }
-    }
-}
-
-void SpectrumMode::renderMirror(Renderer& r, const ScopeState& s) const {
-    // The same block turned a quarter: frequency runs down the face, A grows
-    // left of the centre line and B right.  The round face is widest across the
-    // middle, which is where the low buckets — usually the tallest — sit.
-    const uint16_t n = bins();
-    const int16_t  hgt = bucketW();          // rows per bucket, same arithmetic
-    const int16_t  rad = (int16_t)(hgt / 2);
-    const int16_t  top = (int16_t)(Theme::CY - Theme::SpecBarsW / 2);
-    for (uint16_t i = 0; i < n; ++i) {
-        const int16_t y = (int16_t)(top + (int16_t)i * hgt);
-        if (s.channelEnabled[0] && _barsA[i] > 0) {
-            r.barRounded((int16_t)(Theme::CX - _barsA[i]), y,
-                         _barsA[i], hgt, rad, Theme::TraceA, Renderer::Cap::Left);
-        }
-        if (s.channelEnabled[1] && _barsB[i] > 0) {
-            r.barRounded((int16_t)(Theme::CX + 1), y,
-                         _barsB[i], hgt, rad, Theme::TraceB, Renderer::Cap::Right);
         }
     }
 }
@@ -268,7 +238,6 @@ void SpectrumMode::render(Renderer& r, const ScopeState& state,
                           const SampleBuffers& /*buf*/) {
     drawGrid(r);
     switch (_layout) {
-        case Layout::Mirror:    renderMirror(r, state);        break;
         case Layout::RadialOut: renderRadial(r, state, true);  break;
         case Layout::RadialIn:  renderRadial(r, state, false); break;
         default:                renderBars(r, state);          break;

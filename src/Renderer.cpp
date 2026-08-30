@@ -261,11 +261,8 @@ void Renderer::drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h,
 void Renderer::barRounded(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
                           uint16_t color, Cap cap) {
     if (w <= 0 || h <= 0) return;
-    const bool vertical = (cap == Cap::Top || cap == Cap::Bottom);
-    const int16_t thick = vertical ? w : h;   // across the bar
-    const int16_t len   = vertical ? h : w;   // along it
-    if (r > thick / 2) r = (int16_t)(thick / 2);
-    if (r > len)       r = len;
+    if (r > w / 2) r = (int16_t)(w / 2);
+    if (r > h)     r = h;
 
     uint16_t* fb = tft.getFrameBuffer();
     if (fb == nullptr || r <= 0) {   // 1 px bars land here, as does no framebuffer
@@ -276,41 +273,26 @@ void Renderer::barRounded(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r,
     // Round only the capped end: the geometry is extended r px past the square
     // end so that end's corners fall outside the band actually painted, and
     // clipping the scan to the true bar keeps the join flat.
-    const int16_t gx = (cap == Cap::Right)  ? (int16_t)(x - r) : x;
     const int16_t gy = (cap == Cap::Bottom) ? (int16_t)(y - r) : y;
-    const int16_t gw = vertical ? w : (int16_t)(w + r);
-    const int16_t gh = vertical ? (int16_t)(h + r) : h;
-
-    const float cx = (float)gx + (float)gw * 0.5f - 0.5f;
+    const int16_t gh = (int16_t)(h + r);
+    const float cx = (float)x + (float)w * 0.5f - 0.5f;
     const float cy = (float)gy + (float)gh * 0.5f - 0.5f;
-    const float hx = (float)gw * 0.5f;
+    const float hx = (float)w * 0.5f;
     const float hy = (float)gh * 0.5f;
 
-    // Flat-fill the body, then shade only the r-deep band under the cap (plus
-    // one row/column for the antialiased fringe on the outside).
-    int16_t yLo, yHi, xLo, xHi;
-    switch (cap) {
-        case Cap::Top:
-            if (h > r) fillRect(x, (int16_t)(y + r), w, (int16_t)(h - r), color);
-            yLo = (int16_t)(y - 1); yHi = (int16_t)(y + r - 1);
-            xLo = (int16_t)(x - 1); xHi = (int16_t)(x + w);
-            break;
-        case Cap::Bottom:
-            if (h > r) fillRect(x, y, w, (int16_t)(h - r), color);
-            yLo = (int16_t)(y + h - r); yHi = (int16_t)(y + h);
-            xLo = (int16_t)(x - 1); xHi = (int16_t)(x + w);
-            break;
-        case Cap::Left:
-            if (w > r) fillRect((int16_t)(x + r), y, (int16_t)(w - r), h, color);
-            xLo = (int16_t)(x - 1); xHi = (int16_t)(x + r - 1);
-            yLo = (int16_t)(y - 1); yHi = (int16_t)(y + h);
-            break;
-        default:   // Cap::Right
-            if (w > r) fillRect(x, y, (int16_t)(w - r), h, color);
-            xLo = (int16_t)(x + w - r); xHi = (int16_t)(x + w);
-            yLo = (int16_t)(y - 1); yHi = (int16_t)(y + h);
-            break;
+    // Flat-fill the body, then shade only the r-deep band under the cap, plus
+    // one row for the antialiased fringe on the outside.
+    int16_t yLo, yHi;
+    if (cap == Cap::Top) {
+        if (h > r) fillRect(x, (int16_t)(y + r), w, (int16_t)(h - r), color);
+        yLo = (int16_t)(y - 1);
+        yHi = (int16_t)(y + r - 1);
+    } else {
+        if (h > r) fillRect(x, y, w, (int16_t)(h - r), color);
+        yLo = (int16_t)(y + h - r);
+        yHi = (int16_t)(y + h);
     }
+    int16_t xLo = (int16_t)(x - 1), xHi = (int16_t)(x + w);
     if (yLo < 0) yLo = 0;
     if (xLo < 0) xLo = 0;
     if (yHi > Theme::H - 1) yHi = Theme::H - 1;

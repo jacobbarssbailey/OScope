@@ -155,45 +155,31 @@ class Canvas:
     def bar_rounded(self, x, y, w, h, r, c, cap):
         """Renderer::barRounded — capped at one end, square at the other.
 
-        `cap` is "top", "bottom", "left" or "right".
+        `cap` is "top" or "bottom".
         """
         if w <= 0 or h <= 0:
             return
-        vertical = cap in ("top", "bottom")
-        thick, length = (w, h) if vertical else (h, w)
-        r = min(r, thick // 2, length)
+        r = min(r, w // 2, h)
         if r <= 0:                       # 1 px bars have no corner to round
             self.fill_rect(x, y, w, h, c)
             return
 
         # Geometry extends r past the square end so that end's corners fall
         # outside the band actually painted.
-        gx = x - r if cap == "right" else x
         gy = y - r if cap == "bottom" else y
-        gw = w if vertical else w + r
-        gh = h + r if vertical else h
-        cx, cy = gx + gw * 0.5 - 0.5, gy + gh * 0.5 - 0.5
-        hx, hy = gw * 0.5, gh * 0.5
+        gh = h + r
+        cx, cy = x + w * 0.5 - 0.5, gy + gh * 0.5 - 0.5
+        hx, hy = w * 0.5, gh * 0.5
 
         if cap == "top":
             if h > r: self.fill_rect(x, y + r, w, h - r, c)
             lo, hi = y - 1, y + r - 1
-            xlo, xhi = x - 1, x + w
-        elif cap == "bottom":
+        else:
             if h > r: self.fill_rect(x, y, w, h - r, c)
             lo, hi = y + h - r, y + h
-            xlo, xhi = x - 1, x + w
-        elif cap == "left":
-            if w > r: self.fill_rect(x + r, y, w - r, h, c)
-            lo, hi = y - 1, y + h
-            xlo, xhi = x - 1, x + r - 1
-        else:                            # right
-            if w > r: self.fill_rect(x, y, w - r, h, c)
-            lo, hi = y - 1, y + h
-            xlo, xhi = x + w - r, x + w
 
         for py in range(max(0, lo), min(H, hi + 1)):
-            for px in range(max(0, xlo), min(W, xhi + 1)):
+            for px in range(max(0, x - 1), min(W, x + w + 1)):
                 cov = -self._round_rect_sdf(px - cx, py - cy, hx, hy, r) + 0.5
                 if cov > 0.0:
                     self.blend(px, py, c, min(cov, 1.0))

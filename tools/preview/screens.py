@@ -263,33 +263,6 @@ def _spec_radial(nbins, outward):
     return c
 
 
-def _spec_mirror(nbins):
-    """The bar block a quarter turn round: frequency down the face, A left of
-    the centre line and B right."""
-    c = Canvas()
-    for row in range(1, 8):
-        c.hline(0, row * T["GridDiv"], W, GRID)
-    c.vline(CX, 0, H, GRID)
-
-    hgt = T["SpecBarsW"] // nbins
-    rad = hgt // 2
-    top = CY - T["SpecBarsW"] // 2
-    for i in range(nbins):
-        m = _bucket_mag(i, nbins)
-        la = int(m * T["SpecMaxPx"])
-        lb = int(m * 0.72 * T["SpecMaxPx"])
-        y = top + i * hgt
-        if la > 0:
-            c.bar_rounded(CX - la, y, la, hgt, rad, TRACE_A, "left")
-        if lb > 0:
-            c.bar_rounded(CX + 1, y, lb, hgt, rad, TRACE_B, "right")
-    return c
-
-
-def spectrum_mirror_32():
-    return _spec_mirror(32)
-
-
 def spectrum_radial_out_32():
     return _spec_radial(32, True)
 
@@ -484,7 +457,6 @@ SCREENS = {
     "spectrum_64": spectrum_64,
     "spectrum_32": spectrum_32,
     "spectrum_32_gap": spectrum_32_gap,
-    "spectrum_mirror_32": spectrum_mirror_32,
     "spectrum_radial_out_32": spectrum_radial_out_32,
     "spectrum_radial_out_128": spectrum_radial_out_128,
     "spectrum_radial_in_32": spectrum_radial_in_32,
