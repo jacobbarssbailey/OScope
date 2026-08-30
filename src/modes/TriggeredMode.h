@@ -12,9 +12,9 @@ class TriggeredMode : public ScopeMode {
 public:
     const char* name() const override { return "TRIG"; }
 
-    // Draws each channel only when its enable flag is set, so the Channel
-    // button means something here.
-    bool honoursChannelEnable() const override { return true; }
+    // A fresh trigger-aligned snapshot per frame, so a trail accumulates into
+    // something meaningful — B2 toggles it here.
+    bool honoursPersistence() const override { return true; }
 
     // The only trigger-aligned mode, so the only one that can arm single shot.
     bool triggerAligned() const override { return true; }

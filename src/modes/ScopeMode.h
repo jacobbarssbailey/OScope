@@ -91,16 +91,30 @@ public:
     virtual bool ownsEncoderTurn() const { return false; }
     virtual void encoderTurn(int8_t /*delta*/) {}
 
+    // --- Mode-owned B2 (Channel) button ---
+    // B2 is the per-mode option key: whatever single thing this mode has worth
+    // switching, it switches.  A mode holding that state itself (Spectrum's
+    // peak hold, Waterfall's flow direction) claims the button here; the scope
+    // modes leave it unclaimed and RunScreen wires it to persistence, which
+    // lives in Settings rather than in the mode.
+    //
+    // Nothing is reported: every one of these shows its result on the face.
+    virtual bool ownsChannelButton() const { return false; }
+    virtual void channelPress() {}
+
+    // --- Trace persistence ---
+    // True if fading the previous frame instead of clearing it means anything
+    // here.  Only the modes that draw a fresh snapshot per frame qualify:
+    // accumulation is what reveals jitter and modulation.  Rolling already
+    // encodes time in its scroll and the FFT modes manage their own display, so
+    // for them a trail would just smear.  RunScreen consults this both to fade
+    // and to decide whether B2 has a persistence toggle to offer.
+    virtual bool honoursPersistence() const { return false; }
+
     // --- Trigger alignment ---
     // True only for the mode whose sweeps are aligned to a trigger crossing.
     // Single shot completes on a trigger, so it can only be armed here; the
     // free-running modes would hold a pending arm forever.
     virtual bool triggerAligned() const { return false; }
 
-    // --- Per-channel show/hide ---
-    // True if this mode consults ScopeState::channelEnabled when it renders.
-    // The Channel button only toggles a channel in a mode that does, so the
-    // button never mutates state with no visible effect: X-Y plots both axes by
-    // construction, and Tuner and Waterfall always show both halves.
-    virtual bool honoursChannelEnable() const { return false; }
 };

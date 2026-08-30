@@ -89,6 +89,10 @@ int16_t SpectrumMode::barW() const {
     return (w > 0) ? w : 1;   // at 1 px per bucket there is no room for a gap
 }
 
+void SpectrumMode::channelPress() {
+    _peakHold = !_peakHold;
+}
+
 void SpectrumMode::encoderPress() {
     _layout = (Layout)(((int)_layout + 1) % (int)Layout::COUNT);
 }
@@ -212,24 +216,24 @@ void SpectrumMode::renderBars(Renderer& r, const ScopeState& s) const {
     for (uint16_t i = 0; i < n; ++i) {
         const int16_t x = Theme::SpecLeftX + (int16_t)i * pitch;
 
-        if (s.channelEnabled[0]) {
+        {
             if (_barsA[i] > 0) {
                 r.barRounded(x, (int16_t)(cy - _barsA[i]), w, _barsA[i], rad,
                              Theme::TraceA, Renderer::Cap::Top);
             }
             // The marker floats clear of the bar; the black gap between them is
             // what separates the two, so both can be the channel's own colour.
-            if (_peakA[i] >= _barsA[i] + kPeakGapPx) {
+            if (_peakHold && _peakA[i] >= _barsA[i] + kPeakGapPx) {
                 r.fillRect(x, (int16_t)(cy - _peakA[i]), w, kPeakThickPx,
                            Theme::TraceA);
             }
         }
-        if (s.channelEnabled[1]) {
+        {
             if (_barsB[i] > 0) {
                 r.barRounded(x, (int16_t)(cy + 1), w, _barsB[i], rad,
                              Theme::TraceB, Renderer::Cap::Bottom);
             }
-            if (_peakB[i] >= _barsB[i] + kPeakGapPx) {
+            if (_peakHold && _peakB[i] >= _barsB[i] + kPeakGapPx) {
                 r.fillRect(x, (int16_t)(cy + 1 + _peakB[i] - kPeakThickPx), w,
                            kPeakThickPx, Theme::TraceB);
             }
@@ -260,7 +264,8 @@ void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars,
         for (int pass = 0; pass < 2; ++pass) {
             const int mag = pass ? peak[i] : bars[i];
             if (mag <= 0) continue;
-            if (pass && peak[i] < bars[i] + kPeakGapPx) continue;   // no clear gap
+            if (pass && (!_peakHold || peak[i] < bars[i] + kPeakGapPx))
+                continue;   // off, or no clear gap to read it in
 
             const int16_t len = (int16_t)((int32_t)mag * span / Theme::SpecMaxPx);
             if (len <= 0) continue;
@@ -300,10 +305,8 @@ void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars,
 
 void SpectrumMode::renderRadial(Renderer& r, const ScopeState& s,
                                 bool outward) const {
-    if (s.channelEnabled[0])
-        radialChannel(r, _barsA, _peakA, -1, outward, Theme::TraceA);
-    if (s.channelEnabled[1])
-        radialChannel(r, _barsB, _peakB, +1, outward, Theme::TraceB);
+    radialChannel(r, _barsA, _peakA, -1, outward, Theme::TraceA);
+    radialChannel(r, _barsB, _peakB, +1, outward, Theme::TraceB);
 }
 
 void SpectrumMode::render(Renderer& r, const ScopeState& state,

@@ -55,7 +55,7 @@ void WaterfallMode::reshape() {
     memset(_hist, 0, sizeof _hist);
 }
 
-void WaterfallMode::encoderPress() {
+void WaterfallMode::channelPress() {
     _flow = (_flow == Flow::Up) ? Flow::Out : Flow::Up;
     reshape();
 }

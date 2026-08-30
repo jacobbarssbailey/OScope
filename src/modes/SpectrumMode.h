@@ -46,9 +46,9 @@ public:
 
     const char* name() const override { return "SPEC"; }
 
-    // Draws each channel only when its enable flag is set, so the Channel
-    // button means something here.
-    bool honoursChannelEnable() const override { return true; }
+    // B2 turns the peak-hold markers on and off.
+    bool ownsChannelButton() const override { return true; }
+    void channelPress() override;
 
     // The encoder rotation walks the bucket count and the press walks the
     // layout; this mode has none of the shared settings for either to drive.
@@ -86,6 +86,7 @@ private:
     static const uint16_t kBinSteps[3];
     uint8_t  _binStep = 2;      // index into kBinSteps; starts at the finest
     Layout   _layout  = Layout::Bars;
+    bool     _peakHold = true;
 
     // Pixels of clear space between neighbouring bars in the Bars layout.  Bars
     // butted edge to edge merge into one filled shape at the wider bucket

@@ -63,6 +63,12 @@ private:
     bool     _settings      = false;
     uint32_t _settingsMs    = 0;
 
+    // Persistence level to restore when B2 switches it back on.  Captured from
+    // Settings each time it is switched off, so the menu's choice of how long a
+    // trail lasts survives the toggle.  Not persisted itself: a board that was
+    // powered down with persistence off comes back at the default.
+    uint8_t  _persistLast = 3;   // "long", matching Settings::defaults()
+
     // Raise the settings overlay, unless the mode has no adjustable parameters.
     void showSettings(const ScopeState& s);
     // True while the overlay is still within its hold time.

@@ -37,6 +37,13 @@ public:
     bool ownsEncoderPress() const override { return true; }
     void encoderPress() override;
 
+    // TODO: B2 is the per-mode option key and Tuner is the one mode with
+    // nothing on it.  Candidates: a hold on the last confident reading so a
+    // plucked string can be read after it decays; a fine/coarse cents scale;
+    // or transpose, since the A4 reference in the menu only shifts the whole
+    // grid.  Until one is chosen, ownsChannelButton() stays false and B2 does
+    // nothing here — see docs/user-guide.md's control matrix.
+
 private:
     static constexpr uint16_t kWin       = 1024;   // YIN window length
     static constexpr float    kYinThresh = 0.15f;  // YIN absolute threshold

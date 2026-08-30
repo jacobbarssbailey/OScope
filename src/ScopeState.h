@@ -53,7 +53,6 @@ struct ScopeState {
         {500, 500, 500, kSpectrumTimebaseUs, kTunerTimebaseUs, kWaterfallTimebaseUs};
     uint16_t vscale_mv_per_div[2]   = {3000, 3000};  // mV/div per channel (3 V/div default)
     int16_t  trigger_level_mv       = 0;           // mV
-    bool     channelEnabled[2]      = {true, true};
 
     // Single-shot: when true, the next successful triggered capture freezes the
     // display (running → false) and disarms.  Set by B3 long-press.
