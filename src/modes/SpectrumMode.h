@@ -5,11 +5,16 @@
 // up from the centre line, channel B grows down (inverted), over vertical
 // division grid lines and one centre horizontal line.
 //
-// The encoder rotation sets how many buckets those bars are divided into.  The
-// block keeps its width whatever the count, so the bars get wider as they get
-// fewer, and the counts are exactly the divisors of SpecBarsW that leave a
-// bucket no wider than kMaxBucketW: 128 x 1 px, 64 x 2 px, 32 x 4 px.  Fewer
-// buckets average more FFT bins together, which is the coarser view.
+// The encoder rotation sets how many buckets those bars are divided into and
+// the press cycles the layout.  The block keeps its width whatever the count, so
+// the bars get wider as they get fewer, and the counts are exactly the divisors
+// of SpecBarsW that leave a bucket no wider than kMaxBucketW: 128 x 1 px,
+// 64 x 2 px, 32 x 4 px.  Fewer buckets average more FFT bins together, which is
+// the coarser view.
+//
+// Every bucket also carries a peak-hold marker: the recent maximum, held for a
+// moment and then falling, drawn detached from the bar so a transient stays
+// readable after the bar itself has dropped.
 //
 // The display window and amplitude mapping are fixed (bench-tuned defaults, no
 // runtime controls):
@@ -82,6 +87,22 @@ private:
     uint8_t  _binStep = 2;      // index into kBinSteps; starts at the finest
     Layout   _layout  = Layout::Bars;
 
+    // Pixels of clear space between neighbouring bars in the Bars layout.  Bars
+    // butted edge to edge merge into one filled shape at the wider bucket
+    // widths, which loses both the bar reading and the rounded caps.  Taken out
+    // of the bucket's own width, so the block still spans SpecBarsW exactly.
+    static constexpr int16_t kBarGap = 1;
+
+    // Peak hold.  A bucket's peak jumps straight to a new maximum, sits for
+    // kPeakHoldFrames, then falls a pixel per frame.  Spectrum is blit-bound at
+    // roughly 32 fps, so the hold is about 3/4 s and a full-height peak takes
+    // ~2.5 s to reach the floor.
+    static constexpr uint8_t kPeakHoldFrames = 24;
+    // Clear space a peak needs above its bar before it is worth drawing
+    // separately; below this it would just thicken the bar's cap.
+    static constexpr uint8_t kPeakGapPx = 3;
+    static constexpr int16_t kPeakThickPx = 2;   // marker depth, radially or vertically
+
     // Fixed display parameters (bench-tuned defaults).
     static constexpr int32_t kMinHz    = 0;        // low edge of the window
     static constexpr int32_t kMaxHz    = 8192;     // high edge of the window
@@ -102,6 +123,10 @@ private:
     float    _magB[kNBin];
     uint8_t  _barsA[kMaxBins] = {0};  // bucket heights in px (0..SpecMaxPx)
     uint8_t  _barsB[kMaxBins] = {0};
+    uint8_t  _peakA[kMaxBins] = {0};  // held maxima, same units as _bars
+    uint8_t  _peakB[kMaxBins] = {0};
+    uint8_t  _holdA[kMaxBins] = {0};  // frames left before the peak starts falling
+    uint8_t  _holdB[kMaxBins] = {0};
 
     // Active bucket count and the width each one draws at.  Their product is
     // always Theme::SpecBarsW.
@@ -115,6 +140,11 @@ private:
     void mapBars(const float* mag, uint8_t* bars) const;
     // Blended linear/log magnitude -> bar height in px.
     int  ampToPx(float mag) const;
+    // Fold this frame's bar heights into the held peaks (once per rendered
+    // frame, from onFrame — the decay rate is in frames).
+    void agePeaks(const uint8_t* bars, uint8_t* peak, uint8_t* hold) const;
+    // Width one bar actually draws at, once the gap is taken out.
+    int16_t barW() const;
 
     // One per Layout; each draws its own grid, since they share no axes.
     void drawGrid(Renderer& r) const;
@@ -122,6 +152,6 @@ private:
     void renderRadial(Renderer& r, const ScopeState& s, bool outward) const;
     // Lay one channel's spokes over a half circle.  `side` is -1 for the left
     // half (A) and +1 for the right (B).
-    void radialChannel(Renderer& r, const uint8_t* bars, int side, bool outward,
-                       uint16_t color) const;
+    void radialChannel(Renderer& r, const uint8_t* bars, const uint8_t* peak,
+                       int side, bool outward, uint16_t color) const;
 };

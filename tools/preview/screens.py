@@ -213,6 +213,22 @@ SPEC_MAX_HZ = 8192    # SpectrumMode::kMaxHz
 N_BIN = 128           # SpectrumMode::kNBin
 
 
+SP = consts("src/modes/SpectrumMode.h")
+BAR_GAP     = SP["kBarGap"]
+PEAK_GAP    = SP["kPeakGapPx"]
+PEAK_THICK  = SP["kPeakThickPx"]
+
+
+def _bucket_peak(i, nbins):
+    """A stand-in for a held peak: the bucket a little above where it sits now.
+
+    The real value is a decaying maximum over time, which a still frame cannot
+    show — this is what one looks like a moment after the signal dropped back.
+    """
+    m = _bucket_mag(i, nbins)
+    return min(1.0, m * 1.22 + 0.06 * (1.0 + math.sin(i * 1.7)))
+
+
 def _bucket_mag(i, nbins):
     """One bucket's magnitude, mirroring SpectrumMode::mapBars.
 
@@ -248,18 +264,31 @@ def _spec_radial(nbins, outward):
     for side, color, scale in ((-1, TRACE_A, 1.0), (1, TRACE_B, 0.72)):
         for i in range(nbins):
             mag = int(_bucket_mag(i, nbins) * scale * T["SpecMaxPx"])
-            length = mag * span // T["SpecMaxPx"]
-            if length <= 0:
-                continue
-            r0 = SPEC_RAD_INNER if outward else SPEC_RAD_OUTER - length
-            r1 = SPEC_RAD_INNER + length if outward else SPEC_RAD_OUTER
-            # Spoke count follows the arc at this bar's own outer radius.
-            spokes = max(1, int(wedge * r1 * 0.9))
-            for k in range(spokes):
-                t = (i + (k + 0.5) / spokes) * wedge
-                sx, sy = side * math.sin(t), -math.cos(t)
-                c.line_aa(CX + sx * r0, CY + sy * r0,
-                          CX + sx * r1, CY + sy * r1, color)
+            pk = int(_bucket_peak(i, nbins) * scale * T["SpecMaxPx"])
+            for is_peak in (False, True):
+                v = pk if is_peak else mag
+                if v <= 0 or (is_peak and pk < mag + PEAK_GAP):
+                    continue
+                length = v * span // T["SpecMaxPx"]
+                if length <= 0:
+                    continue
+                tip = SPEC_RAD_INNER + length if outward else SPEC_RAD_OUTER - length
+                if not is_peak:
+                    r0 = SPEC_RAD_INNER if outward else tip
+                    r1 = tip if outward else SPEC_RAD_OUTER
+                elif outward:
+                    r0, r1 = tip, min(tip + PEAK_THICK, SPEC_RAD_OUTER)
+                else:
+                    r0, r1 = max(tip - PEAK_THICK, SPEC_RAD_INNER), tip
+                if r1 <= r0:
+                    continue
+                # Spoke count follows the arc at this slice's outer radius.
+                spokes = max(1, int(wedge * r1 * 0.9))
+                for k in range(spokes):
+                    t = (i + (k + 0.5) / spokes) * wedge
+                    sx, sy = side * math.sin(t), -math.cos(t)
+                    c.line_aa(CX + sx * r0, CY + sy * r0,
+                              CX + sx * r1, CY + sy * r1, color)
     return c
 
 
@@ -279,7 +308,7 @@ def spectrum_radial_in_128():
     return _spec_radial(128, False)
 
 
-def _spectrum(nbins, gap=0):
+def _spectrum(nbins, gap=BAR_GAP):
     """SpectrumMode at one bucket count: the block keeps its total width as the
     bars widen, and only the outer end of each bar is capped.
 
@@ -295,14 +324,18 @@ def _spectrum(nbins, gap=0):
     w = max(1, pitch - gap)
     rad = w // 2
     for i in range(nbins):
-        m = _bucket_mag(i, nbins)
-        ha = int(m * T["SpecMaxPx"])
-        hb = int(m * 0.72 * T["SpecMaxPx"])
+        m, pk = _bucket_mag(i, nbins), _bucket_peak(i, nbins)
+        ha, pa = int(m * T["SpecMaxPx"]), int(pk * T["SpecMaxPx"])
+        hb, pb = int(m * 0.72 * T["SpecMaxPx"]), int(pk * 0.72 * T["SpecMaxPx"])
         x = SPEC_LEFT_X + i * pitch
         if ha > 0:
             c.bar_rounded(x, SPEC_CENTER_Y - ha, w, ha, rad, TRACE_A, "top")
+        if pa >= ha + PEAK_GAP:
+            c.fill_rect(x, SPEC_CENTER_Y - pa, w, PEAK_THICK, TRACE_A)
         if hb > 0:
             c.bar_rounded(x, SPEC_CENTER_Y + 1, w, hb, rad, TRACE_B, "bottom")
+        if pb >= hb + PEAK_GAP:
+            c.fill_rect(x, SPEC_CENTER_Y + 1 + pb - PEAK_THICK, w, PEAK_THICK, TRACE_B)
     return c
 
 
@@ -320,13 +353,9 @@ def spectrum_32():
     return _spectrum(32)
 
 
-def spectrum_32_gap():
-    """32 buckets with a 1 px gap — not in the firmware, drawn for comparison."""
-    return _spectrum(32, gap=1)
-
-
-def spectrum_64_gap():
-    return _spectrum(64, gap=1)
+def spectrum_32_nogap():
+    """32 buckets butted edge to edge, for comparison with the gapped default."""
+    return _spectrum(32, gap=0)
 
 
 # ------------------------------------------------------------ Waterfall ----
@@ -456,12 +485,11 @@ SCREENS = {
     "spectrum_128": spectrum_128,
     "spectrum_64": spectrum_64,
     "spectrum_32": spectrum_32,
-    "spectrum_32_gap": spectrum_32_gap,
+    "spectrum_32_nogap": spectrum_32_nogap,
     "spectrum_radial_out_32": spectrum_radial_out_32,
     "spectrum_radial_out_128": spectrum_radial_out_128,
     "spectrum_radial_in_32": spectrum_radial_in_32,
     "spectrum_radial_in_128": spectrum_radial_in_128,
-    "spectrum_64_gap": spectrum_64_gap,
     "scope_frozen": scope_frozen,
     "scope_single": scope_single,
     "scope_stopped": scope_stopped,

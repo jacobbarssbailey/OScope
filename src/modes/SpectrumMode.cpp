@@ -84,6 +84,11 @@ int16_t SpectrumMode::bucketW() const {
     return (int16_t)(Theme::SpecBarsW / (int16_t)bins());
 }
 
+int16_t SpectrumMode::barW() const {
+    const int16_t w = (int16_t)(bucketW() - kBarGap);
+    return (w > 0) ? w : 1;   // at 1 px per bucket there is no room for a gap
+}
+
 void SpectrumMode::encoderPress() {
     _layout = (Layout)(((int)_layout + 1) % (int)Layout::COUNT);
 }
@@ -94,7 +99,30 @@ void SpectrumMode::encoderTurn(int8_t delta) {
     int v = (int)_binStep + (delta > 0 ? 1 : -1);
     if (v < 0) v = 0;
     if (v > last) v = last;      // steps, not wraps: the ends are meaningful
+    if ((uint8_t)v == _binStep) return;
     _binStep = (uint8_t)v;
+    // The buckets now cover different frequencies, so every held peak is about
+    // a band that no longer exists at that index.  Drop them rather than let
+    // them decay from a value that never applied here.
+    for (uint16_t i = 0; i < kMaxBins; ++i) {
+        _peakA[i] = _peakB[i] = 0;
+        _holdA[i] = _holdB[i] = 0;
+    }
+}
+
+void SpectrumMode::agePeaks(const uint8_t* bars, uint8_t* peak,
+                            uint8_t* hold) const {
+    const uint16_t n = bins();
+    for (uint16_t i = 0; i < n; ++i) {
+        if (bars[i] >= peak[i]) {          // a new maximum resets the hold
+            peak[i] = bars[i];
+            hold[i] = kPeakHoldFrames;
+        } else if (hold[i] > 0) {
+            --hold[i];
+        } else if (peak[i] > 0) {
+            --peak[i];
+        }
+    }
 }
 
 void SpectrumMode::mapBars(const float* mag, uint8_t* bars) const {
@@ -142,6 +170,10 @@ void SpectrumMode::onFrame(const SampleBuffers& /*buf*/) {
     computeMag(_rawB, _magB);
     mapBars(_magA, _barsA);
     mapBars(_magB, _barsB);
+    // onFrame runs once per *rendered* frame, which is what the decay is
+    // measured in — see the ScopeMode::onFrame contract.
+    agePeaks(_barsA, _peakA, _holdA);
+    agePeaks(_barsB, _peakB, _holdB);
 }
 
 void SpectrumMode::drawGrid(Renderer& r) const {
@@ -171,24 +203,43 @@ void SpectrumMode::renderBars(Renderer& r, const ScopeState& s) const {
     // Only the outer end is capped: the end at the centre line stays square so
     // the two channels meet the baseline flat.  At 1 px wide there is no corner
     // to round and barRounded falls through to a plain fill.
-    const uint16_t n = bins();
-    const int16_t  w = bucketW();
-    const int16_t  rad = (int16_t)(w / 2);
+    const uint16_t n     = bins();
+    const int16_t  pitch = bucketW();
+    const int16_t  w     = barW();
+    const int16_t  rad   = (int16_t)(w / 2);
+    const int16_t  cy    = Theme::SpecCenterY;
+
     for (uint16_t i = 0; i < n; ++i) {
-        const int16_t x = Theme::SpecLeftX + (int16_t)i * w;
-        if (s.channelEnabled[0] && _barsA[i] > 0) {
-            r.barRounded(x, (int16_t)(Theme::SpecCenterY - _barsA[i]),
-                         w, _barsA[i], rad, Theme::TraceA, Renderer::Cap::Top);
+        const int16_t x = Theme::SpecLeftX + (int16_t)i * pitch;
+
+        if (s.channelEnabled[0]) {
+            if (_barsA[i] > 0) {
+                r.barRounded(x, (int16_t)(cy - _barsA[i]), w, _barsA[i], rad,
+                             Theme::TraceA, Renderer::Cap::Top);
+            }
+            // The marker floats clear of the bar; the black gap between them is
+            // what separates the two, so both can be the channel's own colour.
+            if (_peakA[i] >= _barsA[i] + kPeakGapPx) {
+                r.fillRect(x, (int16_t)(cy - _peakA[i]), w, kPeakThickPx,
+                           Theme::TraceA);
+            }
         }
-        if (s.channelEnabled[1] && _barsB[i] > 0) {
-            r.barRounded(x, (int16_t)(Theme::SpecCenterY + 1),
-                         w, _barsB[i], rad, Theme::TraceB, Renderer::Cap::Bottom);
+        if (s.channelEnabled[1]) {
+            if (_barsB[i] > 0) {
+                r.barRounded(x, (int16_t)(cy + 1), w, _barsB[i], rad,
+                             Theme::TraceB, Renderer::Cap::Bottom);
+            }
+            if (_peakB[i] >= _barsB[i] + kPeakGapPx) {
+                r.fillRect(x, (int16_t)(cy + 1 + _peakB[i] - kPeakThickPx), w,
+                           kPeakThickPx, Theme::TraceB);
+            }
         }
     }
 }
 
-void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars, int side,
-                                 bool outward, uint16_t color) const {
+void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars,
+                                 const uint8_t* peak, int side, bool outward,
+                                 uint16_t color) const {
     const uint16_t n    = bins();
     const int16_t  rIn  = Theme::SpecRadInner;
     const int16_t  rOut = Theme::SpecRadOuter;
@@ -204,34 +255,55 @@ void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars, int side,
     const float wedge = (float)M_PI / (float)n;
 
     for (uint16_t i = 0; i < n; ++i) {
-        const int mag = bars[i];
-        if (mag <= 0) continue;
-        const int16_t len = (int16_t)((int32_t)mag * span / Theme::SpecMaxPx);
-        if (len <= 0) continue;
-        const int16_t r0 = outward ? rIn : (int16_t)(rOut - len);
-        const int16_t r1 = outward ? (int16_t)(rIn + len) : rOut;
+        // The bar, then its peak marker: a short arc at the peak radius, drawn
+        // by the same fan so it follows the wedge instead of cutting across it.
+        for (int pass = 0; pass < 2; ++pass) {
+            const int mag = pass ? peak[i] : bars[i];
+            if (mag <= 0) continue;
+            if (pass && peak[i] < bars[i] + kPeakGapPx) continue;   // no clear gap
 
-        int spokes = (int)(wedge * (float)r1 * 0.9f);   // 0.9 leaves a hair of gap
-        if (spokes < 1) spokes = 1;
+            const int16_t len = (int16_t)((int32_t)mag * span / Theme::SpecMaxPx);
+            if (len <= 0) continue;
+            // Where the bar's own outer end sits, then the slice to actually ink.
+            const int16_t tip = outward ? (int16_t)(rIn + len)
+                                        : (int16_t)(rOut - len);
+            int16_t r0, r1;
+            if (!pass) {
+                r0 = outward ? rIn : tip;
+                r1 = outward ? tip : rOut;
+            } else if (outward) {
+                r0 = tip; r1 = (int16_t)(tip + kPeakThickPx);
+                if (r1 > rOut) { r1 = rOut; r0 = (int16_t)(rOut - kPeakThickPx); }
+            } else {
+                r1 = tip; r0 = (int16_t)(tip - kPeakThickPx);
+                if (r0 < rIn) { r0 = rIn; r1 = (int16_t)(rIn + kPeakThickPx); }
+            }
+            if (r1 <= r0) continue;
 
-        for (int k = 0; k < spokes; ++k) {
-            // Low frequency at the top of both halves, sweeping down each side.
-            const float t = ((float)i + ((float)k + 0.5f) / (float)spokes) * wedge;
-            const float sx = (float)side * sinf(t);
-            const float sy = -cosf(t);
-            r.lineAA((int32_t)((Theme::CX + sx * r0) * Mapping::FRAC_ONE),
-                     (int32_t)((Theme::CY + sy * r0) * Mapping::FRAC_ONE),
-                     (int32_t)((Theme::CX + sx * r1) * Mapping::FRAC_ONE),
-                     (int32_t)((Theme::CY + sy * r1) * Mapping::FRAC_ONE),
-                     color);
+            int spokes = (int)(wedge * (float)r1 * 0.9f);  // 0.9 leaves a hair of gap
+            if (spokes < 1) spokes = 1;
+
+            for (int k = 0; k < spokes; ++k) {
+                // Low frequency at the top of both halves, sweeping down each side.
+                const float t = ((float)i + ((float)k + 0.5f) / (float)spokes) * wedge;
+                const float sx = (float)side * sinf(t);
+                const float sy = -cosf(t);
+                r.lineAA((int32_t)((Theme::CX + sx * r0) * Mapping::FRAC_ONE),
+                         (int32_t)((Theme::CY + sy * r0) * Mapping::FRAC_ONE),
+                         (int32_t)((Theme::CX + sx * r1) * Mapping::FRAC_ONE),
+                         (int32_t)((Theme::CY + sy * r1) * Mapping::FRAC_ONE),
+                         color);
+            }
         }
     }
 }
 
 void SpectrumMode::renderRadial(Renderer& r, const ScopeState& s,
                                 bool outward) const {
-    if (s.channelEnabled[0]) radialChannel(r, _barsA, -1, outward, Theme::TraceA);
-    if (s.channelEnabled[1]) radialChannel(r, _barsB, +1, outward, Theme::TraceB);
+    if (s.channelEnabled[0])
+        radialChannel(r, _barsA, _peakA, -1, outward, Theme::TraceA);
+    if (s.channelEnabled[1])
+        radialChannel(r, _barsB, _peakB, +1, outward, Theme::TraceB);
 }
 
 void SpectrumMode::render(Renderer& r, const ScopeState& state,
