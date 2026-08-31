@@ -42,10 +42,9 @@ public:
     void onFrame(const SampleBuffers& buf) override;
 
     // B2 toggles the flow direction (see the header comment).
-    // The encoder press flips the flow direction; this mode has no shared
-    // settings for the press to walk.
-    bool ownsEncoderPress() const override { return true; }
-    void encoderPress() override;
+    // B2 flips the flow direction.
+    bool ownsChannelButton() const override { return true; }
+    void channelPress() override;
 
 private:
     enum class Flow : uint8_t { Up, Out };

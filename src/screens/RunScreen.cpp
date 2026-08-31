@@ -3,13 +3,17 @@
 // Button mapping (short press):
 //   B1 (Mode)    — cycle acquisition mode: TRIG → ROLL → X-Y → TRIG …
 //                  then clampSelectable() to fix selection if now invalid.
-//   B2 (Channel) — show/hide channel B (modes that honour the enable flags)
+//   B2 (Channel) — the mode's own option: persistence (Triggered, X-Y),
+//                  spectrum layout (Spectrum), held reading (Tuner),
+//                  flow direction (Waterfall)
 //   B3 (RunStop) — toggle run/stop (also disarms a pending single-shot)
 //   Encoder      — advance selected parameter (skips N/A params for current
 //                  mode), or the mode's own toggle if it claims the press
 //   Encoder turn — adjust the selected parameter value by encoder delta
 // Long press:
 //   B1 (Mode)    — open the settings menu (push MenuScreen)
+//   B2 (Channel) — the mode's second option, where it has one (Spectrum's
+//                  peak decay)
 //   B3 (RunStop) — arm single-shot (Triggered only): run until the next
 //                  successful triggered capture, then freeze and disarm
 //   Encoder      — reset all state to defaults
@@ -191,13 +195,24 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 _settings = false;
                 break;
 
-            // B2: show/hide channel B.  Channel A is the reference trace and
-            // always shows; B is the one you flip in and out against it, so the
-            // button needs no second gesture.  Modes that ignore the enable
-            // flags swallow it, so it never changes state you cannot see.
+            // B2 is the per-mode option key.  A mode that holds the state
+            // itself takes the press (Spectrum's peak hold, Waterfall's flow
+            // direction); the scope modes get persistence, which lives in
+            // Settings and so is switched here.  Tuner has nothing on B2 yet —
+            // see the note in TunerMode.h.
             case Btn::Channel:
-                if (activeMode && activeMode->honoursChannelEnable()) {
-                    s.channelEnabled[1] = !s.channelEnabled[1];
+                if (activeMode && activeMode->ownsChannelButton()) {
+                    activeMode->channelPress();
+                } else if (activeMode && activeMode->honoursPersistence()) {
+                    if (ctx.settings.persist != 0) {
+                        // Keep the level so switching back on restores the
+                        // trail length the menu is set to, not a default.
+                        ctx.settings.persistLast = ctx.settings.persist;
+                        ctx.settings.persist = 0;
+                    } else {
+                        ctx.settings.persist = ctx.settings.persistLast;
+                    }
+                    ctx.settings.save();   // a single press, so no debounce needed
                 }
                 break;
 
@@ -233,6 +248,14 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 clampSelectable(s);
                 break;
 
+            // B2 long-press: the mode's second option, where it has one
+            // (Spectrum's peak decay).  Nothing elsewhere.
+            case Btn::Channel:
+                if (activeMode && activeMode->ownsChannelButton()) {
+                    activeMode->channelHold();
+                }
+                break;
+
             // B1 long-press: open the settings menu.
             case Btn::Mode:
                 if (_menu) ctx.screens.push(_menu, ctx);
@@ -254,10 +277,13 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
                 break;
         }
     } else if (e.type == EventType::EncoderTurn) {
-        // Encoder rotation always drives the shared settings — no mode claims
-        // it — and does nothing where none apply.  The new value goes up in the
-        // overlay, which re-times itself on every detent.
-        if (paramAppliesInMode(s.selected, s.mode)) {
+        // Encoder rotation: the mode's own value if it claims the turn
+        // (Spectrum's bin count), otherwise the shared settings, which do
+        // nothing where none apply.  A shared value goes up in the overlay,
+        // which re-times itself on every detent; a mode-owned one shows itself.
+        if (activeMode && activeMode->ownsEncoderTurn()) {
+            activeMode->encoderTurn(e.delta);
+        } else if (paramAppliesInMode(s.selected, s.mode)) {
             parameterFor(s.selected).adjust(s, e.delta);
             showSettings(s);
         }
@@ -282,8 +308,8 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     //    draws a fresh snapshot per frame, so accumulation reveals jitter and
     //    modulation.  Rolling already encodes time in its scroll, and the
     //    non-scope modes (Spectrum) manage their own display.
-    const bool persistMode = (s.mode == Mode::Triggered || s.mode == Mode::XY);
-    if (ctx.settings.persist != 0 && persistMode) {
+    ScopeMode* activeMode = _modes[static_cast<int>(s.mode)];
+    if (ctx.settings.persist != 0 && activeMode && activeMode->honoursPersistence()) {
         // keep/256 per channel per frame, indexed by the persist level.
         static const uint16_t kKeep[4] = {256, 150, 200, 232};
         r.fadeFrame(kKeep[ctx.settings.persist <= 3 ? ctx.settings.persist : 0]);
@@ -305,7 +331,6 @@ void RunScreen::draw(Renderer& r, AppContext& ctx) {
     // 3. Delegate waveform rendering to the active mode strategy.  Any sweep
     //    acquired since the last render is folded in first, once, on the
     //    freshest published frame — see tick().
-    ScopeMode* activeMode = _modes[static_cast<int>(s.mode)];
     if (activeMode != nullptr) {
         if (_framePending) {
             activeMode->onFrame(_acq.frame());

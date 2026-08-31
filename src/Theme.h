@@ -76,14 +76,25 @@ namespace Theme {
   constexpr int16_t PlotCY        = PlotY + PlotH / 2;  // 120
 
   // ---- Spectrum mode layout ----
-  // 128 FFT buckets, each SpecBucketW px wide, centred horizontally.  Channel A
-  // grows up from the centre line, channel B grows down (inverted).  At 1 px per
-  // bucket the 128 px block clears the round bezel even at full height, so no
-  // bars are clipped.
-  constexpr int16_t SpecBuckets   = 128;
-  constexpr int16_t SpecBucketW   = 1;                              // px per bucket
-  constexpr int16_t SpecBarsW     = SpecBuckets * SpecBucketW;      // 128
+  // A SpecBarsW-wide block of bars, centred horizontally.  Channel A grows up
+  // from the centre line, channel B grows down (inverted).  The 128 px width
+  // clears the round bezel even at full bar height, so nothing is clipped.
+  //
+  // How many buckets that width is divided into is SpectrumMode's business, not
+  // the theme's — it is encoder-adjustable, and only the total is fixed here.
+  // 128 is chosen to divide evenly by every bucket width the mode offers.
+  constexpr int16_t SpecBarsW     = 128;
   constexpr int16_t SpecLeftX     = PlotX + (PlotW - SpecBarsW) / 2; // 56
   constexpr int16_t SpecCenterY   = PlotCY;                         // 120
   constexpr int16_t SpecMaxPx     = 80;                             // full-scale bar height
+
+  // Radial layouts: each channel's buckets become spokes over a half circle,
+  // A sweeping the left half and B the right, low frequency at the top of both.
+  // The outer radius clears the run-state ring at 119 so a frozen display still
+  // reads; the inner one leaves a hole so the spokes do not collide at the hub.
+  constexpr int16_t SpecRadInner  = 22;
+  constexpr int16_t SpecRadOuter  = 110;
+  // Reference rings, as a percentage of the inner→outer span.
+  constexpr int16_t SpecRadRing1  = 33;
+  constexpr int16_t SpecRadRing2  = 67;
 }

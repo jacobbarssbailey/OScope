@@ -20,6 +20,10 @@ struct Settings {
     TrigEdge   trigEdge   = TrigEdge::Rising;
     uint16_t   a4_hz      = 440;   // Tuner reference: frequency of note A4
     uint8_t    persist    = 3;     // trace persistence: 0=Off,1=Short,2=Med,3=Long
+    // The level to come back to when B2 switches persistence on again.  Not on
+    // the menu — it is captured from `persist` each time B2 switches it off, so
+    // the menu's choice of trail length survives the toggle and a power cycle.
+    uint8_t    persistLast = 3;
 
     // Restore all fields to the compile-time defaults above.
     void defaults();

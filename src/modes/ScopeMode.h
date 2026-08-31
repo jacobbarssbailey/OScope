@@ -80,10 +80,40 @@ public:
     // returning true here and acting in encoderPress().  The toggle reports
     // nothing: its outcome is the whole face, which shows itself.
     //
-    // Only the press is claimable.  Encoder *rotation* always belongs to the
-    // shared settings, and simply does nothing in a mode that has none.
     virtual bool ownsEncoderPress() const { return false; }
     virtual void encoderPress() {}
+
+    // --- Optional mode-owned encoder rotation ---
+    // Same bargain for the turn: a mode with a value of its own but none of the
+    // shared settings (Spectrum's bin count) claims the rotation here.  A mode
+    // that does not claim it gets the shared settings, which do nothing where
+    // none apply.
+    virtual bool ownsEncoderTurn() const { return false; }
+    virtual void encoderTurn(int8_t /*delta*/) {}
+
+    // --- Mode-owned B2 (Channel) button ---
+    // B2 is the per-mode option key: whatever single thing this mode has worth
+    // switching, it switches.  A mode holding that state itself (Spectrum's
+    // peak hold, Waterfall's flow direction) claims the button here; the scope
+    // modes leave it unclaimed and RunScreen wires it to persistence, which
+    // lives in Settings rather than in the mode.
+    //
+    // A mode that claims the button gets its hold too, for a second option
+    // where it has one; the default hold does nothing.
+    //
+    // Nothing is reported: every one of these shows its result on the face.
+    virtual bool ownsChannelButton() const { return false; }
+    virtual void channelPress() {}
+    virtual void channelHold() {}
+
+    // --- Trace persistence ---
+    // True if fading the previous frame instead of clearing it means anything
+    // here.  Only the modes that draw a fresh snapshot per frame qualify:
+    // accumulation is what reveals jitter and modulation.  Rolling already
+    // encodes time in its scroll and the FFT modes manage their own display, so
+    // for them a trail would just smear.  RunScreen consults this both to fade
+    // and to decide whether B2 has a persistence toggle to offer.
+    virtual bool honoursPersistence() const { return false; }
 
     // --- Trigger alignment ---
     // True only for the mode whose sweeps are aligned to a trigger crossing.
@@ -91,10 +121,4 @@ public:
     // free-running modes would hold a pending arm forever.
     virtual bool triggerAligned() const { return false; }
 
-    // --- Per-channel show/hide ---
-    // True if this mode consults ScopeState::channelEnabled when it renders.
-    // The Channel button only toggles a channel in a mode that does, so the
-    // button never mutates state with no visible effect: X-Y plots both axes by
-    // construction, and Tuner and Waterfall always show both halves.
-    virtual bool honoursChannelEnable() const { return false; }
 };

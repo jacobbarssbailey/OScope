@@ -8,7 +8,7 @@
 // uninitialised EEPROM or a stale layout (bump kStateVersion on field changes).
 static constexpr int      kEEStateAddr = 32;
 static constexpr uint16_t kStateMagic   = 0x05C1;
-static constexpr uint8_t  kStateVersion = 6;   // bumped: Waterfall mode (6 timebase slots)
+static constexpr uint8_t  kStateVersion = 7;   // bumped: dropped channelEnabled
 
 // Only the acquisition setup is persisted — not running / singleArmed.
 struct StoredState {
@@ -20,7 +20,6 @@ struct StoredState {
     uint32_t     timebase_us_per_div[(uint8_t)Mode::COUNT];
     uint16_t     vscale_mv_per_div[2];
     int16_t      trigger_level_mv;
-    bool         channelEnabled[2];
 };
 
 void ScopeState::resetToDefaults() {
@@ -38,8 +37,6 @@ void ScopeState::resetToDefaults() {
     vscale_mv_per_div[0]  = 3000;
     vscale_mv_per_div[1]  = 3000;
     trigger_level_mv      = 0;
-    channelEnabled[0]     = true;
-    channelEnabled[1]     = true;
     singleArmed           = false;
 }
 
@@ -55,8 +52,6 @@ void ScopeState::load() {
         vscale_mv_per_div[0] = s.vscale_mv_per_div[0];
         vscale_mv_per_div[1] = s.vscale_mv_per_div[1];
         trigger_level_mv     = s.trigger_level_mv;
-        channelEnabled[0]    = s.channelEnabled[0];
-        channelEnabled[1]    = s.channelEnabled[1];
     } else {
         resetToDefaults();
         save();   // initialise EEPROM so subsequent boots read a valid record
@@ -69,10 +64,6 @@ void ScopeState::load() {
     timebase_us_per_div[(uint8_t)Mode::Tuner]     = kTunerTimebaseUs;
     timebase_us_per_div[(uint8_t)Mode::Waterfall] = kWaterfallTimebaseUs;
 
-    // Channel A is the reference trace: no control hides it, so no stored
-    // record may either.  A board that saved A hidden under earlier firmware
-    // would otherwise come up without it and have no way to bring it back.
-    channelEnabled[0] = true;
 
     // Transient fields always boot to a sane state, regardless of what was saved.
     running     = true;
@@ -85,7 +76,7 @@ void ScopeState::save() const {
                    timebase_us_per_div[2], timebase_us_per_div[3],
                    timebase_us_per_div[4], timebase_us_per_div[5]},
                   {vscale_mv_per_div[0], vscale_mv_per_div[1]},
-                  trigger_level_mv, {channelEnabled[0], channelEnabled[1]}};
+                  trigger_level_mv};
     static_assert((uint8_t)Mode::COUNT == 6, "StoredState timebase initializer lists 6 modes");
     EEPROM.put(kEEStateAddr, s);   // put() only rewrites changed bytes (flash wear)
 }

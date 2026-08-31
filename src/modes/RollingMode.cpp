@@ -32,10 +32,10 @@ void RollingMode::render(Renderer& r, const ScopeState& state,
     if (buf.count < 2) return;
 
     // Draw B first so A lands on top (matches Triggered mode's Z-order).
-    if (state.channelEnabled[1]) {
+    {
         drawChannel(r, buf, 1, state.vscale_mv_per_div[1], Theme::TraceB);
     }
-    if (state.channelEnabled[0]) {
+    {
         drawChannel(r, buf, 0, state.vscale_mv_per_div[0], Theme::TraceA);
     }
     // HUD drawn by RunScreen on top afterward.

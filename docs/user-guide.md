@@ -21,16 +21,21 @@ every mode.
 | Control | Short press | Hold (0.5 s) | Turn |
 |---|---|---|---|
 | **Mode** (B1) | next display mode | open the settings menu | — |
-| **Channel** (B2) | show/hide channel B | — | — |
+| **Channel** (B2) | the current mode's own option | — | — |
 | **Run/Stop** (B3) | freeze / resume | arm single shot | — |
 | **Encoder** | select the next setting | reset everything to defaults | change the selected setting |
 
-Two of those bend where a mode has nothing for them to act on. The **encoder
-press** normally walks the settings, but in Tuner and Waterfall — which have no
-settings — it takes the mode's own toggle instead: hertz-or-note in Tuner, flow
-direction in Waterfall. The **Channel** button does nothing in the modes that
-always draw both channels, and it has no hold at all: channel A is the reference
-trace and always shows, so B is the only one to flip.
+Two of those change meaning with the mode.
+
+**Channel** is the per-mode option key: whatever single thing the current mode
+has worth switching, it switches. Persistence in Triggered and X-Y, the layout in
+Spectrum, flow direction in Waterfall. Nothing in Rolling or Tuner yet. Only
+Spectrum has enough to need the *hold* as well, where it sets how fast the peak
+markers fall.
+
+The **encoder press** normally walks the settings, but Spectrum and Tuner have
+none, so there it takes the mode's own value instead: the spectrum layout, or
+hertz-or-note.
 
 ### Every control in every mode
 
@@ -38,27 +43,29 @@ Every cell is spelled out — a dash means the control does nothing in that mode
 
 | | TRIG | ROLL | X-Y | SPEC | TUNE | WFAL |
 |---|---|---|---|---|---|---|
-| **Encoder turn** | change setting | change setting | change setting | — | — | — |
-| **Encoder press** | next setting (of 3) | next setting (of 2) | next setting (of 2) | — | Hz ↔ note | flow direction |
+| **Encoder turn** | change setting | change setting | change setting | bucket count | — | — |
+| **Encoder press** | next setting (of 3) | next setting (of 2) | next setting (of 2) | — | Hz ↔ note | — |
 | **Encoder hold** | reset settings | reset settings | reset settings | reset settings | reset settings | reset settings |
 | **Mode press** | next mode | next mode | next mode | next mode | next mode | next mode |
 | **Mode hold** | settings menu | settings menu | settings menu | settings menu | settings menu | settings menu |
-| **Channel press** | hide/show B | hide/show B | — | hide/show B | — | — |
-| **Channel hold** | — | — | — | — | — | — |
+| **Channel press** | persistence on/off | — | persistence on/off | spectrum layout | — | flow direction |
+| **Channel hold** | — | — | — | peak decay | — | — |
 | **Run/Stop press** | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume |
 | **Run/Stop hold** | arm single shot | — | — | — | — | — |
 
-Four of those nine depend on the mode. Four more — reset, next mode, settings
-menu, freeze — do the same thing wherever you are, and Channel hold is unused
-everywhere. Three rows are worth reading twice:
+Six of those nine depend on the mode; the other three — next mode, settings
+menu, freeze — plus the encoder's reset do the same thing wherever you are.
+Three rows are worth reading twice:
 
+- **Channel press** is the option key, and what it offers depends on what the
+  mode has. Two modes have nothing on it: Rolling, where persistence would just
+  smear a display that already shows time as a scroll, and Tuner — see
+  [Known limitations](#current-limitations).
 - **Encoder press** walks the settings where there are settings, and otherwise
-  becomes the mode's own toggle. Tuner and Waterfall are the two modes with a
-  single thing worth switching and nothing to dial.
-- **Channel press** hides channel B, and only in the modes that consult the
-  flags. X-Y plots both axes by construction, and Tuner and Waterfall always
-  draw both halves, so the button is inert there rather than silently changing
-  something you would only see later. Channel A always shows.
+  becomes the mode's own value. Spectrum and Waterfall have neither — both keep
+  their options on Channel — so it does nothing in either.
+- **Channel hold** is a second option for a mode that needs one. Only Spectrum
+  does, for the peak decay rate.
 - **Run/Stop hold** arms a single shot, which completes on the next *triggered*
   capture. Only Triggered produces one, so the hold is ignored in the other
   modes rather than arming something that could never fire.
@@ -132,11 +139,37 @@ and LFOs, where waiting for a trigger would just mean waiting.
 
 **X-Y — Lissajous.** Channel A drives the horizontal axis and channel B the
 vertical, so two related signals draw a figure instead of two traces. Volts
-scales both axes. X-Y always samples both channels regardless of what is hidden.
+scales both axes.
 
-**SPEC — Spectrum.** A 256-point FFT of each channel drawn as a 128-bucket bar
-spectrum: channel A grows up from the centre line, channel B grows down. The
-frequency window and amplitude mapping are fixed.
+**SPEC — Spectrum.** A 256-point FFT of each channel, with more controls on it
+than any other mode. The frequency window and amplitude mapping are fixed, but
+three things are not:
+
+- **Turn the encoder** for the bucket count: 128, 64, 32 or 16. The block keeps
+  its width, so the bars widen as they thin out — 1, 2, 4 or 8 px. Fewer buckets
+  average more FFT bins together rather than dropping the ones in between, so a
+  coarse view is genuinely coarser and not just sparser. It applies to all three
+  layouts.
+- **Press Channel** for the layout. *Bars* is the classic reading: A up and B
+  down from a centre line. The two circular layouts give each channel a half of
+  the face — A on the left, B on the right, low frequency at the top of both —
+  with the buckets as wedges growing *outward* from a hub or *inward* from the
+  rim. A wedge's free tip is rounded to the same eye as a bar's cap, and the gap
+  between wedges scales with the bucket count: invisible at 128, a clear couple
+  of pixels at 16.
+- **Hold Channel** for the peak markers — each bucket's recent maximum, drawn
+  clear of its bar so a transient stays readable after the bar has dropped. The
+  hold walks how fast they fall, off included:
+
+  | | holds for | then falls in |
+  |---|---|---|
+  | **off** | no markers | |
+  | **fast** | 0.2 s | 0.8 s |
+  | **medium** | 0.75 s | 2.5 s |
+  | **slow** | 2 s | 7.5 s |
+
+  Those are the times a full-height peak takes at Spectrum's usual frame rate;
+  the decay counts frames, so it stretches if the frame rate drops.
 
 **TUNE — Tuner.** Pitch detection on both channels, A in the top half of the
 face and B in the bottom. **Press the encoder** to switch the readout between
@@ -146,8 +179,8 @@ menu.
 
 **WFAL — Waterfall.** A scrolling spectrogram — each FFT frame becomes a line of
 colour and the lines scroll over time, so you watch the spectrum evolve.
-Channel A owns the left half of the face, channel B the right. **Press the
-encoder** to switch the flow direction:
+Channel A owns the left half of the face, channel B the right. **Press
+Channel** to switch the flow direction:
 
 - *Up* — frequency across the face, time scrolling upward from the bottom.
 - *Out* — frequency up the face, time scrolling outward from the centre.
@@ -191,6 +224,12 @@ there before.
 | **edge** | rising / falling | which direction the trigger fires on, in Triggered mode |
 | **A4** | 400 – 480 Hz | the tuner's reference pitch |
 | **persist** | off / short / med / long | how long a trace lingers before fading |
+
+**Press Channel** in Triggered or X-Y to switch persistence off and on without
+opening the menu. It remembers the level the menu is set to, so switching back
+on restores *short*, *med* or *long* rather than jumping to a default — and that
+memory survives a power cycle, so a scope put away with persistence off comes
+back to the trail length you chose.
 
 **Persist** leaves a phosphor-like trail behind the trace, which makes jitter
 and modulation visible as a band rather than a flicker. It applies to Triggered
@@ -237,16 +276,25 @@ does not touch the settings menu — edge, A4 and persist keep their values.
 
 Honest notes about the interface as it stands, so nothing reads as a fault:
 
-- **Hiding channel B only does something in three modes.** Triggered, Rolling
-  and Spectrum consult the enable flag; X-Y plots both axes by construction and
-  Tuner and Waterfall always draw both halves, so the Channel button is inert
-  there.
+- **The Channel button does nothing in Rolling or Tuner.** Rolling has no
+  persistence to switch — a trail would only smear a display that already shows
+  time as a scroll. Tuner had a "hold the last reading" option that was removed:
+  it only engaged when pitch detection failed outright, which a Eurorack input
+  almost never does, so in practice it showed a live garbage pitch rather than a
+  held good one. Doing it properly needs a confidence measure from the pitch
+  detector, not just a pass/fail.
+- **Neither channel can be hidden.** Both traces always draw. The controls for
+  hiding one were removed when the Channel button was given over to per-mode
+  options.
 - **The three panel LEDs do nothing.** They are wired and assigned pins, but no
   firmware drives them yet.
 - **There is no way to scale one channel independently.** Volts moves both
-  together by design, and hiding B does not change that. The per-channel
-  plumbing exists underneath — each channel stores its own V/div — but nothing
-  surfaces a way to set them apart.
+  together by design. The per-channel plumbing exists underneath — each channel
+  stores its own V/div — but nothing surfaces a way to set them apart.
+- **The spectrum layout, bucket count and peak decay are not saved.** They
+  are the mode's own, like the tuner's readout and the waterfall's flow
+  direction, and none of those survive a power cycle. Only the acquisition setup
+  and the menu settings do.
 - **Spectrum, Tuner and Waterfall have no adjustable acquisition settings.**
   Their sample rates, frequency windows and scaling are fixed at bench-tuned
   values.
@@ -259,14 +307,18 @@ Honest notes about the interface as it stands, so nothing reads as a fault:
 Mode  (B1)   press  next mode: TRIG > ROLL > X-Y > SPEC > TUNE > WFAL
              hold   settings menu       (in a menu: press = back / cancel)
 
-Chan  (B2)   press  show / hide channel B    (TRIG, ROLL and SPEC only)
-             hold   nothing
+Chan  (B2)   press  the mode's own option:
+                    TRIG / X-Y: persistence on-off
+                    SPEC: layout (flat / radial out / radial in)
+                    WFAL: flow direction.  ROLL, TUNE: nothing
+             hold   SPEC: peak decay (off / fast / medium / slow)
 
 Run   (B3)   press  freeze / resume     (solid orange ring = frozen)
              hold   arm single shot     (dashed ring = armed; TRIG only)
 
 Enc          press  next setting        (in a menu: open / confirm)
-                    TUNE: Hz <-> note.  WFAL: flow direction
+                    TUNE: Hz <-> note
              hold   reset acquisition settings to defaults
              turn   change the selected setting
+                    SPEC: bucket count (128 / 64 / 32 / 16)
 ```

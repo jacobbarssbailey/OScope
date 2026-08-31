@@ -1,14 +1,28 @@
 // modes/SpectrumMode.h — FFT spectrum analyzer mode.
 //
 // Runs a 256-point real FFT (ARM CMSIS-DSP, hardware FP on the Cortex-M7) on the
-// newest samples of each channel and draws a 128-bucket magnitude spectrum:
-// channel A grows up from the centre line, channel B grows down (inverted), over
-// vertical division grid lines and one centre horizontal line.
+// newest samples of each channel and draws a magnitude spectrum: channel A grows
+// up from the centre line, channel B grows down (inverted), over vertical
+// division grid lines and one centre horizontal line.
+//
+// The encoder rotation sets how many buckets those bars are divided into, and
+// B2 cycles the layout.  The block keeps its width whatever the count, so the
+// bars get wider as they get fewer: the counts are the divisors of SpecBarsW
+// that leave a bucket no wider than kMaxBucketW, giving 128 x 1 px, 64 x 2 px,
+// 32 x 4 px and 16 x 8 px.  Fewer buckets average more FFT bins together, which
+// is what makes a coarse view genuinely coarser rather than merely sparser.
+//
+// Every bucket also carries a peak-hold marker: the recent maximum, held for a
+// moment and then falling, drawn detached from the bar so a transient stays
+// readable after the bar itself has dropped.  A long press on B2 walks how fast
+// it falls, off included.
 //
 // The display window and amplitude mapping are fixed (bench-tuned defaults, no
 // runtime controls):
-//   Fmin/Fmax : the frequency window the 128 buckets span (a zoom over the FFT
-//               bins; buckets nearest-map onto bins).
+//   Fmin/Fmax : the frequency window the buckets span (a zoom over the FFT
+//               bins).  A bucket covering several bins averages them; where the
+//               window is zoomed in far enough that a bucket falls inside one
+//               bin, it takes the nearest.
 //   Scale     : 0 % = linear amplitude, 100 % = log; blended in between.
 //   Zero/Full : the magnitudes mapped to 0 and full bar height.
 //
@@ -33,9 +47,16 @@ public:
 
     const char* name() const override { return "SPEC"; }
 
-    // Draws each channel only when its enable flag is set, so the Channel
-    // button means something here.
-    bool honoursChannelEnable() const override { return true; }
+    // B2 cycles the layout; its hold walks the peak decay.
+    bool ownsChannelButton() const override { return true; }
+    void channelPress() override;
+    void channelHold() override;
+
+    // The encoder rotation walks the bucket count; this mode has none of the
+    // shared settings for it to drive.  The press is left alone — the layout
+    // sits on B2, where the other modes keep their own option.
+    bool ownsEncoderTurn() const override { return true; }
+    void encoderTurn(int8_t delta) override;
 
     // Wire the capture source the FFT block is read from (called by RunScreen).
     void setSource(Acquisition* acq) { _src = acq; }
@@ -44,10 +65,72 @@ public:
                 const SampleBuffers& buf) override;
     void onFrame(const SampleBuffers& buf) override;
 
+    // How the buckets are arranged on the face.  Bars is the classic reading;
+    // the rest trade the linear frequency axis for one that uses the round face
+    // instead of fighting it.
+    enum class Layout : uint8_t {
+        Bars,        // A up / B down from a horizontal centre line
+        RadialOut,   // spokes from a hub outward, A left half / B right half
+        RadialIn,    // spokes from the rim inward, same halves
+        COUNT
+    };
+
 private:
     static constexpr uint16_t kFFT  = 256;                 // FFT length
     static constexpr uint16_t kNBin = kFFT / 2;            // usable bins (1..128)
-    static constexpr uint16_t kBins = 128;                 // display buckets
+    static constexpr uint16_t kMaxBins    = 128;   // widest count = array size
+    static constexpr int16_t  kMaxBucketW = 8;     // widest a single bucket gets
+
+    // Selectable bucket counts, coarse to fine.  These are every divisor of
+    // Theme::SpecBarsW (128) whose quotient is <= kMaxBucketW, which is what
+    // keeps the block exactly as wide at every setting with uniform bars.
+    static const uint16_t kBinSteps[4];
+    uint8_t  _binStep = 3;      // index into kBinSteps; starts at the finest
+    Layout   _layout  = Layout::Bars;
+
+    // How the peak markers fall.  `hold` is frames at a new maximum before it
+    // starts dropping, then it loses `step` px every `div` frames.  Spectrum is
+    // blit-bound at roughly 32 fps, so a frame is about 31 ms.  Off is index 0,
+    // which draws no markers at all.
+    struct PeakDecay { uint8_t hold; uint8_t step; uint8_t div; };
+    static const PeakDecay kDecays[4];
+    uint8_t  _decay      = 2;   // index into kDecays; starts at the middle rate
+    uint8_t  _decayPhase = 0;   // frame counter, for the rates that skip frames
+
+    // Pixels of clear space between neighbouring bars in the Bars layout.  Bars
+    // butted edge to edge merge into one filled shape at the wider bucket
+    // widths, which loses both the bar reading and the rounded caps.  Taken out
+    // of the bucket's own width, so the block still spans SpecBarsW exactly.
+    static constexpr int16_t kBarGap = 1;
+
+    // Peak hold.  A bucket's peak jumps straight to a new maximum, sits for
+    // kPeakHoldFrames, then falls a pixel per frame.  Spectrum is blit-bound at
+    // roughly 32 fps, so the hold is about 3/4 s and a full-height peak takes
+    // ~2.5 s to reach the floor.
+    // Clear space a peak needs above its bar before it is worth drawing
+    // separately; below this it would just thicken the bar's cap.
+    static constexpr uint8_t kPeakGapPx = 3;
+    static constexpr int16_t kPeakThickPx = 2;   // marker depth, radially or vertically
+
+    // Radial styling.  A wedge is rasterised ring by ring — one pass per
+    // integer radius, stepping along the arc — rather than as a fan of radial
+    // lines.  A fan cannot win: its spokes crowd several to a pixel at the hub
+    // and thin to gaps at the rim, so an antialiased one beats against the pixel
+    // grid at both ends and moires.  Ring order writes each pixel once.
+    //
+    // The gap between wedges is measured in pixels at every radius, not as a
+    // share of the angle, so wedges stay apart near the hub instead of
+    // converging into a mass.  It is held between kGapMinFrac and kGapMaxFrac of
+    // the slice so a fine wedge is neither swallowed by its gap nor left without
+    // one.  The tip is rounded by narrowing the arc as it approaches the end,
+    // capped at kWedgeCapPx.
+    static constexpr float   kWedgeCapPx = 4.0f;
+    static constexpr float   kGapPx      = 2.0f;   // preferred gap, in pixels
+    static constexpr float   kGapMinFrac = 0.16f;  // ...but at least this much of the slice
+    static constexpr float   kGapMaxFrac = 0.42f;  // ...and never more than this
+    static constexpr float   kMinInkPx   = 1.0f;   // a wedge always inks this much arc
+    static constexpr float   kArcStepPx  = 0.5f;   // arc sampling, under a pixel
+    static constexpr int     kMaxFanSteps = 96;    // arc samples across one wedge
 
     // Fixed display parameters (bench-tuned defaults).
     static constexpr int32_t kMinHz    = 0;        // low edge of the window
@@ -67,17 +150,45 @@ private:
     uint16_t _rawB[kFFT];
     float    _magA[kNBin];      // per-bin magnitudes (bins 1..128)
     float    _magB[kNBin];
-    uint8_t  _barsA[kBins] = {0};  // bucket heights in px (0..SpecMaxPx)
-    uint8_t  _barsB[kBins] = {0};
+    uint8_t  _barsA[kMaxBins] = {0};  // bucket heights in px (0..SpecMaxPx)
+    uint8_t  _barsB[kMaxBins] = {0};
+    uint8_t  _peakA[kMaxBins] = {0};  // held maxima, same units as _bars
+    uint8_t  _peakB[kMaxBins] = {0};
+    uint8_t  _holdA[kMaxBins] = {0};  // frames left before the peak starts falling
+    uint8_t  _holdB[kMaxBins] = {0};
+
+    // Active bucket count and the width each one draws at.  Their product is
+    // always Theme::SpecBarsW.
+    uint16_t bins() const;
+    int16_t  bucketW() const;
 
     // Window + FFT one channel's kFFT samples into per-bin magnitudes.
     void computeMag(const uint16_t* src, float* mag);
-    // Map per-bin magnitudes onto the 128 display buckets using the frequency
-    // window and amplitude parameters.
+    // Map per-bin magnitudes onto the active display buckets using the
+    // frequency window and amplitude parameters.
     void mapBars(const float* mag, uint8_t* bars) const;
     // Blended linear/log magnitude -> bar height in px.
     int  ampToPx(float mag) const;
+    // Fold this frame's bar heights into the held peaks (once per rendered
+    // frame, from onFrame — the decay rate is in frames).
+    void agePeaks(const uint8_t* bars, uint8_t* peak, uint8_t* hold) const;
+    // Width one bar actually draws at, once the gap is taken out.
+    int16_t barW() const;
 
-    // Draw the spectrum grid: vertical division lines + one centre horizontal.
+    // One per Layout; each draws its own grid, since they share no axes.
     void drawGrid(Renderer& r) const;
+    void renderBars(Renderer& r, const ScopeState& s) const;
+    void renderRadial(Renderer& r, const ScopeState& s, bool outward) const;
+    // Lay one channel's wedges over a half circle.  `side` is -1 for the left
+    // half (A) and +1 for the right (B).
+    void radialChannel(Renderer& r, const uint8_t* bars, const uint8_t* peak,
+                       int side, bool outward, uint16_t color) const;
+    // Sample offsets across one wedge, rebuilt when the bucket count changes.
+    // Shared by both channels and every ring — the angle is the same, only the
+    // radius it is taken at differs.
+    void buildFan();
+    float    _fanCos[kMaxFanSteps];   // cos/sin of the offset from a wedge centre
+    float    _fanSin[kMaxFanSteps];
+    float    _fanOff[kMaxFanSteps];   // that offset, in radians
+    int      _fanSteps = 0;
 };

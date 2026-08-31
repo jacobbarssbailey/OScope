@@ -15,6 +15,10 @@ class XYMode : public ScopeMode {
 public:
     const char* name() const override { return "X-Y"; }
 
+    // A fresh Lissajous figure per frame, so a trail accumulates into something
+    // meaningful — B2 toggles it here.
+    bool honoursPersistence() const override { return true; }
+
     void render(Renderer& r, const ScopeState& state,
                 const SampleBuffers& buf) override;
 };

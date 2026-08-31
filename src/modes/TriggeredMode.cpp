@@ -25,7 +25,7 @@ void TriggeredMode::render(Renderer& r, const ScopeState& state,
     if (nSamples < 2) return;  // nothing to draw
 
     // Channel B (index 1) — drawn first (below A).
-    if (state.channelEnabled[1]) {
+    {
         const uint16_t vscale = state.vscale_mv_per_div[1];
         int32_t y0 = Mapping::sampleToYQ8(buf.ch[1][0], vscale);
         for (uint16_t i = 1; i < nSamples; ++i) {
@@ -38,7 +38,7 @@ void TriggeredMode::render(Renderer& r, const ScopeState& state,
     }
 
     // Channel A (index 0) — drawn second (on top of B).
-    if (state.channelEnabled[0]) {
+    {
         const uint16_t vscale = state.vscale_mv_per_div[0];
         int32_t y0 = Mapping::sampleToYQ8(buf.ch[0][0], vscale);
         for (uint16_t i = 1; i < nSamples; ++i) {

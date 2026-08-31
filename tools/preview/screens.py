@@ -187,6 +187,222 @@ def scope_single():
     return scope_clean(armed=True)
 
 
+# -------------------------------------------------------------- Spectrum ---
+# SpecLeftX and SpecCenterY are expressions in Theme.h, so consts() skips them;
+# recompute here from the same formulas.
+SPEC_LEFT_X   = (W - T["SpecBarsW"]) // 2
+SPEC_CENTER_Y = CY
+
+
+def _spec_mag(f_hz):
+    """Synthetic spectrum: a harmonic series over a sloping noise floor.
+
+    Peaks are given a realistic width (a Hann-windowed bin is a few bins wide)
+    so the coarse bucket counts have something real to average.
+    """
+    v = 0.30 * math.exp(-f_hz / 5000.0) + 0.04      # sloping floor
+    f0 = 512.0
+    for k in range(1, 13):
+        amp = 0.95 / (k ** 0.75)
+        v = max(v, amp * math.exp(-((f_hz - k * f0) / 190.0) ** 2))
+    return min(v, 1.0)
+
+
+BIN_HZ = 126.0        # SpectrumMode's FFT bin width
+SPEC_MAX_HZ = 8192    # SpectrumMode::kMaxHz
+N_BIN = 128           # SpectrumMode::kNBin
+
+
+SP = consts("src/modes/SpectrumMode.h")
+BAR_GAP     = SP["kBarGap"]
+# SpectrumMode's radial styling constants are floats, so consts() skips them.
+WEDGE_CAP    = 4.0     # kWedgeCapPx
+GAP_PX       = 2.0     # kGapPx
+GAP_MIN_FRAC = 0.16    # kGapMinFrac
+GAP_MAX_FRAC = 0.42    # kGapMaxFrac
+MIN_INK_PX   = 1.0     # kMinInkPx
+ARC_STEP_PX  = 0.5     # kArcStepPx
+PEAK_GAP    = SP["kPeakGapPx"]
+PEAK_THICK  = SP["kPeakThickPx"]
+
+
+def _bucket_peak(i, nbins):
+    """A stand-in for a held peak: the bucket a little above where it sits now.
+
+    The real value is a decaying maximum over time, which a still frame cannot
+    show — this is what one looks like a moment after the signal dropped back.
+    """
+    m = _bucket_mag(i, nbins)
+    return min(1.0, m * 1.22 + 0.06 * (1.0 + math.sin(i * 1.7)))
+
+
+def _bucket_mag(i, nbins):
+    """One bucket's magnitude, mirroring SpectrumMode::mapBars.
+
+    Averages the FFT bin centres that fall inside the bucket, and falls back to
+    the nearest bin where the bucket is narrower than the bin spacing.
+    """
+    f_lo = SPEC_MAX_HZ * i / nbins
+    f_hi = SPEC_MAX_HZ * (i + 1) / nbins
+    b_lo = max(1, math.ceil(f_lo / BIN_HZ))
+    b_hi = min(N_BIN, math.floor(f_hi / BIN_HZ))
+    if b_hi >= b_lo:
+        return sum(_spec_mag(b * BIN_HZ) for b in range(b_lo, b_hi + 1)) / (b_hi - b_lo + 1)
+    b = min(N_BIN, max(1, round((f_lo + f_hi) * 0.5 / BIN_HZ)))
+    return _spec_mag(b * BIN_HZ)
+
+
+SPEC_RAD_INNER = T["SpecRadInner"]
+SPEC_RAD_OUTER = T["SpecRadOuter"]
+
+
+def _spec_radial(nbins, outward):
+    """SpectrumMode's radial layouts, rasterised ring by ring as the firmware
+    does — a fan of lines crowds at the hub and thins at the rim, which is what
+    made the antialiased version moire."""
+    c = Canvas()
+    span = SPEC_RAD_OUTER - SPEC_RAD_INNER
+    for pct in (T["SpecRadRing1"], T["SpecRadRing2"]):
+        c.ring(SPEC_RAD_INNER + span * pct // 100, 1, GRID)
+    c.ring(SPEC_RAD_OUTER, 1, GRID)
+    c.vline(CX, 0, H, GRID)
+
+    wedge = math.pi / nbins
+    half = wedge * 0.5
+    steps = int(half * 2 * SPEC_RAD_OUTER / ARC_STEP_PX) + 1
+    fan = [((k + 0.5) / steps - 0.5) * 2 * half for k in range(steps)]
+
+    for side, color, scale in ((-1, TRACE_A, 1.0), (1, TRACE_B, 0.72)):
+        for i in range(nbins):
+            tc = (i + 0.5) * wedge
+            S, C = math.sin(tc), math.cos(tc)
+            mag = int(_bucket_mag(i, nbins) * scale * T["SpecMaxPx"])
+            pk = int(_bucket_peak(i, nbins) * scale * T["SpecMaxPx"])
+            for is_peak in (False, True):
+                v = pk if is_peak else mag
+                if v <= 0 or (is_peak and pk < mag + PEAK_GAP):
+                    continue
+                length = v * span // T["SpecMaxPx"]
+                if length <= 0:
+                    continue
+                tip = SPEC_RAD_INNER + length if outward else SPEC_RAD_OUTER - length
+                if not is_peak:
+                    ra = SPEC_RAD_INNER if outward else tip
+                    rb = tip if outward else SPEC_RAD_OUTER
+                elif outward:
+                    rb = min(tip + PEAK_THICK, SPEC_RAD_OUTER)
+                    ra = rb - PEAK_THICK
+                else:
+                    ra = max(tip - PEAK_THICK, SPEC_RAD_INNER)
+                    rb = ra + PEAK_THICK
+                if rb <= ra:
+                    continue
+
+                for rr in range(ra, rb + 1):
+                    half_arc = half * rr
+                    gap = min(max(GAP_PX, GAP_MIN_FRAC * 2 * half_arc),
+                              GAP_MAX_FRAC * 2 * half_arc)
+                    ink = half_arc - gap * 0.5
+                    if ink * 2 < MIN_INK_PX:
+                        ink = min(half_arc, MIN_INK_PX * 0.5)
+                    if not is_peak:
+                        cap_r = min(half_arc, WEDGE_CAP)
+                        d = (rb - rr) if outward else (rr - ra)
+                        if d < cap_r:
+                            e = cap_r - d
+                            ink -= cap_r - math.sqrt(max(0.0, cap_r * cap_r - e * e))
+                    if ink <= 0:
+                        continue
+                    ink_ang = ink / rr
+                    for off in fan:
+                        if off < -ink_ang or off > ink_ang:
+                            continue
+                        p = S * math.cos(off) + C * math.sin(off)
+                        q = -C * math.cos(off) + S * math.sin(off)
+                        c.set(int(CX + side * p * rr + 0.5),
+                              int(CY + q * rr + 0.5), color)
+    return c
+
+
+def _spectrum(nbins, gap=BAR_GAP):
+    """SpectrumMode at one bucket count: the block keeps its total width as the
+    bars widen, and only the outer end of each bar is capped.
+
+    `gap` leaves that many pixels between bars (not in the firmware — it is here
+    so the choice can be looked at before committing to it).
+    """
+    c = Canvas()
+    for col in range(1, 8):
+        c.vline(col * T["GridDiv"], 0, H, GRID)
+    c.hline(0, SPEC_CENTER_Y, W, GRID)
+
+    pitch = T["SpecBarsW"] // nbins
+    w = max(1, pitch - gap)
+    rad = w // 2
+    for i in range(nbins):
+        m, pk = _bucket_mag(i, nbins), _bucket_peak(i, nbins)
+        ha, pa = int(m * T["SpecMaxPx"]), int(pk * T["SpecMaxPx"])
+        hb, pb = int(m * 0.72 * T["SpecMaxPx"]), int(pk * 0.72 * T["SpecMaxPx"])
+        x = SPEC_LEFT_X + i * pitch
+        if ha > 0:
+            c.bar_rounded(x, SPEC_CENTER_Y - ha, w, ha, rad, TRACE_A, "top")
+        if pa >= ha + PEAK_GAP:
+            c.fill_rect(x, SPEC_CENTER_Y - pa, w, PEAK_THICK, TRACE_A)
+        if hb > 0:
+            c.bar_rounded(x, SPEC_CENTER_Y + 1, w, hb, rad, TRACE_B, "bottom")
+        if pb >= hb + PEAK_GAP:
+            c.fill_rect(x, SPEC_CENTER_Y + 1 + pb - PEAK_THICK, w, PEAK_THICK, TRACE_B)
+    return c
+
+
+def spectrum_16():
+    """The coarsest: 16 buckets at 8 px."""
+    return _spectrum(16)
+
+
+def spectrum_radial_out_16():
+    return _spec_radial(16, True)
+
+
+def spectrum_radial_in_16():
+    return _spec_radial(16, False)
+
+
+def spectrum_128():
+    """The finest setting: 128 buckets at 1 px, unchanged from before."""
+    return _spectrum(128)
+
+
+def spectrum_64():
+    return _spectrum(64)
+
+
+def spectrum_32():
+    """The coarsest: 32 buckets at 4 px."""
+    return _spectrum(32)
+
+
+def spectrum_radial_out_32():
+    return _spec_radial(32, True)
+
+
+def spectrum_radial_out_128():
+    return _spec_radial(128, True)
+
+
+def spectrum_radial_in_32():
+    return _spec_radial(32, False)
+
+
+def spectrum_radial_in_128():
+    return _spec_radial(128, False)
+
+
+def spectrum_32_nogap():
+    """32 buckets butted edge to edge, for comparison with the gapped default."""
+    return _spectrum(32, gap=0)
+
+
 # ------------------------------------------------------------ Waterfall ----
 HALF = W // 2
 
@@ -311,6 +527,17 @@ SCREENS = {
     "scope_settings_wide": scope_settings_wide,
     "scope_settings_roll": scope_settings_roll,
     "scope_clean": scope_clean,
+    "spectrum_16": spectrum_16,
+    "spectrum_128": spectrum_128,
+    "spectrum_radial_out_16": spectrum_radial_out_16,
+    "spectrum_radial_in_16": spectrum_radial_in_16,
+    "spectrum_64": spectrum_64,
+    "spectrum_32": spectrum_32,
+    "spectrum_32_nogap": spectrum_32_nogap,
+    "spectrum_radial_out_32": spectrum_radial_out_32,
+    "spectrum_radial_out_128": spectrum_radial_out_128,
+    "spectrum_radial_in_32": spectrum_radial_in_32,
+    "spectrum_radial_in_128": spectrum_radial_in_128,
     "scope_frozen": scope_frozen,
     "scope_single": scope_single,
     "scope_stopped": scope_stopped,

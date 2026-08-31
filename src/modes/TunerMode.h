@@ -37,6 +37,24 @@ public:
     bool ownsEncoderPress() const override { return true; }
     void encoderPress() override;
 
+    // TODO: B2 is the per-mode option key and Tuner is the one mode with
+    // nothing on it.
+    //
+    // A hold on the last confident reading was tried and removed.  It worked as
+    // written, but its trigger — analyze() returning -1 — almost never fires on
+    // a Eurorack input: there is always enough noise, residual DC ripple or a
+    // still-sounding VCO to clear kMinPP and give YIN *some* period, so the
+    // readout shows a live garbage pitch rather than a held good one.  Doing it
+    // properly needs a confidence number, not a binary: AcqCore::yinPeriod
+    // computes the normalized difference at the chosen lag and then throws it
+    // away, so surfacing that is the prerequisite.
+    //
+    // Cheaper candidates that need nothing new: a fine cents scale (the meter
+    // spans +/-50, and the last few cents are where tuning actually happens);
+    // a response speed, since smooth() blends at a fixed 0.7/0.3; sharps vs
+    // flats in the note names; or transpose, since the menu's A4 only shifts
+    // the whole grid.
+
 private:
     static constexpr uint16_t kWin       = 1024;   // YIN window length
     static constexpr float    kYinThresh = 0.15f;  // YIN absolute threshold
