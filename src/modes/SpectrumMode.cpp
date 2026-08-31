@@ -76,7 +76,17 @@ void SpectrumMode::computeMag(const uint16_t* src, float* mag) {
     mag[kNBin - 1] = fabsf(_out[1]);
 }
 
-const uint16_t SpectrumMode::kBinSteps[3] = {32, 64, 128};
+const uint16_t SpectrumMode::kBinSteps[4] = {16, 32, 64, 128};
+
+// off, then fast / medium / slow.  At ~32 fps: fast holds ~0.2 s then clears a
+// full-height peak in ~0.8 s; medium holds ~0.75 s and takes ~2.5 s; slow holds
+// ~2 s and takes ~7.5 s, which is long enough to catch something you missed.
+const SpectrumMode::PeakDecay SpectrumMode::kDecays[4] = {
+    { 0,  0, 0},   // off
+    { 6,  3, 1},   // fast
+    {24,  1, 1},   // medium
+    {64,  1, 3},   // slow
+};
 
 uint16_t SpectrumMode::bins() const { return kBinSteps[_binStep]; }
 
@@ -90,11 +100,17 @@ int16_t SpectrumMode::barW() const {
 }
 
 void SpectrumMode::channelPress() {
-    _peakHold = !_peakHold;
+    _layout = (Layout)(((int)_layout + 1) % (int)Layout::COUNT);
 }
 
-void SpectrumMode::encoderPress() {
-    _layout = (Layout)(((int)_layout + 1) % (int)Layout::COUNT);
+void SpectrumMode::channelHold() {
+    _decay = (uint8_t)((_decay + 1) % (int)(sizeof kDecays / sizeof kDecays[0]));
+    if (kDecays[_decay].hold == 0) {          // switched off: drop what was held
+        for (uint16_t i = 0; i < kMaxBins; ++i) {
+            _peakA[i] = _peakB[i] = 0;
+            _holdA[i] = _holdB[i] = 0;
+        }
+    }
 }
 
 void SpectrumMode::encoderTurn(int8_t delta) {
@@ -116,15 +132,20 @@ void SpectrumMode::encoderTurn(int8_t delta) {
 
 void SpectrumMode::agePeaks(const uint8_t* bars, uint8_t* peak,
                             uint8_t* hold) const {
+    const PeakDecay& d = kDecays[_decay];
+    if (d.hold == 0) return;               // off: nothing to age
+    // Rates slower than a pixel a frame skip frames rather than carry a
+    // fraction, so a peak is always a whole number of pixels.
+    const bool falls = (d.div <= 1) || (_decayPhase % d.div) == 0;
     const uint16_t n = bins();
     for (uint16_t i = 0; i < n; ++i) {
         if (bars[i] >= peak[i]) {          // a new maximum resets the hold
             peak[i] = bars[i];
-            hold[i] = kPeakHoldFrames;
+            hold[i] = d.hold;
         } else if (hold[i] > 0) {
             --hold[i];
-        } else if (peak[i] > 0) {
-            --peak[i];
+        } else if (peak[i] > 0 && falls) {
+            peak[i] = (peak[i] > d.step) ? (uint8_t)(peak[i] - d.step) : 0;
         }
     }
 }
@@ -178,6 +199,7 @@ void SpectrumMode::onFrame(const SampleBuffers& /*buf*/) {
     // measured in — see the ScopeMode::onFrame contract.
     agePeaks(_barsA, _peakA, _holdA);
     agePeaks(_barsB, _peakB, _holdB);
+    ++_decayPhase;
 }
 
 void SpectrumMode::drawGrid(Renderer& r) const {
@@ -223,7 +245,7 @@ void SpectrumMode::renderBars(Renderer& r, const ScopeState& s) const {
             }
             // The marker floats clear of the bar; the black gap between them is
             // what separates the two, so both can be the channel's own colour.
-            if (_peakHold && _peakA[i] >= _barsA[i] + kPeakGapPx) {
+            if (_peakA[i] >= _barsA[i] + kPeakGapPx) {
                 r.fillRect(x, (int16_t)(cy - _peakA[i]), w, kPeakThickPx,
                            Theme::TraceA);
             }
@@ -233,7 +255,7 @@ void SpectrumMode::renderBars(Renderer& r, const ScopeState& s) const {
                 r.barRounded(x, (int16_t)(cy + 1), w, _barsB[i], rad,
                              Theme::TraceB, Renderer::Cap::Bottom);
             }
-            if (_peakHold && _peakB[i] >= _barsB[i] + kPeakGapPx) {
+            if (_peakB[i] >= _barsB[i] + kPeakGapPx) {
                 r.fillRect(x, (int16_t)(cy + 1 + _peakB[i] - kPeakThickPx), w,
                            kPeakThickPx, Theme::TraceB);
             }
@@ -264,8 +286,8 @@ void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars,
         for (int pass = 0; pass < 2; ++pass) {
             const int mag = pass ? peak[i] : bars[i];
             if (mag <= 0) continue;
-            if (pass && (!_peakHold || peak[i] < bars[i] + kPeakGapPx))
-                continue;   // off, or no clear gap to read it in
+            // Off leaves every peak at 0, so the gap test below covers it.
+            if (pass && peak[i] < bars[i] + kPeakGapPx) continue;
 
             const int16_t len = (int16_t)((int32_t)mag * span / Theme::SpecMaxPx);
             if (len <= 0) continue;
@@ -285,18 +307,38 @@ void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars,
             }
             if (r1 <= r0) continue;
 
-            int spokes = (int)(wedge * (float)r1 * 0.9f);  // 0.9 leaves a hair of gap
+            int spokes = (int)(wedge * (float)r1 * kWedgeFill);
             if (spokes < 1) spokes = 1;
+
+            // Round the wedge's free tip — the outer end growing from the hub,
+            // the inner end growing from the rim — by pulling each spoke back
+            // along a circular profile as it approaches the wedge's edge.  The
+            // peak markers are thin arcs with no room for a cap, so they skip it.
+            const float halfArc = wedge * (float)r1 * 0.5f;
+            const float capR    = (halfArc < kWedgeCapPx) ? halfArc : kWedgeCapPx;
 
             for (int k = 0; k < spokes; ++k) {
                 // Low frequency at the top of both halves, sweeping down each side.
-                const float t = ((float)i + ((float)k + 0.5f) / (float)spokes) * wedge;
-                const float sx = (float)side * sinf(t);
-                const float sy = -cosf(t);
-                r.lineAA((int32_t)((Theme::CX + sx * r0) * Mapping::FRAC_ONE),
-                         (int32_t)((Theme::CY + sy * r0) * Mapping::FRAC_ONE),
-                         (int32_t)((Theme::CX + sx * r1) * Mapping::FRAC_ONE),
-                         (int32_t)((Theme::CY + sy * r1) * Mapping::FRAC_ONE),
+                const float off = ((float)k + 0.5f) / (float)spokes;   // 0..1 across
+                const float t   = ((float)i + off) * wedge;
+                const float sx  = (float)side * sinf(t);
+                const float sy  = -cosf(t);
+
+                float a0 = (float)r0, a1 = (float)r1;
+                if (!pass && capR > 0.0f) {
+                    // How far into the cap this spoke sits, as an arc distance.
+                    const float x = fabsf(off * 2.0f - 1.0f) * halfArc
+                                    - (halfArc - capR);
+                    if (x > 0.0f) {
+                        const float back = capR - sqrtf(capR * capR - x * x);
+                        if (outward) a1 -= back; else a0 += back;
+                        if (a1 <= a0) continue;
+                    }
+                }
+                r.lineAA((int32_t)((Theme::CX + sx * a0) * Mapping::FRAC_ONE),
+                         (int32_t)((Theme::CY + sy * a0) * Mapping::FRAC_ONE),
+                         (int32_t)((Theme::CX + sx * a1) * Mapping::FRAC_ONE),
+                         (int32_t)((Theme::CY + sy * a1) * Mapping::FRAC_ONE),
                          color);
             }
         }

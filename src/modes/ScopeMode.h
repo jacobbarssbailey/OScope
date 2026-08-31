@@ -98,9 +98,13 @@ public:
     // modes leave it unclaimed and RunScreen wires it to persistence, which
     // lives in Settings rather than in the mode.
     //
+    // A mode that claims the button gets its hold too, for a second option
+    // where it has one; the default hold does nothing.
+    //
     // Nothing is reported: every one of these shows its result on the face.
     virtual bool ownsChannelButton() const { return false; }
     virtual void channelPress() {}
+    virtual void channelHold() {}
 
     // --- Trace persistence ---
     // True if fading the previous frame instead of clearing it means anything

@@ -226,6 +226,8 @@ N_BIN = 128           # SpectrumMode::kNBin
 
 SP = consts("src/modes/SpectrumMode.h")
 BAR_GAP     = SP["kBarGap"]
+WEDGE_FILL  = 0.9      # SpectrumMode::kWedgeFill (a float, so consts() skips it)
+WEDGE_CAP   = 4.0      # SpectrumMode::kWedgeCapPx
 PEAK_GAP    = SP["kPeakGapPx"]
 PEAK_THICK  = SP["kPeakThickPx"]
 
@@ -294,12 +296,28 @@ def _spec_radial(nbins, outward):
                 if r1 <= r0:
                     continue
                 # Spoke count follows the arc at this slice's outer radius.
-                spokes = max(1, int(wedge * r1 * 0.9))
+                spokes = max(1, int(wedge * r1 * WEDGE_FILL))
+                half_arc = wedge * r1 * 0.5
+                cap_r = min(half_arc, WEDGE_CAP)
                 for k in range(spokes):
-                    t = (i + (k + 0.5) / spokes) * wedge
+                    off = (k + 0.5) / spokes
+                    t = (i + off) * wedge
                     sx, sy = side * math.sin(t), -math.cos(t)
-                    c.line_aa(CX + sx * r0, CY + sy * r0,
-                              CX + sx * r1, CY + sy * r1, color)
+                    a0, a1 = float(r0), float(r1)
+                    if not is_peak and cap_r > 0.0:
+                        # Pull the spoke back along a circular profile near the
+                        # wedge's edge, rounding its free tip.
+                        x = abs(off * 2.0 - 1.0) * half_arc - (half_arc - cap_r)
+                        if x > 0.0:
+                            back = cap_r - math.sqrt(max(0.0, cap_r * cap_r - x * x))
+                            if outward:
+                                a1 -= back
+                            else:
+                                a0 += back
+                            if a1 <= a0:
+                                continue
+                    c.line_aa(CX + sx * a0, CY + sy * a0,
+                              CX + sx * a1, CY + sy * a1, color)
     return c
 
 
@@ -348,6 +366,19 @@ def _spectrum(nbins, gap=BAR_GAP):
         if pb >= hb + PEAK_GAP:
             c.fill_rect(x, SPEC_CENTER_Y + 1 + pb - PEAK_THICK, w, PEAK_THICK, TRACE_B)
     return c
+
+
+def spectrum_16():
+    """The coarsest: 16 buckets at 8 px."""
+    return _spectrum(16)
+
+
+def spectrum_radial_out_16():
+    return _spec_radial(16, True)
+
+
+def spectrum_radial_in_16():
+    return _spec_radial(16, False)
 
 
 def spectrum_128():
@@ -494,7 +525,10 @@ SCREENS = {
     "scope_settings_wide": scope_settings_wide,
     "scope_settings_roll": scope_settings_roll,
     "scope_clean": scope_clean,
+    "spectrum_16": spectrum_16,
     "spectrum_128": spectrum_128,
+    "spectrum_radial_out_16": spectrum_radial_out_16,
+    "spectrum_radial_in_16": spectrum_radial_in_16,
     "spectrum_64": spectrum_64,
     "spectrum_32": spectrum_32,
     "spectrum_32_nogap": spectrum_32_nogap,

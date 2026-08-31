@@ -4,13 +4,16 @@
 //   B1 (Mode)    — cycle acquisition mode: TRIG → ROLL → X-Y → TRIG …
 //                  then clampSelectable() to fix selection if now invalid.
 //   B2 (Channel) — the mode's own option: persistence (Triggered, X-Y),
-//                  peak hold (Spectrum), flow direction (Waterfall)
+//                  spectrum layout (Spectrum), held reading (Tuner),
+//                  flow direction (Waterfall)
 //   B3 (RunStop) — toggle run/stop (also disarms a pending single-shot)
 //   Encoder      — advance selected parameter (skips N/A params for current
 //                  mode), or the mode's own toggle if it claims the press
 //   Encoder turn — adjust the selected parameter value by encoder delta
 // Long press:
 //   B1 (Mode)    — open the settings menu (push MenuScreen)
+//   B2 (Channel) — the mode's second option, where it has one (Spectrum's
+//                  peak decay)
 //   B3 (RunStop) — arm single-shot (Triggered only): run until the next
 //                  successful triggered capture, then freeze and disarm
 //   Encoder      — reset all state to defaults
@@ -243,6 +246,14 @@ void RunScreen::handleEvent(const InputEvent& e, AppContext& ctx) {
             case Btn::Encoder:
                 s.resetToDefaults();
                 clampSelectable(s);
+                break;
+
+            // B2 long-press: the mode's second option, where it has one
+            // (Spectrum's peak decay).  Nothing elsewhere.
+            case Btn::Channel:
+                if (activeMode && activeMode->ownsChannelButton()) {
+                    activeMode->channelHold();
+                }
                 break;
 
             // B1 long-press: open the settings menu.

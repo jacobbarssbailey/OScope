@@ -5,16 +5,17 @@
 // up from the centre line, channel B grows down (inverted), over vertical
 // division grid lines and one centre horizontal line.
 //
-// The encoder rotation sets how many buckets those bars are divided into and
-// the press cycles the layout.  The block keeps its width whatever the count, so
-// the bars get wider as they get fewer, and the counts are exactly the divisors
-// of SpecBarsW that leave a bucket no wider than kMaxBucketW: 128 x 1 px,
-// 64 x 2 px, 32 x 4 px.  Fewer buckets average more FFT bins together, which is
-// the coarser view.
+// The encoder rotation sets how many buckets those bars are divided into, and
+// B2 cycles the layout.  The block keeps its width whatever the count, so the
+// bars get wider as they get fewer: the counts are the divisors of SpecBarsW
+// that leave a bucket no wider than kMaxBucketW, giving 128 x 1 px, 64 x 2 px,
+// 32 x 4 px and 16 x 8 px.  Fewer buckets average more FFT bins together, which
+// is what makes a coarse view genuinely coarser rather than merely sparser.
 //
 // Every bucket also carries a peak-hold marker: the recent maximum, held for a
 // moment and then falling, drawn detached from the bar so a transient stays
-// readable after the bar itself has dropped.
+// readable after the bar itself has dropped.  A long press on B2 walks how fast
+// it falls, off included.
 //
 // The display window and amplitude mapping are fixed (bench-tuned defaults, no
 // runtime controls):
@@ -46,16 +47,16 @@ public:
 
     const char* name() const override { return "SPEC"; }
 
-    // B2 turns the peak-hold markers on and off.
+    // B2 cycles the layout; its hold walks the peak decay.
     bool ownsChannelButton() const override { return true; }
     void channelPress() override;
+    void channelHold() override;
 
-    // The encoder rotation walks the bucket count and the press walks the
-    // layout; this mode has none of the shared settings for either to drive.
+    // The encoder rotation walks the bucket count; this mode has none of the
+    // shared settings for it to drive.  The press is left alone — the layout
+    // sits on B2, where the other modes keep their own option.
     bool ownsEncoderTurn() const override { return true; }
     void encoderTurn(int8_t delta) override;
-    bool ownsEncoderPress() const override { return true; }
-    void encoderPress() override;
 
     // Wire the capture source the FFT block is read from (called by RunScreen).
     void setSource(Acquisition* acq) { _src = acq; }
@@ -78,15 +79,23 @@ private:
     static constexpr uint16_t kFFT  = 256;                 // FFT length
     static constexpr uint16_t kNBin = kFFT / 2;            // usable bins (1..128)
     static constexpr uint16_t kMaxBins    = 128;   // widest count = array size
-    static constexpr int16_t  kMaxBucketW = 4;     // widest a single bucket gets
+    static constexpr int16_t  kMaxBucketW = 8;     // widest a single bucket gets
 
     // Selectable bucket counts, coarse to fine.  These are every divisor of
     // Theme::SpecBarsW (128) whose quotient is <= kMaxBucketW, which is what
     // keeps the block exactly as wide at every setting with uniform bars.
-    static const uint16_t kBinSteps[3];
-    uint8_t  _binStep = 2;      // index into kBinSteps; starts at the finest
+    static const uint16_t kBinSteps[4];
+    uint8_t  _binStep = 3;      // index into kBinSteps; starts at the finest
     Layout   _layout  = Layout::Bars;
-    bool     _peakHold = true;
+
+    // How the peak markers fall.  `hold` is frames at a new maximum before it
+    // starts dropping, then it loses `step` px every `div` frames.  Spectrum is
+    // blit-bound at roughly 32 fps, so a frame is about 31 ms.  Off is index 0,
+    // which draws no markers at all.
+    struct PeakDecay { uint8_t hold; uint8_t step; uint8_t div; };
+    static const PeakDecay kDecays[4];
+    uint8_t  _decay      = 2;   // index into kDecays; starts at the middle rate
+    uint8_t  _decayPhase = 0;   // frame counter, for the rates that skip frames
 
     // Pixels of clear space between neighbouring bars in the Bars layout.  Bars
     // butted edge to edge merge into one filled shape at the wider bucket
@@ -98,11 +107,18 @@ private:
     // kPeakHoldFrames, then falls a pixel per frame.  Spectrum is blit-bound at
     // roughly 32 fps, so the hold is about 3/4 s and a full-height peak takes
     // ~2.5 s to reach the floor.
-    static constexpr uint8_t kPeakHoldFrames = 24;
     // Clear space a peak needs above its bar before it is worth drawing
     // separately; below this it would just thicken the bar's cap.
     static constexpr uint8_t kPeakGapPx = 3;
     static constexpr int16_t kPeakThickPx = 2;   // marker depth, radially or vertically
+
+    // Radial styling.  A wedge is inked over kWedgeFill of its angular slice,
+    // which leaves a gap that scales with the slice: invisible at 128 buckets
+    // where a wedge is under 3 px of arc, and a clear 2 px at 16 where it is
+    // over 20.  Its tip is rounded to the same eye as the flat bars' caps,
+    // capped at kWedgeCapPx so a fine wedge is not rounded away to nothing.
+    static constexpr float   kWedgeFill  = 0.9f;
+    static constexpr float   kWedgeCapPx = 4.0f;
 
     // Fixed display parameters (bench-tuned defaults).
     static constexpr int32_t kMinHz    = 0;        // low edge of the window
