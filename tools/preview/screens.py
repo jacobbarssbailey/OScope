@@ -226,8 +226,13 @@ N_BIN = 128           # SpectrumMode::kNBin
 
 SP = consts("src/modes/SpectrumMode.h")
 BAR_GAP     = SP["kBarGap"]
-WEDGE_FILL  = 0.9      # SpectrumMode::kWedgeFill (a float, so consts() skips it)
-WEDGE_CAP   = 4.0      # SpectrumMode::kWedgeCapPx
+# SpectrumMode's radial styling constants are floats, so consts() skips them.
+WEDGE_CAP    = 4.0     # kWedgeCapPx
+GAP_PX       = 2.0     # kGapPx
+GAP_MIN_FRAC = 0.16    # kGapMinFrac
+GAP_MAX_FRAC = 0.42    # kGapMaxFrac
+MIN_INK_PX   = 1.0     # kMinInkPx
+ARC_STEP_PX  = 0.5     # kArcStepPx
 PEAK_GAP    = SP["kPeakGapPx"]
 PEAK_THICK  = SP["kPeakThickPx"]
 
@@ -263,9 +268,9 @@ SPEC_RAD_OUTER = T["SpecRadOuter"]
 
 
 def _spec_radial(nbins, outward):
-    """SpectrumMode's radial layouts: each channel's buckets become a fan of
-    spokes over a half circle, A on the left and B on the right, low frequency
-    at the top of both."""
+    """SpectrumMode's radial layouts, rasterised ring by ring as the firmware
+    does — a fan of lines crowds at the hub and thins at the rim, which is what
+    made the antialiased version moire."""
     c = Canvas()
     span = SPEC_RAD_OUTER - SPEC_RAD_INNER
     for pct in (T["SpecRadRing1"], T["SpecRadRing2"]):
@@ -274,8 +279,14 @@ def _spec_radial(nbins, outward):
     c.vline(CX, 0, H, GRID)
 
     wedge = math.pi / nbins
+    half = wedge * 0.5
+    steps = int(half * 2 * SPEC_RAD_OUTER / ARC_STEP_PX) + 1
+    fan = [((k + 0.5) / steps - 0.5) * 2 * half for k in range(steps)]
+
     for side, color, scale in ((-1, TRACE_A, 1.0), (1, TRACE_B, 0.72)):
         for i in range(nbins):
+            tc = (i + 0.5) * wedge
+            S, C = math.sin(tc), math.cos(tc)
             mag = int(_bucket_mag(i, nbins) * scale * T["SpecMaxPx"])
             pk = int(_bucket_peak(i, nbins) * scale * T["SpecMaxPx"])
             for is_peak in (False, True):
@@ -287,54 +298,41 @@ def _spec_radial(nbins, outward):
                     continue
                 tip = SPEC_RAD_INNER + length if outward else SPEC_RAD_OUTER - length
                 if not is_peak:
-                    r0 = SPEC_RAD_INNER if outward else tip
-                    r1 = tip if outward else SPEC_RAD_OUTER
+                    ra = SPEC_RAD_INNER if outward else tip
+                    rb = tip if outward else SPEC_RAD_OUTER
                 elif outward:
-                    r0, r1 = tip, min(tip + PEAK_THICK, SPEC_RAD_OUTER)
+                    rb = min(tip + PEAK_THICK, SPEC_RAD_OUTER)
+                    ra = rb - PEAK_THICK
                 else:
-                    r0, r1 = max(tip - PEAK_THICK, SPEC_RAD_INNER), tip
-                if r1 <= r0:
+                    ra = max(tip - PEAK_THICK, SPEC_RAD_INNER)
+                    rb = ra + PEAK_THICK
+                if rb <= ra:
                     continue
-                # Spoke count follows the arc at this slice's outer radius.
-                spokes = max(1, int(wedge * r1 * WEDGE_FILL))
-                half_arc = wedge * r1 * 0.5
-                cap_r = min(half_arc, WEDGE_CAP)
-                for k in range(spokes):
-                    off = (k + 0.5) / spokes
-                    t = (i + off) * wedge
-                    sx, sy = side * math.sin(t), -math.cos(t)
-                    a0, a1 = float(r0), float(r1)
-                    if not is_peak and cap_r > 0.0:
-                        # Pull the spoke back along a circular profile near the
-                        # wedge's edge, rounding its free tip.
-                        x = abs(off * 2.0 - 1.0) * half_arc - (half_arc - cap_r)
-                        if x > 0.0:
-                            back = cap_r - math.sqrt(max(0.0, cap_r * cap_r - x * x))
-                            if outward:
-                                a1 -= back
-                            else:
-                                a0 += back
-                            if a1 <= a0:
-                                continue
-                    c.line_aa(CX + sx * a0, CY + sy * a0,
-                              CX + sx * a1, CY + sy * a1, color)
+
+                for rr in range(ra, rb + 1):
+                    half_arc = half * rr
+                    gap = min(max(GAP_PX, GAP_MIN_FRAC * 2 * half_arc),
+                              GAP_MAX_FRAC * 2 * half_arc)
+                    ink = half_arc - gap * 0.5
+                    if ink * 2 < MIN_INK_PX:
+                        ink = min(half_arc, MIN_INK_PX * 0.5)
+                    if not is_peak:
+                        cap_r = min(half_arc, WEDGE_CAP)
+                        d = (rb - rr) if outward else (rr - ra)
+                        if d < cap_r:
+                            e = cap_r - d
+                            ink -= cap_r - math.sqrt(max(0.0, cap_r * cap_r - e * e))
+                    if ink <= 0:
+                        continue
+                    ink_ang = ink / rr
+                    for off in fan:
+                        if off < -ink_ang or off > ink_ang:
+                            continue
+                        p = S * math.cos(off) + C * math.sin(off)
+                        q = -C * math.cos(off) + S * math.sin(off)
+                        c.set(int(CX + side * p * rr + 0.5),
+                              int(CY + q * rr + 0.5), color)
     return c
-
-
-def spectrum_radial_out_32():
-    return _spec_radial(32, True)
-
-
-def spectrum_radial_out_128():
-    return _spec_radial(128, True)
-
-
-def spectrum_radial_in_32():
-    return _spec_radial(32, False)
-
-
-def spectrum_radial_in_128():
-    return _spec_radial(128, False)
 
 
 def _spectrum(nbins, gap=BAR_GAP):
@@ -393,6 +391,22 @@ def spectrum_64():
 def spectrum_32():
     """The coarsest: 32 buckets at 4 px."""
     return _spectrum(32)
+
+
+def spectrum_radial_out_32():
+    return _spec_radial(32, True)
+
+
+def spectrum_radial_out_128():
+    return _spec_radial(128, True)
+
+
+def spectrum_radial_in_32():
+    return _spec_radial(32, False)
+
+
+def spectrum_radial_in_128():
+    return _spec_radial(128, False)
 
 
 def spectrum_32_nogap():

@@ -112,13 +112,25 @@ private:
     static constexpr uint8_t kPeakGapPx = 3;
     static constexpr int16_t kPeakThickPx = 2;   // marker depth, radially or vertically
 
-    // Radial styling.  A wedge is inked over kWedgeFill of its angular slice,
-    // which leaves a gap that scales with the slice: invisible at 128 buckets
-    // where a wedge is under 3 px of arc, and a clear 2 px at 16 where it is
-    // over 20.  Its tip is rounded to the same eye as the flat bars' caps,
-    // capped at kWedgeCapPx so a fine wedge is not rounded away to nothing.
-    static constexpr float   kWedgeFill  = 0.9f;
+    // Radial styling.  A wedge is rasterised ring by ring — one pass per
+    // integer radius, stepping along the arc — rather than as a fan of radial
+    // lines.  A fan cannot win: its spokes crowd several to a pixel at the hub
+    // and thin to gaps at the rim, so an antialiased one beats against the pixel
+    // grid at both ends and moires.  Ring order writes each pixel once.
+    //
+    // The gap between wedges is measured in pixels at every radius, not as a
+    // share of the angle, so wedges stay apart near the hub instead of
+    // converging into a mass.  It is held between kGapMinFrac and kGapMaxFrac of
+    // the slice so a fine wedge is neither swallowed by its gap nor left without
+    // one.  The tip is rounded by narrowing the arc as it approaches the end,
+    // capped at kWedgeCapPx.
     static constexpr float   kWedgeCapPx = 4.0f;
+    static constexpr float   kGapPx      = 2.0f;   // preferred gap, in pixels
+    static constexpr float   kGapMinFrac = 0.16f;  // ...but at least this much of the slice
+    static constexpr float   kGapMaxFrac = 0.42f;  // ...and never more than this
+    static constexpr float   kMinInkPx   = 1.0f;   // a wedge always inks this much arc
+    static constexpr float   kArcStepPx  = 0.5f;   // arc sampling, under a pixel
+    static constexpr int     kMaxFanSteps = 96;    // arc samples across one wedge
 
     // Fixed display parameters (bench-tuned defaults).
     static constexpr int32_t kMinHz    = 0;        // low edge of the window
@@ -167,8 +179,16 @@ private:
     void drawGrid(Renderer& r) const;
     void renderBars(Renderer& r, const ScopeState& s) const;
     void renderRadial(Renderer& r, const ScopeState& s, bool outward) const;
-    // Lay one channel's spokes over a half circle.  `side` is -1 for the left
+    // Lay one channel's wedges over a half circle.  `side` is -1 for the left
     // half (A) and +1 for the right (B).
     void radialChannel(Renderer& r, const uint8_t* bars, const uint8_t* peak,
                        int side, bool outward, uint16_t color) const;
+    // Sample offsets across one wedge, rebuilt when the bucket count changes.
+    // Shared by both channels and every ring — the angle is the same, only the
+    // radius it is taken at differs.
+    void buildFan();
+    float    _fanCos[kMaxFanSteps];   // cos/sin of the offset from a wedge centre
+    float    _fanSin[kMaxFanSteps];
+    float    _fanOff[kMaxFanSteps];   // that offset, in radians
+    int      _fanSteps = 0;
 };

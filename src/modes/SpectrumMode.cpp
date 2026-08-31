@@ -27,6 +27,8 @@ SpectrumMode::SpectrumMode() {
     if (interval < 1) interval = 1;
     const float fs = 1000000.0f / (float)interval;
     _binHz = fs / (float)kFFT;
+
+    buildFan();   // for the starting bucket count; encoderTurn rebuilds it
 }
 
 int SpectrumMode::ampToPx(float mag) const {
@@ -128,6 +130,7 @@ void SpectrumMode::encoderTurn(int8_t delta) {
         _peakA[i] = _peakB[i] = 0;
         _holdA[i] = _holdB[i] = 0;
     }
+    buildFan();
 }
 
 void SpectrumMode::agePeaks(const uint8_t* bars, uint8_t* peak,
@@ -263,26 +266,46 @@ void SpectrumMode::renderBars(Renderer& r, const ScopeState& s) const {
     }
 }
 
+// Rebuilt only when the bucket count changes — the fan is a function of that
+// and nothing else, so render() never has to touch it and stays the pure
+// function of (state, buffers) the ScopeMode contract asks for.
+void SpectrumMode::buildFan() {
+    const uint16_t n = bins();
+    const float wedgeHalf = (float)M_PI / (float)n * 0.5f;
+    // Resolution is set by the outer radius, where a wedge's arc is longest.
+    // Inner rings reuse the same offsets and so oversample, which costs a little
+    // overdraw and nothing else: pixels are written, not blended.
+    int steps = (int)(wedgeHalf * 2.0f * (float)Theme::SpecRadOuter / kArcStepPx) + 1;
+    if (steps > kMaxFanSteps) steps = kMaxFanSteps;
+    _fanSteps = steps;
+
+    for (int k = 0; k < steps; ++k) {
+        const float off = (((float)k + 0.5f) / (float)steps - 0.5f) * 2.0f * wedgeHalf;
+        _fanOff[k] = off;
+        _fanCos[k] = cosf(off);
+        _fanSin[k] = sinf(off);
+    }
+}
+
 void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars,
                                  const uint8_t* peak, int side, bool outward,
                                  uint16_t color) const {
+    uint16_t* fb = r.tft.getFrameBuffer();
+    if (fb == nullptr) return;                 // nothing to rasterise into
+
     const uint16_t n    = bins();
     const int16_t  rIn  = Theme::SpecRadInner;
     const int16_t  rOut = Theme::SpecRadOuter;
     const int16_t  span = (int16_t)(rOut - rIn);
-
-    // Each bucket owns a wedge of the half circle.  Filling a wedge as a polygon
-    // would need a scanline fill; drawing it as a fan of antialiased spokes
-    // spaced under a pixel apart costs about the same and keeps the radial
-    // texture, which is the point of the layout.  So the spoke count follows arc
-    // length rather than the bucket count — and it is taken at each bar's own
-    // outer radius, not the rim, which is most of the cost of a short bar near
-    // the hub in the outward layout.
-    const float wedge = (float)M_PI / (float)n;
+    const float wedge     = (float)M_PI / (float)n;
+    const float wedgeHalf = wedge * 0.5f;
 
     for (uint16_t i = 0; i < n; ++i) {
-        // The bar, then its peak marker: a short arc at the peak radius, drawn
-        // by the same fan so it follows the wedge instead of cutting across it.
+        // The wedge's centre direction, once per bucket; the fan offsets are
+        // rotated onto it with a multiply rather than another sin/cos each.
+        const float tc = ((float)i + 0.5f) * wedge;
+        const float S  = sinf(tc), C = cosf(tc);
+
         for (int pass = 0; pass < 2; ++pass) {
             const int mag = pass ? peak[i] : bars[i];
             if (mag <= 0) continue;
@@ -291,55 +314,64 @@ void SpectrumMode::radialChannel(Renderer& r, const uint8_t* bars,
 
             const int16_t len = (int16_t)((int32_t)mag * span / Theme::SpecMaxPx);
             if (len <= 0) continue;
-            // Where the bar's own outer end sits, then the slice to actually ink.
             const int16_t tip = outward ? (int16_t)(rIn + len)
                                         : (int16_t)(rOut - len);
-            int16_t r0, r1;
+            int16_t ra, rb;                     // the radial slice to ink
             if (!pass) {
-                r0 = outward ? rIn : tip;
-                r1 = outward ? tip : rOut;
+                ra = outward ? rIn : tip;
+                rb = outward ? tip : rOut;
             } else if (outward) {
-                r0 = tip; r1 = (int16_t)(tip + kPeakThickPx);
-                if (r1 > rOut) { r1 = rOut; r0 = (int16_t)(rOut - kPeakThickPx); }
+                rb = (int16_t)(tip + kPeakThickPx);
+                if (rb > rOut) rb = rOut;
+                ra = (int16_t)(rb - kPeakThickPx);
             } else {
-                r1 = tip; r0 = (int16_t)(tip - kPeakThickPx);
-                if (r0 < rIn) { r0 = rIn; r1 = (int16_t)(rIn + kPeakThickPx); }
+                ra = (int16_t)(tip - kPeakThickPx);
+                if (ra < rIn) ra = rIn;
+                rb = (int16_t)(ra + kPeakThickPx);
             }
-            if (r1 <= r0) continue;
+            if (rb <= ra) continue;
 
-            int spokes = (int)(wedge * (float)r1 * kWedgeFill);
-            if (spokes < 1) spokes = 1;
+            for (int16_t rr = ra; rr <= rb; ++rr) {
+                const float halfArc = wedgeHalf * (float)rr;   // half the slice, in px
+                // A pixel-measured gap, held to a sane share of the slice.
+                float gap = kGapPx;
+                const float lo = kGapMinFrac * 2.0f * halfArc;
+                const float hi = kGapMaxFrac * 2.0f * halfArc;
+                if (gap < lo) gap = lo;
+                if (gap > hi) gap = hi;
+                float ink = halfArc - gap * 0.5f;              // half the inked arc
+                // Near the hub a fine wedge is under a pixel of arc, and no gap
+                // fits inside it: taking one anyway breaks the ring into aliased
+                // dots.  Ink at least kMinInkPx and let neighbours meet instead.
+                if (ink * 2.0f < kMinInkPx) {
+                    ink = (halfArc < kMinInkPx * 0.5f) ? halfArc : kMinInkPx * 0.5f;
+                }
 
-            // Round the wedge's free tip — the outer end growing from the hub,
-            // the inner end growing from the rim — by pulling each spoke back
-            // along a circular profile as it approaches the wedge's edge.  The
-            // peak markers are thin arcs with no room for a cap, so they skip it.
-            const float halfArc = wedge * (float)r1 * 0.5f;
-            const float capR    = (halfArc < kWedgeCapPx) ? halfArc : kWedgeCapPx;
-
-            for (int k = 0; k < spokes; ++k) {
-                // Low frequency at the top of both halves, sweeping down each side.
-                const float off = ((float)k + 0.5f) / (float)spokes;   // 0..1 across
-                const float t   = ((float)i + off) * wedge;
-                const float sx  = (float)side * sinf(t);
-                const float sy  = -cosf(t);
-
-                float a0 = (float)r0, a1 = (float)r1;
-                if (!pass && capR > 0.0f) {
-                    // How far into the cap this spoke sits, as an arc distance.
-                    const float x = fabsf(off * 2.0f - 1.0f) * halfArc
-                                    - (halfArc - capR);
-                    if (x > 0.0f) {
-                        const float back = capR - sqrtf(capR * capR - x * x);
-                        if (outward) a1 -= back; else a0 += back;
-                        if (a1 <= a0) continue;
+                if (!pass) {
+                    // Round the free tip: narrow the arc along a circular
+                    // profile over the last kWedgeCapPx of the wedge's length.
+                    const float capR = (halfArc < kWedgeCapPx) ? halfArc : kWedgeCapPx;
+                    const float d = outward ? (float)(rb - rr) : (float)(rr - ra);
+                    if (d < capR) {
+                        const float e = capR - d;
+                        ink -= capR - sqrtf(capR * capR - e * e);
                     }
                 }
-                r.lineAA((int32_t)((Theme::CX + sx * a0) * Mapping::FRAC_ONE),
-                         (int32_t)((Theme::CY + sy * a0) * Mapping::FRAC_ONE),
-                         (int32_t)((Theme::CX + sx * a1) * Mapping::FRAC_ONE),
-                         (int32_t)((Theme::CY + sy * a1) * Mapping::FRAC_ONE),
-                         color);
+                if (ink <= 0.0f) continue;
+                const float inkAng = ink / (float)rr;          // back to radians
+
+                for (int k = 0; k < _fanSteps; ++k) {
+                    if (_fanOff[k] < -inkAng || _fanOff[k] > inkAng) continue;
+                    // Rotate the fan offset onto this wedge's centre.
+                    const float p =  S * _fanCos[k] + C * _fanSin[k];
+                    const float q = -C * _fanCos[k] + S * _fanSin[k];
+                    const int x = (int)(Theme::CX + (float)side * p * (float)rr + 0.5f);
+                    const int y = (int)(Theme::CY + q * (float)rr + 0.5f);
+                    if ((unsigned)x < (unsigned)Theme::W &&
+                        (unsigned)y < (unsigned)Theme::H) {
+                        fb[y * Theme::W + x] = color;
+                    }
+                }
             }
         }
     }
