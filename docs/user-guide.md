@@ -29,9 +29,9 @@ Two of those change meaning with the mode.
 
 **Channel** is the per-mode option key: whatever single thing the current mode
 has worth switching, it switches. Persistence in Triggered and X-Y, the layout in
-Spectrum, a held reading in Tuner, flow direction in Waterfall. Nothing in
-Rolling. Only Spectrum has enough to need the *hold* as well, where it sets how
-fast the peak markers fall.
+Spectrum, flow direction in Waterfall. Nothing in Rolling or Tuner yet. Only
+Spectrum has enough to need the *hold* as well, where it sets how fast the peak
+markers fall.
 
 The **encoder press** normally walks the settings, but Spectrum and Tuner have
 none, so there it takes the mode's own value instead: the spectrum layout, or
@@ -48,7 +48,7 @@ Every cell is spelled out — a dash means the control does nothing in that mode
 | **Encoder hold** | reset settings | reset settings | reset settings | reset settings | reset settings | reset settings |
 | **Mode press** | next mode | next mode | next mode | next mode | next mode | next mode |
 | **Mode hold** | settings menu | settings menu | settings menu | settings menu | settings menu | settings menu |
-| **Channel press** | persistence on/off | — | persistence on/off | spectrum layout | hold reading | flow direction |
+| **Channel press** | persistence on/off | — | persistence on/off | spectrum layout | — | flow direction |
 | **Channel hold** | — | — | — | peak decay | — | — |
 | **Run/Stop press** | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume | freeze/resume |
 | **Run/Stop hold** | arm single shot | — | — | — | — | — |
@@ -58,8 +58,9 @@ menu, freeze — plus the encoder's reset do the same thing wherever you are.
 Three rows are worth reading twice:
 
 - **Channel press** is the option key, and what it offers depends on what the
-  mode has. Only Rolling has nothing on it: persistence would just smear a
-  display that already shows time as a scroll.
+  mode has. Two modes have nothing on it: Rolling, where persistence would just
+  smear a display that already shows time as a scroll, and Tuner — see
+  [Known limitations](#current-limitations).
 - **Encoder press** walks the settings where there are settings, and otherwise
   becomes the mode's own value. Spectrum and Waterfall have neither — both keep
   their options on Channel — so it does nothing in either.
@@ -176,12 +177,6 @@ frequency in hertz and musical note; in note mode a bar either side of centre
 shows how sharp or flat each channel is. The A4 reference is in the settings
 menu.
 
-**Press Channel** to hold the reading. Pitch detection gives up as a plucked
-note decays — which is exactly when you want to read it — so with hold on, a
-channel that has lost its pitch keeps showing the last one it was sure of
-instead of dropping to `--`. A held readout is greyed, so a stale note can never
-pass for a live one; the cents meter keeps its channel colour either way.
-
 **WFAL — Waterfall.** A scrolling spectrogram — each FFT frame becomes a line of
 colour and the lines scroll over time, so you watch the spectrum evolve.
 Channel A owns the left half of the face, channel B the right. **Press
@@ -281,9 +276,13 @@ does not touch the settings menu — edge, A4 and persist keep their values.
 
 Honest notes about the interface as it stands, so nothing reads as a fault:
 
-- **The Channel button does nothing in Rolling.** There is no persistence to
-  switch there: a trail would only smear a display that already shows time as a
-  scroll.
+- **The Channel button does nothing in Rolling or Tuner.** Rolling has no
+  persistence to switch — a trail would only smear a display that already shows
+  time as a scroll. Tuner had a "hold the last reading" option that was removed:
+  it only engaged when pitch detection failed outright, which a Eurorack input
+  almost never does, so in practice it showed a live garbage pitch rather than a
+  held good one. Doing it properly needs a confidence measure from the pitch
+  detector, not just a pass/fail.
 - **Neither channel can be hidden.** Both traces always draw. The controls for
   hiding one were removed when the Channel button was given over to per-mode
   options.
@@ -311,8 +310,7 @@ Mode  (B1)   press  next mode: TRIG > ROLL > X-Y > SPEC > TUNE > WFAL
 Chan  (B2)   press  the mode's own option:
                     TRIG / X-Y: persistence on-off
                     SPEC: layout (flat / radial out / radial in)
-                    TUNE: hold reading.  WFAL: flow direction
-                    ROLL: nothing
+                    WFAL: flow direction.  ROLL, TUNE: nothing
              hold   SPEC: peak decay (off / fast / medium / slow)
 
 Run   (B3)   press  freeze / resume     (solid orange ring = frozen)

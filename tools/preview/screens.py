@@ -83,17 +83,6 @@ def tuner():
     return c
 
 
-def tuner_held():
-    """Hold on, and channel B's note has decayed past detection: its readout is
-    greyed to say it is the last confident reading rather than a live one."""
-    c = Canvas()
-    c.text_unit_center(BIG_YA, "A", "4", TEXT, 36, 20)
-    draw_meter(c, TU["kMeterYA"], 31, True, TRACE_A)
-    draw_meter(c, TU["kMeterYB"], 2, True, TRACE_B)
-    c.text_unit_center(BIG_YB, "A#", "3", DIM, 36, 20)
-    return c
-
-
 # ------------------------------------------------------ Scope + settings ----
 def draw_grid(c):
     for col in range(1, 8):
@@ -534,7 +523,6 @@ SCREENS = {
     "aa_sub": aa_sub,
     "aa_on": aa_on,
     "tuner": tuner,
-    "tuner_held": tuner_held,
     "scope_settings": scope,
     "scope_settings_wide": scope_settings_wide,
     "scope_settings_roll": scope_settings_roll,

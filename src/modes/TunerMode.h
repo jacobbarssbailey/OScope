@@ -37,11 +37,23 @@ public:
     bool ownsEncoderPress() const override { return true; }
     void encoderPress() override;
 
-    // B2 holds the last confident reading.  YIN gives up as a plucked note
-    // decays, which is exactly when you want to read it, so with hold on the
-    // readout keeps the last pitch it was sure of instead of dropping to "--".
-    bool ownsChannelButton() const override { return true; }
-    void channelPress() override;
+    // TODO: B2 is the per-mode option key and Tuner is the one mode with
+    // nothing on it.
+    //
+    // A hold on the last confident reading was tried and removed.  It worked as
+    // written, but its trigger — analyze() returning -1 — almost never fires on
+    // a Eurorack input: there is always enough noise, residual DC ripple or a
+    // still-sounding VCO to clear kMinPP and give YIN *some* period, so the
+    // readout shows a live garbage pitch rather than a held good one.  Doing it
+    // properly needs a confidence number, not a binary: AcqCore::yinPeriod
+    // computes the normalized difference at the chosen lag and then throws it
+    // away, so surfacing that is the prerequisite.
+    //
+    // Cheaper candidates that need nothing new: a fine cents scale (the meter
+    // spans +/-50, and the last few cents are where tuning actually happens);
+    // a response speed, since smooth() blends at a fixed 0.7/0.3; sharps vs
+    // flats in the note names; or transpose, since the menu's A4 only shifts
+    // the whole grid.
 
 private:
     static constexpr uint16_t kWin       = 1024;   // YIN window length
@@ -51,12 +63,9 @@ private:
     Acquisition*    _src      = nullptr;
     const Settings* _settings = nullptr;
     bool  _showNote = true;     // false = Hz readout, true = note readout
-    bool  _hold     = false;    // keep the last confident reading when YIN loses it
     float _fsHz     = 16129.0f; // sample rate (set in the constructor)
     float _freqA    = -1.0f;    // smoothed detected pitch, -1 = none
     float _freqB    = -1.0f;
-    float _heldA    = -1.0f;    // last pitch either channel was confident of
-    float _heldB    = -1.0f;
 
     uint16_t _rawA[kWin];
     uint16_t _rawB[kWin];
@@ -68,8 +77,6 @@ private:
     // Fold a new reading into a smoothed estimate (snap on a big jump).
     static float smooth(float prev, float fresh);
     // Draw one channel's readout (big glyph + subscript) and its cents meter.
-    // `held` greys the readout — the channel colour stays on the meter marker,
-    // so what the dimming says is "this is not live", not "this is not yours".
     void drawChannel(Renderer& r, float freq, uint16_t color,
-                     int16_t bigY, int16_t meterY, bool held) const;
+                     int16_t bigY, int16_t meterY) const;
 };

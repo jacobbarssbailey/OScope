@@ -77,18 +77,10 @@ float TunerMode::smooth(float prev, float fresh) {
     return prev * 0.7f + fresh * 0.3f;                      // small jitter: smooth
 }
 
-void TunerMode::channelPress() {
-    _hold = !_hold;
-}
-
 void TunerMode::onFrame(const SampleBuffers& /*buf*/) {
     if (!_src || !_src->readNewestBlock(_rawA, _rawB, kWin)) return;  // hold last
     _freqA = smooth(_freqA, analyze(_rawA));
     _freqB = smooth(_freqB, analyze(_rawB));
-    // Remember every confident reading, whether or not hold is on — switching
-    // it on should show the note you just played, not wait for the next one.
-    if (_freqA > 0.0f) _heldA = _freqA;
-    if (_freqB > 0.0f) _heldB = _freqB;
 }
 
 void TunerMode::encoderPress() {
@@ -128,7 +120,7 @@ static void drawMeter(Renderer& r, int16_t cy, int cents, bool haveMarker,
 }
 
 void TunerMode::drawChannel(Renderer& r, float freq, uint16_t color,
-                            int16_t bigY, int16_t meterY, bool held) const {
+                            int16_t bigY, int16_t meterY) const {
     if (freq <= 0.0f) {
         r.textCenterX(bigY, "--", Theme::Dim, FONT_LARGE);
         drawMeter(r, meterY, 0, false, color);   // ruler only, no marker
@@ -145,17 +137,15 @@ void TunerMode::drawChannel(Renderer& r, float freq, uint16_t color,
     const int   oct   = nn / 12 - 1;
 
     // The readout is white; the channel colour lives in the meter marker.
-    // A held reading greys it, so a stale note can never pass for a live one.
-    const uint16_t readout = held ? Theme::Dim : Theme::Text;
     if (_showNote) {
         char oc[8];
         snprintf(oc, sizeof oc, "%d", oct);
-        r.textUnitCenterX(bigY, kNoteNames[idx], oc, readout,
+        r.textUnitCenterX(bigY, kNoteNames[idx], oc, Theme::Text,
                           FONT_LARGE, FONT_BODY);
     } else {
         char hz[8];
         snprintf(hz, sizeof hz, "%.0f", (double)freq);
-        r.textUnitCenterX(bigY, hz, "Hz", readout, FONT_LARGE, FONT_BODY);
+        r.textUnitCenterX(bigY, hz, "Hz", Theme::Text, FONT_LARGE, FONT_BODY);
     }
 
     drawMeter(r, meterY, cents, true, color);
@@ -163,11 +153,7 @@ void TunerMode::drawChannel(Renderer& r, float freq, uint16_t color,
 
 void TunerMode::render(Renderer& r, const ScopeState& /*state*/,
                        const SampleBuffers& /*buf*/) {
-    // With hold on, a channel that YIN has lost falls back to its last
-    // confident reading rather than dropping to "--".
-    const bool heldA = _hold && _freqA <= 0.0f && _heldA > 0.0f;
-    const bool heldB = _hold && _freqB <= 0.0f && _heldB > 0.0f;
-    drawChannel(r, heldA ? _heldA : _freqA, Theme::TraceA, kBigYA, kMeterYA, heldA);
-    drawChannel(r, heldB ? _heldB : _freqB, Theme::TraceB, kBigYB, kMeterYB, heldB);
+    drawChannel(r, _freqA, Theme::TraceA, kBigYA, kMeterYA);   // top: channel A
+    drawChannel(r, _freqB, Theme::TraceB, kBigYB, kMeterYB);   // bottom: channel B
     // HUD drawn by RunScreen on top afterward.
 }
